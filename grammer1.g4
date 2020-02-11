@@ -1,22 +1,22 @@
 grammar grammer1;
 
-input : line (';')+ (line (';')+)* ;
+input : (';')* line (';')+ (line (';')+)* ;
 
 line :  expr
      //|  empty
      ;
 
 expr :  INT
-     |  '(' expr ')'
+     |  plus (OPERATOR | OPERATOR2) '(' expr ')' ((OPERATOR|OPERATOR2) expr )*
      |  plus
      ;
 
-plus : INT (OPERATOR2 expr)*
+plus : vm (OPERATOR2 plus)*
      | vm
      ;
 
 vm   : INT
-     | INT (OPERATOR expr)*
+     | INT (OPERATOR vm)*
      ;
 
 
