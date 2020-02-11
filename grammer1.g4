@@ -1,6 +1,6 @@
 grammar grammer1;
 
-input : line ';' (line ';')* ;
+input : line (';')+ (line (';')+)* ;
 
 line :  expr
      //|  empty
@@ -8,8 +8,17 @@ line :  expr
 
 expr :  INT
      |  '(' expr ')'
-     |  INT (OPERATOR expr)*
+     |  plus
      ;
+
+plus : INT (OPERATOR2 expr)*
+     | vm
+     ;
+
+vm   : INT
+     | INT (OPERATOR expr)*
+     ;
+
 
 INT
     : '0'
@@ -17,10 +26,12 @@ INT
     ;
 
 OPERATOR
+    : '*'
+    | '/'
+    ;
+OPERATOR2
     : '+'
     | '-'
-    | '*'
-    | '/'
     ;
 
 // empty : '' ;
