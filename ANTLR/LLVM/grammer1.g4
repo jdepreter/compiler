@@ -1,19 +1,19 @@
 grammar grammer1;
 
-input : line (';')+ (line (';')+)* ;
+gram : line (';')+ (line (';')+)* ;
 
-line : expr|bool
+line : bool1
 
      //|  empty
      ;
 
-bool
+bool1
     :bool2 (BINOP bool2)*
     ;
 
 
 bool2
-    :'!'? '(' bool ')'
+    :'!'? '(' bool1 ')'
     |expr BINOP2 expr
     |expr
     ;
