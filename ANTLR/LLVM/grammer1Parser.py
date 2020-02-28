@@ -12,7 +12,7 @@ else:
 def serializedATN():
     with StringIO() as buf:
         buf.write("\3\u608b\ua72a\u8133\ub9ed\u417c\u3be7\u7786\u5964\3\20")
-        buf.write("{\4\2\t\2\4\3\t\3\4\4\t\4\4\5\t\5\4\6\t\6\4\7\t\7\4\b")
+        buf.write("~\4\2\t\2\4\3\t\3\4\4\t\4\4\5\t\5\4\6\t\6\4\7\t\7\4\b")
         buf.write("\t\b\4\t\t\t\4\n\t\n\4\13\t\13\4\f\t\f\4\r\t\r\3\2\3\2")
         buf.write("\6\2\35\n\2\r\2\16\2\36\3\2\3\2\6\2#\n\2\r\2\16\2$\7\2")
         buf.write("\'\n\2\f\2\16\2*\13\2\3\3\3\3\3\4\3\4\3\4\7\4\61\n\4\f")
@@ -20,36 +20,37 @@ def serializedATN():
         buf.write("\3\5\3\5\3\5\5\5B\n\5\3\6\3\6\5\6F\n\6\3\7\3\7\5\7J\n")
         buf.write("\7\3\7\3\7\3\7\5\7O\n\7\7\7Q\n\7\f\7\16\7T\13\7\3\b\3")
         buf.write("\b\3\b\3\b\5\bZ\n\b\7\b\\\n\b\f\b\16\b_\13\b\3\t\3\t\3")
-        buf.write("\t\3\t\5\te\n\t\5\tg\n\t\3\n\3\n\3\n\3\n\3\n\5\nn\n\n")
-        buf.write("\3\13\3\13\3\13\3\13\3\13\5\13u\n\13\3\f\3\f\3\r\3\r\3")
-        buf.write("\r\2\2\16\2\4\6\b\n\f\16\20\22\24\26\30\2\2\2\177\2\32")
-        buf.write("\3\2\2\2\4+\3\2\2\2\6-\3\2\2\2\bA\3\2\2\2\nE\3\2\2\2\f")
-        buf.write("I\3\2\2\2\16U\3\2\2\2\20`\3\2\2\2\22m\3\2\2\2\24t\3\2")
-        buf.write("\2\2\26v\3\2\2\2\30x\3\2\2\2\32\34\5\4\3\2\33\35\7\3\2")
-        buf.write("\2\34\33\3\2\2\2\35\36\3\2\2\2\36\34\3\2\2\2\36\37\3\2")
-        buf.write("\2\2\37(\3\2\2\2 \"\5\4\3\2!#\7\3\2\2\"!\3\2\2\2#$\3\2")
-        buf.write("\2\2$\"\3\2\2\2$%\3\2\2\2%\'\3\2\2\2& \3\2\2\2\'*\3\2")
-        buf.write("\2\2(&\3\2\2\2()\3\2\2\2)\3\3\2\2\2*(\3\2\2\2+,\5\6\4")
-        buf.write("\2,\5\3\2\2\2-\62\5\b\5\2./\7\13\2\2/\61\5\b\5\2\60.\3")
-        buf.write("\2\2\2\61\64\3\2\2\2\62\60\3\2\2\2\62\63\3\2\2\2\63\7")
-        buf.write("\3\2\2\2\64\62\3\2\2\2\65\67\7\4\2\2\66\65\3\2\2\2\66")
-        buf.write("\67\3\2\2\2\678\3\2\2\289\7\5\2\29:\5\6\4\2:;\7\6\2\2")
-        buf.write(";B\3\2\2\2<=\5\n\6\2=>\7\n\2\2>?\5\n\6\2?B\3\2\2\2@B\5")
-        buf.write("\n\6\2A\66\3\2\2\2A<\3\2\2\2A@\3\2\2\2B\t\3\2\2\2CF\3")
-        buf.write("\2\2\2DF\5\f\7\2EC\3\2\2\2ED\3\2\2\2F\13\3\2\2\2GJ\5\16")
-        buf.write("\b\2HJ\3\2\2\2IG\3\2\2\2IH\3\2\2\2JR\3\2\2\2KN\7\17\2")
-        buf.write("\2LO\5\16\b\2MO\5\22\n\2NL\3\2\2\2NM\3\2\2\2OQ\3\2\2\2")
-        buf.write("PK\3\2\2\2QT\3\2\2\2RP\3\2\2\2RS\3\2\2\2S\r\3\2\2\2TR")
-        buf.write("\3\2\2\2U]\5\20\t\2VY\7\16\2\2WZ\5\20\t\2XZ\5\22\n\2Y")
-        buf.write("W\3\2\2\2YX\3\2\2\2Z\\\3\2\2\2[V\3\2\2\2\\_\3\2\2\2][")
-        buf.write("\3\2\2\2]^\3\2\2\2^\17\3\2\2\2_]\3\2\2\2`f\5\24\13\2a")
-        buf.write("d\7\7\2\2be\5\24\13\2ce\5\22\n\2db\3\2\2\2dc\3\2\2\2e")
-        buf.write("g\3\2\2\2fa\3\2\2\2fg\3\2\2\2g\21\3\2\2\2hn\5\26\f\2i")
-        buf.write("j\7\b\2\2jk\5\f\7\2kl\7\t\2\2ln\3\2\2\2mh\3\2\2\2mi\3")
-        buf.write("\2\2\2n\23\3\2\2\2ou\5\30\r\2pq\7\5\2\2qr\5\f\7\2rs\7")
-        buf.write("\6\2\2su\3\2\2\2to\3\2\2\2tp\3\2\2\2u\25\3\2\2\2vw\7\f")
-        buf.write("\2\2w\27\3\2\2\2xy\7\r\2\2y\31\3\2\2\2\22\36$(\62\66A")
-        buf.write("EINRY]dfmt")
+        buf.write("\t\3\t\5\te\n\t\5\tg\n\t\3\n\3\n\3\n\3\n\3\n\3\n\3\n\3")
+        buf.write("\n\5\nq\n\n\3\13\3\13\3\13\3\13\3\13\5\13x\n\13\3\f\3")
+        buf.write("\f\3\r\3\r\3\r\2\2\16\2\4\6\b\n\f\16\20\22\24\26\30\2")
+        buf.write("\4\3\2\b\t\3\2\n\13\2\u0082\2\32\3\2\2\2\4+\3\2\2\2\6")
+        buf.write("-\3\2\2\2\bA\3\2\2\2\nE\3\2\2\2\fI\3\2\2\2\16U\3\2\2\2")
+        buf.write("\20`\3\2\2\2\22p\3\2\2\2\24w\3\2\2\2\26y\3\2\2\2\30{\3")
+        buf.write("\2\2\2\32\34\5\4\3\2\33\35\7\r\2\2\34\33\3\2\2\2\35\36")
+        buf.write("\3\2\2\2\36\34\3\2\2\2\36\37\3\2\2\2\37(\3\2\2\2 \"\5")
+        buf.write("\4\3\2!#\7\r\2\2\"!\3\2\2\2#$\3\2\2\2$\"\3\2\2\2$%\3\2")
+        buf.write("\2\2%\'\3\2\2\2& \3\2\2\2\'*\3\2\2\2(&\3\2\2\2()\3\2\2")
+        buf.write("\2)\3\3\2\2\2*(\3\2\2\2+,\5\6\4\2,\5\3\2\2\2-\62\5\b\5")
+        buf.write("\2./\7\5\2\2/\61\5\b\5\2\60.\3\2\2\2\61\64\3\2\2\2\62")
+        buf.write("\60\3\2\2\2\62\63\3\2\2\2\63\7\3\2\2\2\64\62\3\2\2\2\65")
+        buf.write("\67\7\3\2\2\66\65\3\2\2\2\66\67\3\2\2\2\678\3\2\2\289")
+        buf.write("\7\16\2\29:\5\6\4\2:;\7\17\2\2;B\3\2\2\2<=\5\n\6\2=>\7")
+        buf.write("\4\2\2>?\5\n\6\2?B\3\2\2\2@B\5\n\6\2A\66\3\2\2\2A<\3\2")
+        buf.write("\2\2A@\3\2\2\2B\t\3\2\2\2CF\3\2\2\2DF\5\f\7\2EC\3\2\2")
+        buf.write("\2ED\3\2\2\2F\13\3\2\2\2GJ\5\16\b\2HJ\3\2\2\2IG\3\2\2")
+        buf.write("\2IH\3\2\2\2JR\3\2\2\2KN\t\2\2\2LO\5\16\b\2MO\5\22\n\2")
+        buf.write("NL\3\2\2\2NM\3\2\2\2OQ\3\2\2\2PK\3\2\2\2QT\3\2\2\2RP\3")
+        buf.write("\2\2\2RS\3\2\2\2S\r\3\2\2\2TR\3\2\2\2U]\5\20\t\2VY\t\3")
+        buf.write("\2\2WZ\5\20\t\2XZ\5\22\n\2YW\3\2\2\2YX\3\2\2\2Z\\\3\2")
+        buf.write("\2\2[V\3\2\2\2\\_\3\2\2\2][\3\2\2\2]^\3\2\2\2^\17\3\2")
+        buf.write("\2\2_]\3\2\2\2`f\5\24\13\2ad\7\f\2\2be\5\24\13\2ce\5\22")
+        buf.write("\n\2db\3\2\2\2dc\3\2\2\2eg\3\2\2\2fa\3\2\2\2fg\3\2\2\2")
+        buf.write("g\21\3\2\2\2hq\5\26\f\2ij\7\16\2\2jk\7\t\2\2kl\7\16\2")
+        buf.write("\2lm\5\f\7\2mn\7\17\2\2no\7\17\2\2oq\3\2\2\2ph\3\2\2\2")
+        buf.write("pi\3\2\2\2q\23\3\2\2\2rx\5\30\r\2st\7\16\2\2tu\5\f\7\2")
+        buf.write("uv\7\17\2\2vx\3\2\2\2wr\3\2\2\2ws\3\2\2\2x\25\3\2\2\2")
+        buf.write("yz\7\6\2\2z\27\3\2\2\2{|\7\7\2\2|\31\3\2\2\2\22\36$(\62")
+        buf.write("\66AEINRY]dfpw")
         return buf.getvalue()
 
 
@@ -63,13 +64,13 @@ class grammer1Parser ( Parser ):
 
     sharedContextCache = PredictionContextCache()
 
-    literalNames = [ "<INVALID>", "';'", "'!'", "'('", "')'", "'%'", "'(-('", 
-                     "'))'" ]
+    literalNames = [ "<INVALID>", "'!'", "<INVALID>", "<INVALID>", "<INVALID>", 
+                     "<INVALID>", "'+'", "'-'", "'*'", "'/'", "'%'", "';'", 
+                     "'('", "')'" ]
 
-    symbolicNames = [ "<INVALID>", "<INVALID>", "<INVALID>", "<INVALID>", 
-                      "<INVALID>", "<INVALID>", "<INVALID>", "<INVALID>", 
-                      "BINOP2", "BINOP", "NEG_INT", "INT", "OPERATOR", "OPERATOR2", 
-                      "WS" ]
+    symbolicNames = [ "<INVALID>", "<INVALID>", "BINOP2", "BINOP", "NEG_INT", 
+                      "INT", "PLUS", "MIN", "MAAL", "DEEL", "MOD", "SEMICOLON", 
+                      "LBRACKET", "RBRACKET", "WS" ]
 
     RULE_gram = 0
     RULE_line = 1
@@ -89,18 +90,18 @@ class grammer1Parser ( Parser ):
 
     EOF = Token.EOF
     T__0=1
-    T__1=2
-    T__2=3
-    T__3=4
-    T__4=5
-    T__5=6
-    T__6=7
-    BINOP2=8
-    BINOP=9
-    NEG_INT=10
-    INT=11
-    OPERATOR=12
-    OPERATOR2=13
+    BINOP2=2
+    BINOP=3
+    NEG_INT=4
+    INT=5
+    PLUS=6
+    MIN=7
+    MAAL=8
+    DEEL=9
+    MOD=10
+    SEMICOLON=11
+    LBRACKET=12
+    RBRACKET=13
     WS=14
 
     def __init__(self, input:TokenStream, output:TextIO = sys.stdout):
@@ -124,6 +125,12 @@ class grammer1Parser ( Parser ):
             else:
                 return self.getTypedRuleContext(grammer1Parser.LineContext,i)
 
+
+        def SEMICOLON(self, i:int=None):
+            if i is None:
+                return self.getTokens(grammer1Parser.SEMICOLON)
+            else:
+                return self.getToken(grammer1Parser.SEMICOLON, i)
 
         def getRuleIndex(self):
             return grammer1Parser.RULE_gram
@@ -160,7 +167,7 @@ class grammer1Parser ( Parser ):
             while _alt!=2 and _alt!=ATN.INVALID_ALT_NUMBER:
                 if _alt == 1:
                     self.state = 25
-                    self.match(grammer1Parser.T__0)
+                    self.match(grammer1Parser.SEMICOLON)
 
                 else:
                     raise NoViableAltException(self)
@@ -171,7 +178,7 @@ class grammer1Parser ( Parser ):
             self.state = 38
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            while (((_la) & ~0x3f) == 0 and ((1 << _la) & ((1 << grammer1Parser.T__0) | (1 << grammer1Parser.T__1) | (1 << grammer1Parser.T__2) | (1 << grammer1Parser.BINOP2) | (1 << grammer1Parser.BINOP) | (1 << grammer1Parser.INT) | (1 << grammer1Parser.OPERATOR2))) != 0):
+            while (((_la) & ~0x3f) == 0 and ((1 << _la) & ((1 << grammer1Parser.T__0) | (1 << grammer1Parser.BINOP2) | (1 << grammer1Parser.BINOP) | (1 << grammer1Parser.INT) | (1 << grammer1Parser.PLUS) | (1 << grammer1Parser.MIN) | (1 << grammer1Parser.SEMICOLON) | (1 << grammer1Parser.LBRACKET))) != 0):
                 self.state = 30
                 self.line()
                 self.state = 32 
@@ -180,7 +187,7 @@ class grammer1Parser ( Parser ):
                 while _alt!=2 and _alt!=ATN.INVALID_ALT_NUMBER:
                     if _alt == 1:
                         self.state = 31
-                        self.match(grammer1Parser.T__0)
+                        self.match(grammer1Parser.SEMICOLON)
 
                     else:
                         raise NoViableAltException(self)
@@ -323,9 +330,15 @@ class grammer1Parser ( Parser ):
             super().__init__(parent, invokingState)
             self.parser = parser
 
+        def LBRACKET(self):
+            return self.getToken(grammer1Parser.LBRACKET, 0)
+
         def bool1(self):
             return self.getTypedRuleContext(grammer1Parser.Bool1Context,0)
 
+
+        def RBRACKET(self):
+            return self.getToken(grammer1Parser.RBRACKET, 0)
 
         def expr(self, i:int=None):
             if i is None:
@@ -371,17 +384,17 @@ class grammer1Parser ( Parser ):
                 self.state = 52
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
-                if _la==grammer1Parser.T__1:
+                if _la==grammer1Parser.T__0:
                     self.state = 51
-                    self.match(grammer1Parser.T__1)
+                    self.match(grammer1Parser.T__0)
 
 
                 self.state = 54
-                self.match(grammer1Parser.T__2)
+                self.match(grammer1Parser.LBRACKET)
                 self.state = 55
                 self.bool1()
                 self.state = 56
-                self.match(grammer1Parser.T__3)
+                self.match(grammer1Parser.RBRACKET)
                 pass
 
             elif la_ == 2:
@@ -482,11 +495,17 @@ class grammer1Parser ( Parser ):
                 return self.getTypedRuleContext(grammer1Parser.VmContext,i)
 
 
-        def OPERATOR2(self, i:int=None):
+        def PLUS(self, i:int=None):
             if i is None:
-                return self.getTokens(grammer1Parser.OPERATOR2)
+                return self.getTokens(grammer1Parser.PLUS)
             else:
-                return self.getToken(grammer1Parser.OPERATOR2, i)
+                return self.getToken(grammer1Parser.PLUS, i)
+
+        def MIN(self, i:int=None):
+            if i is None:
+                return self.getTokens(grammer1Parser.MIN)
+            else:
+                return self.getToken(grammer1Parser.MIN, i)
 
         def neg_sol(self, i:int=None):
             if i is None:
@@ -525,11 +544,11 @@ class grammer1Parser ( Parser ):
             self.state = 71
             self._errHandler.sync(self)
             token = self._input.LA(1)
-            if token in [grammer1Parser.T__2, grammer1Parser.INT]:
+            if token in [grammer1Parser.INT, grammer1Parser.LBRACKET]:
                 self.state = 69
                 self.vm()
                 pass
-            elif token in [grammer1Parser.T__0, grammer1Parser.T__3, grammer1Parser.T__6, grammer1Parser.BINOP2, grammer1Parser.BINOP, grammer1Parser.OPERATOR2]:
+            elif token in [grammer1Parser.BINOP2, grammer1Parser.BINOP, grammer1Parser.PLUS, grammer1Parser.MIN, grammer1Parser.SEMICOLON, grammer1Parser.RBRACKET]:
                 pass
             else:
                 raise NoViableAltException(self)
@@ -537,22 +556,27 @@ class grammer1Parser ( Parser ):
             self.state = 80
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            while _la==grammer1Parser.OPERATOR2:
+            while _la==grammer1Parser.PLUS or _la==grammer1Parser.MIN:
                 self.state = 73
-                self.match(grammer1Parser.OPERATOR2)
+                _la = self._input.LA(1)
+                if not(_la==grammer1Parser.PLUS or _la==grammer1Parser.MIN):
+                    self._errHandler.recoverInline(self)
+                else:
+                    self._errHandler.reportMatch(self)
+                    self.consume()
                 self.state = 76
                 self._errHandler.sync(self)
-                token = self._input.LA(1)
-                if token in [grammer1Parser.T__2, grammer1Parser.INT]:
+                la_ = self._interp.adaptivePredict(self._input,8,self._ctx)
+                if la_ == 1:
                     self.state = 74
                     self.vm()
                     pass
-                elif token in [grammer1Parser.T__5, grammer1Parser.NEG_INT]:
+
+                elif la_ == 2:
                     self.state = 75
                     self.neg_sol()
                     pass
-                else:
-                    raise NoViableAltException(self)
+
 
                 self.state = 82
                 self._errHandler.sync(self)
@@ -580,11 +604,17 @@ class grammer1Parser ( Parser ):
                 return self.getTypedRuleContext(grammer1Parser.ModContext,i)
 
 
-        def OPERATOR(self, i:int=None):
+        def MAAL(self, i:int=None):
             if i is None:
-                return self.getTokens(grammer1Parser.OPERATOR)
+                return self.getTokens(grammer1Parser.MAAL)
             else:
-                return self.getToken(grammer1Parser.OPERATOR, i)
+                return self.getToken(grammer1Parser.MAAL, i)
+
+        def DEEL(self, i:int=None):
+            if i is None:
+                return self.getTokens(grammer1Parser.DEEL)
+            else:
+                return self.getToken(grammer1Parser.DEEL, i)
 
         def neg_sol(self, i:int=None):
             if i is None:
@@ -625,22 +655,27 @@ class grammer1Parser ( Parser ):
             self.state = 91
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            while _la==grammer1Parser.OPERATOR:
+            while _la==grammer1Parser.MAAL or _la==grammer1Parser.DEEL:
                 self.state = 84
-                self.match(grammer1Parser.OPERATOR)
+                _la = self._input.LA(1)
+                if not(_la==grammer1Parser.MAAL or _la==grammer1Parser.DEEL):
+                    self._errHandler.recoverInline(self)
+                else:
+                    self._errHandler.reportMatch(self)
+                    self.consume()
                 self.state = 87
                 self._errHandler.sync(self)
-                token = self._input.LA(1)
-                if token in [grammer1Parser.T__2, grammer1Parser.INT]:
+                la_ = self._interp.adaptivePredict(self._input,10,self._ctx)
+                if la_ == 1:
                     self.state = 85
                     self.mod()
                     pass
-                elif token in [grammer1Parser.T__5, grammer1Parser.NEG_INT]:
+
+                elif la_ == 2:
                     self.state = 86
                     self.neg_sol()
                     pass
-                else:
-                    raise NoViableAltException(self)
+
 
                 self.state = 93
                 self._errHandler.sync(self)
@@ -667,6 +702,9 @@ class grammer1Parser ( Parser ):
             else:
                 return self.getTypedRuleContext(grammer1Parser.Vm_solContext,i)
 
+
+        def MOD(self):
+            return self.getToken(grammer1Parser.MOD, 0)
 
         def neg_sol(self):
             return self.getTypedRuleContext(grammer1Parser.Neg_solContext,0)
@@ -704,22 +742,22 @@ class grammer1Parser ( Parser ):
             self.state = 100
             self._errHandler.sync(self)
             _la = self._input.LA(1)
-            if _la==grammer1Parser.T__4:
+            if _la==grammer1Parser.MOD:
                 self.state = 95
-                self.match(grammer1Parser.T__4)
+                self.match(grammer1Parser.MOD)
                 self.state = 98
                 self._errHandler.sync(self)
-                token = self._input.LA(1)
-                if token in [grammer1Parser.T__2, grammer1Parser.INT]:
+                la_ = self._interp.adaptivePredict(self._input,12,self._ctx)
+                if la_ == 1:
                     self.state = 96
                     self.vm_sol()
                     pass
-                elif token in [grammer1Parser.T__5, grammer1Parser.NEG_INT]:
+
+                elif la_ == 2:
                     self.state = 97
                     self.neg_sol()
                     pass
-                else:
-                    raise NoViableAltException(self)
+
 
 
 
@@ -742,9 +780,24 @@ class grammer1Parser ( Parser ):
             return self.getTypedRuleContext(grammer1Parser.Neg_valueContext,0)
 
 
+        def LBRACKET(self, i:int=None):
+            if i is None:
+                return self.getTokens(grammer1Parser.LBRACKET)
+            else:
+                return self.getToken(grammer1Parser.LBRACKET, i)
+
+        def MIN(self):
+            return self.getToken(grammer1Parser.MIN, 0)
+
         def plus(self):
             return self.getTypedRuleContext(grammer1Parser.PlusContext,0)
 
+
+        def RBRACKET(self, i:int=None):
+            if i is None:
+                return self.getTokens(grammer1Parser.RBRACKET)
+            else:
+                return self.getToken(grammer1Parser.RBRACKET, i)
 
         def getRuleIndex(self):
             return grammer1Parser.RULE_neg_sol
@@ -771,7 +824,7 @@ class grammer1Parser ( Parser ):
         localctx = grammer1Parser.Neg_solContext(self, self._ctx, self.state)
         self.enterRule(localctx, 16, self.RULE_neg_sol)
         try:
-            self.state = 107
+            self.state = 110
             self._errHandler.sync(self)
             token = self._input.LA(1)
             if token in [grammer1Parser.NEG_INT]:
@@ -779,14 +832,20 @@ class grammer1Parser ( Parser ):
                 self.state = 102
                 self.neg_value()
                 pass
-            elif token in [grammer1Parser.T__5]:
+            elif token in [grammer1Parser.LBRACKET]:
                 self.enterOuterAlt(localctx, 2)
                 self.state = 103
-                self.match(grammer1Parser.T__5)
+                self.match(grammer1Parser.LBRACKET)
                 self.state = 104
-                self.plus()
+                self.match(grammer1Parser.MIN)
                 self.state = 105
-                self.match(grammer1Parser.T__6)
+                self.match(grammer1Parser.LBRACKET)
+                self.state = 106
+                self.plus()
+                self.state = 107
+                self.match(grammer1Parser.RBRACKET)
+                self.state = 108
+                self.match(grammer1Parser.RBRACKET)
                 pass
             else:
                 raise NoViableAltException(self)
@@ -810,9 +869,15 @@ class grammer1Parser ( Parser ):
             return self.getTypedRuleContext(grammer1Parser.ValueContext,0)
 
 
+        def LBRACKET(self):
+            return self.getToken(grammer1Parser.LBRACKET, 0)
+
         def plus(self):
             return self.getTypedRuleContext(grammer1Parser.PlusContext,0)
 
+
+        def RBRACKET(self):
+            return self.getToken(grammer1Parser.RBRACKET, 0)
 
         def getRuleIndex(self):
             return grammer1Parser.RULE_vm_sol
@@ -839,22 +904,22 @@ class grammer1Parser ( Parser ):
         localctx = grammer1Parser.Vm_solContext(self, self._ctx, self.state)
         self.enterRule(localctx, 18, self.RULE_vm_sol)
         try:
-            self.state = 114
+            self.state = 117
             self._errHandler.sync(self)
             token = self._input.LA(1)
             if token in [grammer1Parser.INT]:
                 self.enterOuterAlt(localctx, 1)
-                self.state = 109
+                self.state = 112
                 self.value()
                 pass
-            elif token in [grammer1Parser.T__2]:
+            elif token in [grammer1Parser.LBRACKET]:
                 self.enterOuterAlt(localctx, 2)
-                self.state = 110
-                self.match(grammer1Parser.T__2)
-                self.state = 111
+                self.state = 113
+                self.match(grammer1Parser.LBRACKET)
+                self.state = 114
                 self.plus()
-                self.state = 112
-                self.match(grammer1Parser.T__3)
+                self.state = 115
+                self.match(grammer1Parser.RBRACKET)
                 pass
             else:
                 raise NoViableAltException(self)
@@ -903,7 +968,7 @@ class grammer1Parser ( Parser ):
         self.enterRule(localctx, 20, self.RULE_neg_value)
         try:
             self.enterOuterAlt(localctx, 1)
-            self.state = 116
+            self.state = 119
             self.match(grammer1Parser.NEG_INT)
         except RecognitionException as re:
             localctx.exception = re
@@ -949,7 +1014,7 @@ class grammer1Parser ( Parser ):
         self.enterRule(localctx, 22, self.RULE_value)
         try:
             self.enterOuterAlt(localctx, 1)
-            self.state = 118
+            self.state = 121
             self.match(grammer1Parser.INT)
         except RecognitionException as re:
             localctx.exception = re
