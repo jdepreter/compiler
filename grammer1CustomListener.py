@@ -7,8 +7,8 @@ from ANTLR.LLVM.AST import Node
 
 # Depth first
 class KeyPrinter(grammer1Listener):
-    def __init__(self, file):
-        self.ast = Node(0, "ast", None, [])
+    def __init__(self):
+        self.ast = None
         self.currentNode = None
         self.id = 1
 
@@ -17,10 +17,15 @@ class KeyPrinter(grammer1Listener):
         self.id += 1
         return node
 
+    def enterGram(self, ctx:grammer1Parser.GramContext):
+        print("enter gram")
+        self.ast = self.create_node("gram", self.ast)
+        self.currentNode = self.ast
+
     def enterLine(self, ctx:grammer1Parser.LineContext):
         print("enter line")
         node = self.create_node("line", self.ast)
-        self.ast.children.append(node)
+        self.currentNode.children.append(node)
         self.currentNode = node
 
     def exitLine(self, ctx:grammer1Parser.LineContext):

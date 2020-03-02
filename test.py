@@ -14,7 +14,7 @@ def main(argv):
     stream = CommonTokenStream(lexer)
     parser = grammer1Parser(stream)
     tree = parser.gram()
-    printer = KeyPrinter("temp.txt")
+    printer = KeyPrinter()
     walker = ParseTreeWalker()
     walker.walk(printer, tree)
     # printer.ast.to_dot(open("temp.dot", 'w'))
