@@ -1,6 +1,6 @@
 grammar grammer1;
 
-gram : line (';')+ (line (';')+)* ;
+gram : line (SEMICOLON)+ (line (SEMICOLON)+)* ;
 
 line : bool1
 
@@ -13,7 +13,7 @@ bool1
 
 
 bool2
-    :'!'? '(' bool1 ')'
+    :'!'? LBRACKET bool1 RBRACKET
     |expr BINOP2 expr
     |expr
     ;
@@ -36,24 +36,24 @@ expr :
      | plus
      ;
 
-plus : (vm|) (OPERATOR2 (vm|neg_sol))*
+plus : (vm|) ((PLUS|MIN) (vm|neg_sol))*
      ;
 
 vm   :
-    mod (OPERATOR (mod | neg_sol))*
+    mod ((MAAL|DEEL) (mod | neg_sol))*
      ;
 
 mod  :
-    vm_sol ('%' (vm_sol | neg_sol))?
+    vm_sol (MOD (vm_sol | neg_sol))?
     ;
 
 neg_sol
-    :neg_value|('(-(' plus '))')
+    :neg_value|(LBRACKET'-'LBRACKET plus RBRACKET RBRACKET)
     ;
 
 vm_sol
     : value
-    | '(' plus ')'
+    | LBRACKET plus RBRACKET
     ;
 
 neg_value
@@ -67,7 +67,7 @@ value
 
 
 NEG_INT
-    :'('('0'| ('-'?[1-9][0-9]*) )')'
+    :LBRACKET('0'| ('-'?[1-9][0-9]*) )RBRACKET
     ;
 
 INT
@@ -75,14 +75,15 @@ INT
     | [1-9][0-9]*
     ;
 
-OPERATOR
-    : '*'
-    | '/'
-    ;
-OPERATOR2
-    : '+'
-    | '-'
-    ;
+
+PLUS : '+';
+MIN  : '-';
+MAAL : '*';
+DEEL : '/';
+MOD  : '%';
+SEMICOLON: ';';
+LBRACKET: '(';
+RBRACKET: ')';
 
 // empty : '' ;
 
