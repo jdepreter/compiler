@@ -49,7 +49,7 @@ class KeyPrinter(grammer1Listener):
         self.currentNode = self.currentNode.parent
 
     def enterExpr(self, ctx:grammer1Parser.ExprContext):
-        node = self.create_node("Expr", self.currentNode)
+        node = self.create_node("expr", self.currentNode)
         self.currentNode.children.append(node)
         self.currentNode = node
 
