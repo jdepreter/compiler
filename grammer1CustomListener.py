@@ -36,11 +36,19 @@ class KeyPrinter(grammer1Listener):
         self.currentNode = self.currentNode.parent
 
     def enterBool2(self, ctx:grammer1Parser.Bool2Context):
-        node = self.create_node("Bool-2", self.currentNode)
+        node = self.create_node("Bool2", self.currentNode)
         self.currentNode.children.append(node)
         self.currentNode = node
 
     def exitBool2(self, ctx:grammer1Parser.Bool2Context):
+        self.currentNode = self.currentNode.parent
+
+    def enterExpr(self, ctx:grammer1Parser.ExprContext):
+        node = self.create_node("Expr", self.currentNode)
+        self.currentNode.children.append(node)
+        self.currentNode = node
+
+    def exitExpr(self, ctx:grammer1Parser.ExprContext):
         self.currentNode = self.currentNode.parent
 
     def enterPlus(self, ctx:grammer1Parser.PlusContext):
@@ -59,10 +67,42 @@ class KeyPrinter(grammer1Listener):
     def exitVm(self, ctx:grammer1Parser.VmContext):
         self.currentNode = self.currentNode.parent
 
+    def enterMod(self, ctx:grammer1Parser.ModContext):
+        node = self.create_node("mod", self.currentNode)
+        self.currentNode.children.append(node)
+        self.currentNode = node
+
+    def exitMod(self, ctx:grammer1Parser.ModContext):
+        self.currentNode = self.currentNode.parent
+
+    def enterNeg_sol(self, ctx:grammer1Parser.Neg_solContext):
+        node = self.create_node("negsol", self.currentNode)
+        self.currentNode.children.append(node)
+        self.currentNode = node
+
+    def exitNeg_sol(self, ctx:grammer1Parser.Neg_solContext):
+        self.currentNode = self.currentNode.parent
+
+    def enterVm_sol(self, ctx:grammer1Parser.Vm_solContext):
+        node = self.create_node("vmsol", self.currentNode)
+        self.currentNode.children.append(node)
+        self.currentNode = node
+
+    def exitVm_sol(self, ctx:grammer1Parser.Vm_solContext):
+        self.currentNode = self.currentNode.parent
+
     def enterValue(self, ctx:grammer1Parser.ValueContext):
         node = self.create_node(str(ctx.INT()), self.currentNode)
         self.currentNode.children.append(node)
         self.currentNode = node
 
     def exitValue(self, ctx:grammer1Parser.ValueContext):
+        self.currentNode = self.currentNode.parent
+
+    def enterNeg_value(self, ctx:grammer1Parser.Neg_valueContext):
+        node = self.create_node(str(ctx.NEG_INT()), self.currentNode)
+        self.currentNode.children.append(node)
+        self.currentNode = node
+
+    def exitNeg_value(self, ctx:grammer1Parser.Neg_valueContext):
         self.currentNode = self.currentNode.parent
