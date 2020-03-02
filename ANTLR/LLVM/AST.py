@@ -1,3 +1,6 @@
+from graphviz import Digraph
+
+
 class Node:
     def __init__(self, id, label, parent=None, children=[]):
         self.id = id
@@ -7,6 +10,19 @@ class Node:
         for child in children:
             child_node = Node(child.children, self)
             self.children.append(child_node)
+
+    def render_dot(self, graph=None):
+        if graph is None:
+            graph = Digraph(format='png')
+        graph.node(str(self.id), self.label)
+
+        if self.parent is not None:
+            graph.edge(str(self.parent.id), str(self.id))
+
+        for child in self.children:
+            child.render_dot(graph)
+
+        return graph
 
     def to_dot(self, file):
         if self.parent is None:
