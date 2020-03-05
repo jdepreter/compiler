@@ -23,7 +23,7 @@ def main(argv):
     visitor.clean_tree()
     graph = printer.ast.render_dot()
     graph.save("output.txt", "output")
-    graph.render("output.txt")
+    graph.render("output")
 
 if __name__ == '__main__':
     main(sys.argv)

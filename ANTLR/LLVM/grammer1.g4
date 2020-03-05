@@ -3,8 +3,6 @@ grammar grammer1;
 gram : line (SEMICOLON)+ (line (SEMICOLON)+)* ;
 
 line : bool1
-
-     //|  empty
      ;
 
 bool1
@@ -14,16 +12,9 @@ bool1
 
 bool2
     :NOT? LBRACKET bool1 RBRACKET
-    |expr (EQ|LT|LE|GT|GE|NE) expr
-    |expr
+    |plus (EQ|LT|LE|GT|GE|NE) plus
+    |plus
     ;
-
-
-
-
-expr :
-     | plus
-     ;
 
 plus : (vm|) ((PLUS|MIN) (vm|neg_sol))*
      ;

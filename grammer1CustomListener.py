@@ -48,13 +48,13 @@ class KeyPrinter(grammer1Listener):
     def exitBool2(self, ctx:grammer1Parser.Bool2Context):
         self.currentNode = self.currentNode.parent
 
-    def enterExpr(self, ctx:grammer1Parser.ExprContext):
-        node = self.create_node("expr", self.currentNode)
-        self.currentNode.children.append(node)
-        self.currentNode = node
-
-    def exitExpr(self, ctx:grammer1Parser.ExprContext):
-        self.currentNode = self.currentNode.parent
+    # def enterExpr(self, ctx:grammer1Parser.ExprContext):
+    #     node = self.create_node("expr", self.currentNode)
+    #     self.currentNode.children.append(node)
+    #     self.currentNode = node
+    #
+    # def exitExpr(self, ctx:grammer1Parser.ExprContext):
+    #     self.currentNode = self.currentNode.parent
 
     def enterPlus(self, ctx:grammer1Parser.PlusContext):
         if len(ctx.PLUS()) > 0:

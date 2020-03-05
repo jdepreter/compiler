@@ -44,15 +44,6 @@ class grammer1Listener(ParseTreeListener):
         pass
 
 
-    # Enter a parse tree produced by grammer1Parser#expr.
-    def enterExpr(self, ctx:grammer1Parser.ExprContext):
-        pass
-
-    # Exit a parse tree produced by grammer1Parser#expr.
-    def exitExpr(self, ctx:grammer1Parser.ExprContext):
-        pass
-
-
     # Enter a parse tree produced by grammer1Parser#plus.
     def enterPlus(self, ctx:grammer1Parser.PlusContext):
         pass

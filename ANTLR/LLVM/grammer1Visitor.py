@@ -29,11 +29,6 @@ class grammer1Visitor(ParseTreeVisitor):
         return self.visitChildren(ctx)
 
 
-    # Visit a parse tree produced by grammer1Parser#expr.
-    def visitExpr(self, ctx:grammer1Parser.ExprContext):
-        return self.visitChildren(ctx)
-
-
     # Visit a parse tree produced by grammer1Parser#plus.
     def visitPlus(self, ctx:grammer1Parser.PlusContext):
         return self.visitChildren(ctx)
