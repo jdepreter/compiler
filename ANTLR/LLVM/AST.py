@@ -40,14 +40,14 @@ class Node:
 
         elif self.label == 'plus':
             self.label = int(self.children[0].label) + int(self.children[1].label)
-
+        elif self.label == 'min':
+            self.label = int(self.children[0].label) - int(self.children[1].label)
         elif self.label == 'vm':
             self.label = int(self.children[0].label) * int(self.children[1].label)
-
+        elif self.label == 'deel':
+            self.label = int(self.children[0].label) / int(self.children[1].label)
         self.children = []
         return True
-
-
 
     def render_dot(self, graph=None):
         if graph is None:

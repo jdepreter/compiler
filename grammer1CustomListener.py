@@ -57,7 +57,10 @@ class KeyPrinter(grammer1Listener):
         self.currentNode = self.currentNode.parent
 
     def enterPlus(self, ctx:grammer1Parser.PlusContext):
-        node = self.create_node("plus", self.currentNode)
+        if len(ctx.PLUS()) > 0:
+            node = self.create_node("plus", self.currentNode)
+        else:
+            node = self.create_node("min", self.currentNode)
         self.currentNode.children.append(node)
         self.currentNode = node
 
@@ -65,7 +68,10 @@ class KeyPrinter(grammer1Listener):
         self.currentNode = self.currentNode.parent
 
     def enterVm(self, ctx:grammer1Parser.VmContext):
-        node = self.create_node("vm", self.currentNode)
+        if len(ctx.MAAL()) > 0:
+            node = self.create_node("vm", self.currentNode)
+        else:
+            node = self.create_node("deel", self.currentNode)
         self.currentNode.children.append(node)
         self.currentNode = node
 
