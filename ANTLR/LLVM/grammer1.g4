@@ -8,29 +8,18 @@ line : bool1
      ;
 
 bool1
-    :bool2 (BINOP bool2)*
+    :bool2 ((AND|OR) bool2)*
     ;
 
 
 bool2
-    :'!'? LBRACKET bool1 RBRACKET
-    |expr BINOP2 expr
+    :NOT? LBRACKET bool1 RBRACKET
+    |expr (EQ|LT|LE|GT|GE|NE) expr
     |expr
     ;
 
-BINOP2
-    :'=='
-    |'>'
-    |'<'
-    |'>='
-    |'<='
-    |'!='
-    ;
 
-BINOP
-    :'&&'
-    |'||'
-    ;
+
 
 expr :
      | plus
@@ -84,6 +73,15 @@ MOD  : '%';
 SEMICOLON: ';';
 LBRACKET: '(';
 RBRACKET: ')';
+NOT: '!';
+AND: '&&';
+OR: '||';
+EQ: '==';
+GT: '>';
+LT: '<';
+NE: '!=';
+GE:'>=';
+LE:'<=';
 
 // empty : '' ;
 
