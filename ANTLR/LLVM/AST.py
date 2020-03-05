@@ -11,7 +11,10 @@ class Node:
             child_node = Node(child.children, self)
             self.children.append(child_node)
 
-    def __str__(self) -> str:
+    def __repr__(self):
+        return "Node: " + str(self.label)
+
+    def __str__(self):
         return str(self.label)
 
     """
@@ -98,6 +101,23 @@ class Min(Node):
 class ASTVisitor:
     def __init__(self, node):
         self.startnode = node
+
+    def clean_tree(self):
+        nodes = []
+        queue = [self.startnode]
+        # Get leaf nodes
+        while len(queue) > 0:
+            current_node = queue[0]
+
+            queue = queue[1:]
+            queue += current_node.children
+
+            if len(current_node.children) == 1:
+                current_node.parent.children.remove(current_node)
+                current_node.parent.children += current_node.children
+                current_node.children[0].parent = current_node.parent
+                del current_node
+
 
     def constant_folding(self):
         nodes = [self.startnode]
