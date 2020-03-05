@@ -8,7 +8,7 @@ line : bool1
      ;
 
 bool1
-    :bool2 (BINOP bool2)*
+    :bool2 ((AND|OR) bool2)*
     ;
 
 
@@ -27,10 +27,6 @@ BINOP2
     |'!='
     ;
 
-BINOP
-    :'&&'
-    |'||'
-    ;
 
 expr :
      | plus
@@ -85,6 +81,8 @@ SEMICOLON: ';';
 LBRACKET: '(';
 RBRACKET: ')';
 NOT: '!';
+AND: '&&';
+OR: '||'
 
 // empty : '' ;
 
