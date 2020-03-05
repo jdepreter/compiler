@@ -82,7 +82,7 @@ LBRACKET: '(';
 RBRACKET: ')';
 NOT: '!';
 AND: '&&';
-OR: '||'
+OR: '||';
 
 // empty : '' ;
 
