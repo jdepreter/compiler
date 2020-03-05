@@ -13,7 +13,7 @@ bool1
 
 
 bool2
-    :'!'? LBRACKET bool1 RBRACKET
+    :NOT? LBRACKET bool1 RBRACKET
     |expr BINOP2 expr
     |expr
     ;
@@ -84,6 +84,7 @@ MOD  : '%';
 SEMICOLON: ';';
 LBRACKET: '(';
 RBRACKET: ')';
+NOT: '!';
 
 // empty : '' ;
 
