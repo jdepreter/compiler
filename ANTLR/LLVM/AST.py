@@ -45,6 +45,8 @@ class Node:
         elif self.label == 'vm':
             self.label = int(self.children[0].label) * int(self.children[1].label)
         elif self.label == 'deel':
+            if int(self.children[1].label) == 0:
+                return False
             self.label = int(self.children[0].label) / int(self.children[1].label)
         self.children = []
         return True
