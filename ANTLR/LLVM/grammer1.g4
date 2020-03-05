@@ -14,18 +14,11 @@ bool1
 
 bool2
     :NOT? LBRACKET bool1 RBRACKET
-    |expr BINOP2 expr
+    |expr (EQ|LT|LE|GT|GE|NE) expr
     |expr
     ;
 
-BINOP2
-    :'=='
-    |'>'
-    |'<'
-    |'>='
-    |'<='
-    |'!='
-    ;
+
 
 
 expr :
@@ -83,6 +76,12 @@ RBRACKET: ')';
 NOT: '!';
 AND: '&&';
 OR: '||';
+EQ: '==';
+GT: '>';
+LT: '<';
+NE: '!=';
+GE:'>=';
+LE:'<=';
 
 // empty : '' ;
 
