@@ -21,7 +21,7 @@ class Node:
         try:
             int(self.label)
             return True
-        except ValueError:
+        except Exception:
             return False
 
     """
@@ -39,11 +39,17 @@ class Node:
             self.label = self.children[0].label
 
         elif self.label == 'plus':
-            self.label = int(self.children[0].label) + int(self.children[1].label)
+            self.label = 0
+            for child in self.children:
+                self.label += int(child.label)
         elif self.label == 'min':
-            self.label = int(self.children[0].label) - int(self.children[1].label)
+            self.label = 0
+            for child in self.children:
+                self.label -= int(child.label)
         elif self.label == 'vm':
-            self.label = int(self.children[0].label) * int(self.children[1].label)
+            self.label = 1
+            for child in self.children:
+                self.label *= int(child.label)
         elif self.label == 'deel':
             if int(self.children[1].label) == 0:
                 return False
@@ -105,7 +111,7 @@ class ASTVisitor:
             current_node = nodes[0]
             nodes = nodes[1:]
 
-            if current_node.label == "bool1":
+            if current_node.label == "Bool1":
                 current_node.only_literal_children()
             else:
                 nodes += current_node.children
