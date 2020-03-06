@@ -1,1 +1,1 @@
-java -jar antlr-4.8-complete.jar -Dlanguage=Python3 ./ANTLR/LLVM/grammer1.g4 -visitor
+java -jar antlr-4.8-complete.jar -Dlanguage=Python3 ./ANTLR/LLVM/c.g4 -visitor

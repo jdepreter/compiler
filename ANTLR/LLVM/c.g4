@@ -4,11 +4,11 @@ c: (line (SEMICOLON)+)* ;
 
 line: (declaration | definition | assignment | bool1);
 
-definition: CONST? type IDENTIFIER EQUALS bool1;
-declaration: CONST? type IDENTIFIER;
+definition: CONST? var_type IDENTIFIER EQUALS bool1;
+declaration: CONST? var_type IDENTIFIER;
 
 assignment: IDENTIFIER EQUALS bool1;
-type: (INT_TYPE | FLOAT_TYPE);
+var_type: (INT_TYPE | FLOAT_TYPE | CHAR_TYPE | pointer_type);
 
 
 EQUALS: '=';

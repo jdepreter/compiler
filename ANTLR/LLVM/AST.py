@@ -105,7 +105,7 @@ class ASTVisitor:
             current_node = nodes[0]
             nodes = nodes[1:]
 
-            if current_node.label == "expr":
+            if current_node.label == "bool1":
                 current_node.only_literal_children()
             else:
                 nodes += current_node.children
