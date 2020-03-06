@@ -1,20 +1,23 @@
 import sys
 from antlr4 import *
 from ANTLR.LLVM.grammer1Lexer import grammer1Lexer
+from ANTLR.LLVM.cLexer import cLexer
 from ANTLR.LLVM.grammer1Parser import grammer1Parser
+from ANTLR.LLVM.cParser import cParser
 from ANTLR.LLVM.grammer1Visitor import grammer1Visitor
 from grammer1CustomListener import KeyPrinter
+from cCustomListener import CASTGenerator
 from ANTLR.LLVM.AST import ASTVisitor
 from graphviz import Digraph
 
 
 def main(argv):
     input_stream = FileStream(argv[1])
-    lexer = grammer1Lexer(input_stream)
+    lexer = cLexer(input_stream)
     stream = CommonTokenStream(lexer)
-    parser = grammer1Parser(stream)
-    tree = parser.gram()
-    printer = KeyPrinter()
+    parser = cParser(stream)
+    tree = parser.c()
+    printer = CASTGenerator()
     walker = ParseTreeWalker()
     walker.walk(printer, tree)
     # printer.ast.to_dot(open("temp.dot", 'w'))
