@@ -2,7 +2,9 @@ grammar c;
 
 c: (line (SEMICOLON)+)* ;
 
-line: (declaration | definition | assignment | bool1);
+line: (declaration | definition | assignment | bool1| scope);
+
+scope: LCURLYBRACE (line (SEMICOLON)+)* RCURLYBRACE;
 
 definition: CONST? var_type IDENTIFIER EQUALS bool1;
 declaration: CONST? var_type IDENTIFIER;
@@ -94,7 +96,8 @@ LT: '<';
 NE: '!=';
 GE:'>=';
 LE:'<=';
-
+LCURLYBRACE:'{';
+RCURLYBRACE: '}';
 // empty : '' ;
 
 WS : [ \n\t\r]+ -> skip;
