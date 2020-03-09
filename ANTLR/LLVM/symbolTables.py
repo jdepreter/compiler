@@ -12,17 +12,19 @@ class SymbolTable:
     def close_scope(self):
         self.table_stack.pop(0)
 
-    def add_symbol(self, symbol, symbol_type):
+    def add_symbol(self, symbol, symbol_type, error):
         if symbol in self.table_stack[0]:
-            raise Exception("Duplicate declaration of " + symbol)
+            raise Exception("[Error] Line {}, Position {}: Duplicate declaration of variable {} "
+                            .format(error.line, error.pos, symbol))
         self.table_stack[0][symbol] = symbol_type
 
-    def get_symbol(self, symbol):
+    def get_symbol(self, symbol, error):
         for scope in self.table_stack:
             if symbol in scope:
                 return scope[symbol]
 
-        raise Exception(symbol + " is undeclared.")
+        raise Exception("[Error] Line {}, Position {}: variable {} is undeclared"
+                        .format(error.line, error.start, symbol))
 
 
 # class SymbolTableCreator:

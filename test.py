@@ -32,5 +32,6 @@ def main(argv):
     graph.save("output.txt", "output")
     graph.render("output")
 
+
 if __name__ == '__main__':
     main(sys.argv)
