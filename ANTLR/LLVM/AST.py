@@ -118,23 +118,22 @@ class ASTVisitor:
             queue += current_node.children
 
             if len(current_node.children) == 1 and current_node.parent is not None:
-                try:
-                    index = current_node.parent.children.index(current_node)
-                    current_node.parent.children.remove(current_node)
-                    current_node.parent.children[index:index] = current_node.children
-                    current_node.children[0].parent = current_node.parent
-                    del current_node
-                except Exception:
-                    print("help")
+                index = current_node.parent.children.index(current_node)
+                current_node.parent.children.remove(current_node)
+                current_node.parent.children[index:index] = current_node.children
+                current_node.children[0].parent = current_node.parent
+                del current_node
 
     def maal(self):
         queue = [self.startnode]
+        visited = []
         while len(queue) > 0:
             current_node = queue[0]
-
             queue = queue[1:]
+            if current_node.id in visited:
+                continue
+            visited.append(current_node.id)
             queue += current_node.children
-
             if current_node.label == 'vm' or current_node.label == 'plus':
                 i = 0
                 while i < len(current_node.children):
@@ -152,8 +151,6 @@ class ASTVisitor:
                 current_node.children[0].parent = current_node.parent
                 index = current_node.parent.children.index(current_node)
                 current_node.parent.children[index] = current_node.children[0]
-                for c in current_node.children:
-                    queue.remove(c)
                 del current_node
 
     def constant_folding(self):
