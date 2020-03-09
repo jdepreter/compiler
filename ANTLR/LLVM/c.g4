@@ -1,8 +1,8 @@
 grammar c;
 
-c: (line (SEMICOLON)+)* ;
+c: (line)* ;
 
-line: (declaration | definition | assignment | bool1| scope);
+line: ((declaration SEMICOLON)|(definition SEMICOLON)| (assignment SEMICOLON) | (bool1 SEMICOLON)|SEMICOLON| scope);
 
 scope: LCURLYBRACE (line (SEMICOLON)+)* RCURLYBRACE;
 
