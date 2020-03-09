@@ -36,14 +36,14 @@ class CASTGenerator(cListener):
 
     def enterAssignment(self, ctx:cParser.AssignmentContext):
         node = self.create_node("ass", self.currentNode)
-        identifier = self.create_node(ctx.IDENTIFIER(), node)
+        identifier = self.create_node(str(ctx.IDENTIFIER()), node)
         node.children.append(identifier)
         self.currentNode.children.append(node)
         self.currentNode = node
 
     def enterDeclaration(self, ctx:cParser.DeclarationContext):
         node = self.create_node("dec", self.currentNode)
-        identifier = self.create_node(ctx.IDENTIFIER(), node)
+        identifier = self.create_node(str(ctx.IDENTIFIER()), node)
         node.children.append(identifier)
         self.currentNode.children.append(node)
         self.currentNode = node
@@ -51,7 +51,7 @@ class CASTGenerator(cListener):
 
     def enterDefinition(self, ctx:cParser.DefinitionContext):
         node = self.create_node("def", self.currentNode)
-        identifier = self.create_node(ctx.IDENTIFIER(), node)
+        identifier = self.create_node(str(ctx.IDENTIFIER()), node)
         node.children.append(identifier)
         self.currentNode.children.append(node)
         self.currentNode = node
@@ -59,11 +59,11 @@ class CASTGenerator(cListener):
     def enterPointer_type(self, ctx:cParser.Pointer_typeContext):
         string = "pointer"
         if ctx.CHAR_TYPE():
-            string = ctx.CHAR_TYPE()
+            string = str(ctx.CHAR_TYPE())
         if ctx.FLOAT_TYPE():
-            string = ctx.FLOAT_TYPE()
+            string = str(ctx.FLOAT_TYPE())
         if ctx.INT_TYPE():
-            string = ctx.INT_TYPE()
+            string = str(ctx.INT_TYPE())
         node = self.create_node(string, self.currentNode)
         self.currentNode.children.append(node)
         self.currentNode = node
@@ -71,11 +71,11 @@ class CASTGenerator(cListener):
     def enterVar_type(self, ctx:cParser.Var_typeContext):
         string = "pointer"
         if ctx.CHAR_TYPE():
-            string = ctx.CHAR_TYPE()
+            string = str(ctx.CHAR_TYPE())
         if ctx.FLOAT_TYPE():
-            string = ctx.FLOAT_TYPE()
+            string = str(ctx.FLOAT_TYPE())
         if ctx.INT_TYPE():
-            string = ctx.INT_TYPE()
+            string = str(ctx.INT_TYPE())
 
         node = self.create_node(string, self.currentNode)
         self.currentNode.children.insert(0, node)
