@@ -1,7 +1,7 @@
 from antlr4 import *
 from ANTLR.LLVM.cListener import cListener
 from ANTLR.LLVM.cParser import cParser
-
+from ANTLR.LLVM.symbolTables import SymbolTable
 from ANTLR.LLVM.AST import Node
 
 
@@ -11,6 +11,7 @@ class CASTGenerator(cListener):
         self.ast = None
         self.currentNode = None
         self.id = 1
+        self.symbol_table = SymbolTable()
 
     def create_node(self, label, parent):
         node = Node(self.id, label, parent)
@@ -21,6 +22,7 @@ class CASTGenerator(cListener):
         print("enter c")
         self.ast = self.create_node("C", self.currentNode)
         self.currentNode = self.ast
+        self.symbol_table.open_scope()
 
     def enterLine(self, ctx:cParser.LineContext):
         print("enter line")
@@ -45,6 +47,7 @@ class CASTGenerator(cListener):
         node.children.append(identifier)
         self.currentNode.children.append(node)
         self.currentNode = node
+
 
     def enterDefinition(self, ctx:cParser.DefinitionContext):
         node = self.create_node("def", self.currentNode)
@@ -82,12 +85,17 @@ class CASTGenerator(cListener):
         self.currentNode = self.currentNode.parent
 
     def exitDeclaration(self, ctx:cParser.DeclarationContext):
+        self.symbol_table.add_symbol(self.currentNode.children[1].label, self.currentNode.children[0].label)
         self.currentNode = self.currentNode.parent
 
     def exitDefinition(self, ctx:cParser.DefinitionContext):
         if ctx.CONST():
             node = self.create_node("const", self.currentNode)
             self.currentNode.children.insert(0, node)
+            self.symbol_table.add_symbol(self.currentNode.children[2].label, "const " + self.currentNode.children[1].label)
+        else:
+            self.symbol_table.add_symbol(self.currentNode.children[1].label, self.currentNode.children[0].label)
+
         self.currentNode = self.currentNode.parent
 
     def exitPointer_type(self, ctx:cParser.Pointer_typeContext):
