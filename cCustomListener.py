@@ -61,7 +61,6 @@ class CASTGenerator(cListener):
         self.currentNode.children.append(node)
         self.currentNode = node
 
-
     def enterDefinition(self, ctx:cParser.DefinitionContext):
         node = self.create_node("def", self.currentNode)
         identifier = self.create_node(str(ctx.IDENTIFIER()), node)
@@ -95,7 +94,11 @@ class CASTGenerator(cListener):
         self.currentNode = node
 
     def exitAssignment(self, ctx:cParser.AssignmentContext):
-        self.symbol_table.get_symbol(self.currentNode.children[0].label, ctx.start)
+        var = self.currentNode.children[0].label
+        var_type = self.symbol_table.get_symbol(var, ctx.start)
+        if var_type.const:
+            raise Exception("[Error] Line {}, Position {}: variable {} is declared const"
+                            .format(ctx.start.line, ctx.start.column, var))
         self.currentNode = self.currentNode.parent
 
     def exitDeclaration(self, ctx:cParser.DeclarationContext):
@@ -106,9 +109,9 @@ class CASTGenerator(cListener):
         if ctx.CONST():
             node = self.create_node("const", self.currentNode)
             self.currentNode.children.insert(0, node)
-            self.symbol_table.add_symbol(self.currentNode.children[2].label, self.currentNode.children[1].label, True, True)
+            self.symbol_table.add_symbol(self.currentNode.children[2].label, self.currentNode.children[1].label, ctx.start, True, True)
         else:
-            self.symbol_table.add_symbol(self.currentNode.children[1].label, self.currentNode.children[0].label, True)
+            self.symbol_table.add_symbol(self.currentNode.children[1].label, self.currentNode.children[0].label, ctx.start, True)
 
         self.currentNode = self.currentNode.parent
 

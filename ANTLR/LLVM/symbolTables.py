@@ -21,7 +21,7 @@ class SymbolTable:
     def add_symbol(self, symbol, symbol_type, error, assinged=True, const=False):
         if symbol in self.table_stack[0]:
             raise Exception("[Error] Line {}, Position {}: Duplicate declaration of variable {} "
-                            .format(error.line, error.pos, symbol))
+                            .format(error.line, error.column, symbol))
         self.table_stack[0][symbol] = SymbolType(symbol_type, assinged, const)
 
     def get_symbol(self, symbol, error):
@@ -30,7 +30,7 @@ class SymbolTable:
                 return scope[symbol]
 
         raise Exception("[Error] Line {}, Position {}: variable {} is undeclared"
-                        .format(error.line, error.start, symbol))
+                        .format(error.line, error.column, symbol))
 
 
 # class SymbolTableCreator:
