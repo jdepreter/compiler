@@ -41,21 +41,21 @@ class Node:
         if len(self.children) == 1:
             self.label = self.children[0].label
 
-        elif self.label == 'plus':
+        elif self.label == '+':
             self.label = 0
             for child in self.children:
                 self.label += int(child.label)
-        elif self.label == 'min':
+        elif self.label == '-':
             self.label = 0
             for child in self.children:
                 self.label -= int(child.label)
-        elif self.label == 'vm':
+        elif self.label == '*':
             self.label = 1
             for child in self.children:
                 self.label *= int(child.label)
-        elif self.label == 'deel':
+        elif self.label == '/':
             if int(self.children[1].label) == 0:
-                return False
+                raise ZeroDivisionError
             self.label = int(self.children[0].label) / int(self.children[1].label)
         self.children = []
         return True
@@ -109,7 +109,6 @@ class ASTVisitor:
         self.startnode = node
 
     def clean_tree(self):
-        nodes = []
         queue = [self.startnode]
         # Get leaf nodes
         while len(queue) > 0:
@@ -118,13 +117,44 @@ class ASTVisitor:
             queue = queue[1:]
             queue += current_node.children
 
-            if len(current_node.children) == 1:
-                index = current_node.parent.children.index(current_node)
-                current_node.parent.children.remove(current_node)
-                current_node.parent.children[index:index] = current_node.children
-                current_node.children[0].parent = current_node.parent
-                del current_node
+            if len(current_node.children) == 1 and current_node.parent is not None:
+                try:
+                    index = current_node.parent.children.index(current_node)
+                    current_node.parent.children.remove(current_node)
+                    current_node.parent.children[index:index] = current_node.children
+                    current_node.children[0].parent = current_node.parent
+                    del current_node
+                except Exception:
+                    print("help")
 
+    def maal(self):
+        queue = [self.startnode]
+        while len(queue) > 0:
+            current_node = queue[0]
+
+            queue = queue[1:]
+            queue += current_node.children
+
+            if current_node.label == 'vm' or current_node.label == 'plus':
+                i = 0
+                while i < len(current_node.children):
+                    child = current_node.children[i]
+                    if child.label == '+' or child.label == '*' or child.label == '-' or child.label == '/':
+                        index = current_node.children.index(child)
+                        current_node.children[index-1].parent = child
+                        current_node.children[index+1].parent = child
+                        child.children = [current_node.children[index-1], current_node.children[index+1]]
+                        current_node.children.remove(current_node.children[index+1])
+                        current_node.children.remove(current_node.children[index-1])
+                    else:
+                        i += 1
+
+                current_node.children[0].parent = current_node.parent
+                index = current_node.parent.children.index(current_node)
+                current_node.parent.children[index] = current_node.children[0]
+                for c in current_node.children:
+                    queue.remove(c)
+                del current_node
 
     def constant_folding(self):
         nodes = [self.startnode]

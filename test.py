@@ -25,6 +25,10 @@ def main(argv):
     # visitor.constant_folding()
     visitor.clean_tree()
     graph = printer.ast.render_dot()
+    graph.save("1.txt", "output")
+    graph.render("1")
+    visitor.maal()
+    graph = printer.ast.render_dot()
     graph.save("output.txt", "output")
     graph.render("output")
 
