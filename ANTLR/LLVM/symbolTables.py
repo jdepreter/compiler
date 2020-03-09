@@ -13,6 +13,8 @@ class SymbolTable:
         self.table_stack.pop(0)
 
     def add_symbol(self, symbol, symbol_type):
+        if symbol in self.table_stack[0]:
+            raise Exception("Duplicate declaration of " + symbol)
         self.table_stack[0][symbol] = symbol_type
 
     def get_symbol(self, symbol):
