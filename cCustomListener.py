@@ -86,16 +86,16 @@ class CASTGenerator(cListener):
         self.currentNode = self.currentNode.parent
 
     def exitDeclaration(self, ctx:cParser.DeclarationContext):
-        self.symbol_table.add_symbol(self.currentNode.children[1].label, self.currentNode.children[0].label)
+        self.symbol_table.add_symbol(self.currentNode.children[1].label, self.currentNode.children[0].label, False)
         self.currentNode = self.currentNode.parent
 
     def exitDefinition(self, ctx:cParser.DefinitionContext):
         if ctx.CONST():
             node = self.create_node("const", self.currentNode)
             self.currentNode.children.insert(0, node)
-            self.symbol_table.add_symbol(self.currentNode.children[2].label, "const " + self.currentNode.children[1].label)
+            self.symbol_table.add_symbol(self.currentNode.children[2].label, self.currentNode.children[1].label, True, True)
         else:
-            self.symbol_table.add_symbol(self.currentNode.children[1].label, self.currentNode.children[0].label)
+            self.symbol_table.add_symbol(self.currentNode.children[1].label, self.currentNode.children[0].label, True)
 
         self.currentNode = self.currentNode.parent
 

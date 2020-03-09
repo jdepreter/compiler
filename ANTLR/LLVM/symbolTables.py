@@ -1,3 +1,9 @@
+class SymbolType:
+    def __init__(self, symbol_type, assigned, const):
+        self.symbol_type = symbol_type
+        self.assigned = assigned
+        self.const = const
+
 
 class SymbolTable:
     def __init__(self):
@@ -12,10 +18,10 @@ class SymbolTable:
     def close_scope(self):
         self.table_stack.pop(0)
 
-    def add_symbol(self, symbol, symbol_type):
+    def add_symbol(self, symbol, symbol_type, assinged=True, const=False):
         if symbol in self.table_stack[0]:
             raise Exception("Duplicate declaration of " + symbol)
-        self.table_stack[0][symbol] = symbol_type
+        self.table_stack[0][symbol] = SymbolType(symbol_type, assinged, const)
 
     def get_symbol(self, symbol):
         for scope in self.table_stack:
