@@ -82,6 +82,7 @@ class CASTGenerator(cListener):
         self.currentNode = node
 
     def exitAssignment(self, ctx:cParser.AssignmentContext):
+        self.symbol_table.get_symbol(self.currentNode.children[0].label)
         self.currentNode = self.currentNode.parent
 
     def exitDeclaration(self, ctx:cParser.DeclarationContext):

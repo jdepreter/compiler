@@ -22,7 +22,7 @@ class SymbolTable:
             if symbol in scope:
                 return scope[symbol]
 
-        return None
+        raise Exception(symbol + " is undeclared.")
 
 
 # class SymbolTableCreator:
