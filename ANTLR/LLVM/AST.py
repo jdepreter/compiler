@@ -34,14 +34,18 @@ class Node:
         if not self.children:
             return self.is_literal()
 
+        fail = False
         for child in self.children:
             if not child.only_literal_children():
-                return False
+                fail = True
 
-        if len(self.children) == 1:
-            self.label = self.children[0].label
+        if fail:
+            return False
 
-        elif self.label == '+':
+        # if len(self.children) == 1:
+        #     self.label = self.children[0].label
+
+        if self.label == '+':
             self.label = 0
             for child in self.children:
                 self.label += int(child.label)
@@ -159,7 +163,7 @@ class ASTVisitor:
             current_node = nodes[0]
             nodes = nodes[1:]
 
-            if current_node.label == "Bool1":
+            if current_node.label in ["+", "-", "*", "/"]:
                 current_node.only_literal_children()
             else:
                 nodes += current_node.children
