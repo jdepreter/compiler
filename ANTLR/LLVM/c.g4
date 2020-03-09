@@ -31,11 +31,11 @@ bool2
     ;
 
 
-plus : (vm|) ((PLUS|MIN) (vm|neg_sol))*
+plus : (vm|) (operator2 (vm|neg_sol))*
      ;
 
 vm   :
-    mod ((MAAL|DEEL) (mod | neg_sol))*
+    mod (operator (mod | neg_sol))*
      ;
 
 mod  :
@@ -62,6 +62,8 @@ value
     | (MINMIN|PLUSPLUS)IDENTIFIER
     ;
 
+operator: MAAL | DEEL;
+operator2: PLUS | MIN ;
 
 NEG_INT
     :LBRACKET('0'| (MIN?[1-9][0-9]*) )RBRACKET

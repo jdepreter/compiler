@@ -89,5 +89,15 @@ class cVisitor(ParseTreeVisitor):
         return self.visitChildren(ctx)
 
 
+    # Visit a parse tree produced by cParser#operator.
+    def visitOperator(self, ctx:cParser.OperatorContext):
+        return self.visitChildren(ctx)
+
+
+    # Visit a parse tree produced by cParser#operator2.
+    def visitOperator2(self, ctx:cParser.Operator2Context):
+        return self.visitChildren(ctx)
+
+
 
 del cParser

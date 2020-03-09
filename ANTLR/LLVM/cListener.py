@@ -152,5 +152,23 @@ class cListener(ParseTreeListener):
         pass
 
 
+    # Enter a parse tree produced by cParser#operator.
+    def enterOperator(self, ctx:cParser.OperatorContext):
+        pass
+
+    # Exit a parse tree produced by cParser#operator.
+    def exitOperator(self, ctx:cParser.OperatorContext):
+        pass
+
+
+    # Enter a parse tree produced by cParser#operator2.
+    def enterOperator2(self, ctx:cParser.Operator2Context):
+        pass
+
+    # Exit a parse tree produced by cParser#operator2.
+    def exitOperator2(self, ctx:cParser.Operator2Context):
+        pass
+
+
 
 del cParser

@@ -114,10 +114,7 @@ class CASTGenerator(cListener):
         self.currentNode = self.currentNode.parent
 
     def enterPlus(self, ctx:cParser.PlusContext):
-        if len(ctx.PLUS()) > 0:
-            node = self.create_node("plus", self.currentNode)
-        else:
-            node = self.create_node("min", self.currentNode)
+        node = self.create_node("plus", self.currentNode)
         self.currentNode.children.append(node)
         self.currentNode = node
 
@@ -125,10 +122,7 @@ class CASTGenerator(cListener):
         self.currentNode = self.currentNode.parent
 
     def enterVm(self, ctx:cParser.VmContext):
-        if len(ctx.MAAL()) > 0:
-            node = self.create_node("vm", self.currentNode)
-        else:
-            node = self.create_node("deel", self.currentNode)
+        node = self.create_node("vm", self.currentNode)
         self.currentNode.children.append(node)
         self.currentNode = node
 
@@ -136,11 +130,13 @@ class CASTGenerator(cListener):
         self.currentNode = self.currentNode.parent
 
     def enterMod(self, ctx:cParser.ModContext):
+        print("entermod")
         node = self.create_node("mod", self.currentNode)
         self.currentNode.children.append(node)
         self.currentNode = node
 
     def exitMod(self, ctx:cParser.ModContext):
+        print("exitmod")
         self.currentNode = self.currentNode.parent
 
     def enterNeg_sol(self, ctx:cParser.Neg_solContext):
@@ -178,4 +174,34 @@ class CASTGenerator(cListener):
         self.currentNode = node
 
     def exitNeg_value(self, ctx:cParser.Neg_valueContext):
+        self.currentNode = self.currentNode.parent
+
+    def enterOperator(self, ctx:cParser.OperatorContext):
+        print("enterop")
+        string = ""
+        if ctx.MAAL():
+            string = str(ctx.MAAL())
+        else:
+            string = str(ctx.DEEL())
+        node = self.create_node(string, self.currentNode)
+        self.currentNode.children.append(node)
+        self.currentNode = node
+
+    def exitOperator(self, ctx:cParser.OperatorContext):
+        print('exitop')
+        self.currentNode = self.currentNode.parent
+
+    def enterOperator2(self, ctx:cParser.Operator2Context):
+        print("enterop")
+        string = ""
+        if ctx.PLUS():
+            string = str(ctx.PLUS())
+        else:
+            string = str(ctx.MIN())
+        node = self.create_node(string, self.currentNode)
+        self.currentNode.children.append(node)
+        self.currentNode = node
+
+    def exitOperator2(self, ctx:cParser.Operator2Context):
+        print('exitop')
         self.currentNode = self.currentNode.parent

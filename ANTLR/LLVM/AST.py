@@ -119,8 +119,9 @@ class ASTVisitor:
             queue += current_node.children
 
             if len(current_node.children) == 1:
+                index = current_node.parent.children.index(current_node)
                 current_node.parent.children.remove(current_node)
-                current_node.parent.children += current_node.children
+                current_node.parent.children[index:index] = current_node.children
                 current_node.children[0].parent = current_node.parent
                 del current_node
 
