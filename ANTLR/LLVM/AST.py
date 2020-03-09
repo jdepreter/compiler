@@ -2,14 +2,12 @@ from graphviz import Digraph
 
 
 class Node:
-    def __init__(self, id, label, parent=None, children=[]):
-        self.id = id
+    def __init__(self, node_id, label, parent, ctx):
+        self.id = node_id
         self.children = []
         self.parent = parent
         self.label = label
-        for child in children:
-            child_node = Node(child.children, self)
-            self.children.append(child_node)
+        self.ctx = ctx
 
     def __repr__(self):
         return "Node: " + str(self.label)
@@ -22,7 +20,7 @@ class Node:
     """
     def is_literal(self):
         try:
-            int(self.label)
+            float(self.label)
             return True
         except Exception:
             return False
@@ -45,22 +43,33 @@ class Node:
         # if len(self.children) == 1:
         #     self.label = self.children[0].label
 
+        c0 = None
+        c1 = None
+        if '.' not in str(self.children[0].label):
+            c0 = int(self.children[0].label)
+        else:
+            c0 = float(self.children[0].label)
+
+        if '.' not in str(self.children[1].label):
+            c1 = int(self.children[1].label)
+        else:
+            c1 = float(self.children[1].label)
+
         if self.label == '+':
-            self.label = 0
-            for child in self.children:
-                self.label += int(child.label)
+            self.label = c0 + c1
         elif self.label == '-':
-            self.label = 0
-            for child in self.children:
-                self.label -= int(child.label)
+            self.label = c0 - c1
         elif self.label == '*':
-            self.label = 1
-            for child in self.children:
-                self.label *= int(child.label)
+            self.label = c0 * c1
         elif self.label == '/':
-            if int(self.children[1].label) == 0:
+            if c1 == 0:
                 raise ZeroDivisionError
-            self.label = int(self.children[0].label) / int(self.children[1].label)
+            self.label = c0 / c1
+
+        # INTEGER OPERATION
+        if '.' not in str(self.children[0].label) and '.' not in str(self.children[1].label):
+            self.label = int(self.label)
+
         self.children = []
         return True
 

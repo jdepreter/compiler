@@ -2,9 +2,9 @@ grammar c;
 
 c: (line)* ;
 
-line: ((declaration SEMICOLON)|(definition SEMICOLON)| (assignment SEMICOLON) | (bool1 SEMICOLON)|SEMICOLON| scope);
+line: ((declaration SEMICOLON)|(definition SEMICOLON)| (assignment SEMICOLON) | (bool1 SEMICOLON) | scope);
 
-scope: LCURLYBRACE (line (SEMICOLON)+)* RCURLYBRACE;
+scope: LCURLYBRACE (line)* RCURLYBRACE;
 
 definition: CONST? var_type IDENTIFIER EQUALS bool1;
 declaration: CONST? var_type IDENTIFIER;
@@ -60,6 +60,7 @@ neg_value
 
 value
     : INT
+    | FLOAT
     | IDENTIFIER(MINMIN|PLUSPLUS)?
     | (MINMIN|PLUSPLUS)IDENTIFIER
     ;
@@ -76,6 +77,9 @@ INT
     | [1-9][0-9]*
     ;
 
+FLOAT:
+    [1-9][0-9]*('.'[0-9]+)
+    ;
 
 PLUS : '+';
 PLUSPLUS : '++';
