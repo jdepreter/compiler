@@ -46,7 +46,6 @@ class CASTGenerator(cListener):
         self.symbol_table.close_scope()
         self.currentNode = self.currentNode.parent
 
-
     def enterAssignment(self, ctx:cParser.AssignmentContext):
         node = self.create_node("ass", self.currentNode, ctx)
         identifier = self.create_node(str(ctx.IDENTIFIER()), node, ctx)
