@@ -46,6 +46,40 @@ class CASTGenerator(cListener):
         self.symbol_table.close_scope()
         self.currentNode = self.currentNode.parent
 
+    def enterLvalue(self, ctx:cParser.LvalueContext):
+        string = "lvalue"
+        if ctx.IDENTIFIER():
+            string = ctx.IDENTIFIER()
+        node = self.create_node(string, self.currentNode, ctx)
+        self.currentNode.children.append(node)
+        self.currentNode = node
+
+    def exitLvalue(self, ctx:cParser.LvalueContext):
+        self.currentNode = self.currentNode.parent
+
+    def enterRvalue(self, ctx:cParser.RvalueContext):
+        string = "nothing"
+        if ctx.INT():
+            string = str(ctx.INT())
+        elif ctx.FLOAT():
+            string = str(ctx.FLOAT())
+        elif ctx.IDENTIFIER():
+            string = ctx.IDENTIFIER()
+        node = self.create_node(string, self.currentNode, ctx)
+        self.currentNode.children.append(node)
+        self.currentNode = node
+
+    def exitRvalue(self, ctx:cParser.RvalueContext):
+        self.currentNode = self.currentNode.parent
+
+    def enterAddress(self, ctx:cParser.AddressContext):
+        node = self.create_node("address", self.currentNode, ctx)
+        self.currentNode.children.append(node)
+        self.currentNode = node
+
+    def exitAddress(self, ctx:cParser.AddressContext):
+        self.currentNode = self.currentNode.parent
+
     def enterAssignment(self, ctx:cParser.AssignmentContext):
         node = self.create_node("ass", self.currentNode, ctx)
         identifier = self.create_node(str(ctx.IDENTIFIER()), node, ctx)
@@ -180,14 +214,7 @@ class CASTGenerator(cListener):
         self.currentNode = self.currentNode.parent
 
     def enterValue(self, ctx:cParser.ValueContext):
-        string = "nothing"
-        if ctx.INT():
-            string = str(ctx.INT())
-        elif ctx.FLOAT():
-            string = str(ctx.FLOAT())
-        elif ctx.IDENTIFIER():
-            string = ctx.IDENTIFIER()
-        node = self.create_node(string, self.currentNode, ctx)
+        node = self.create_node("value", self.currentNode, ctx)
         self.currentNode.children.append(node)
         self.currentNode = node
 

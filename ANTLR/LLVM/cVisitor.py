@@ -3,7 +3,7 @@ from antlr4 import *
 if __name__ is not None and "." in __name__:
     from .cParser import cParser
 else:
-    from cParser import cParser
+    from ANTLR.LLVM.cParser import cParser
 
 # This class defines a complete generic visitor for a parse tree produced by cParser.
 
@@ -91,6 +91,21 @@ class cVisitor(ParseTreeVisitor):
 
     # Visit a parse tree produced by cParser#value.
     def visitValue(self, ctx:cParser.ValueContext):
+        return self.visitChildren(ctx)
+
+
+    # Visit a parse tree produced by cParser#rvalue.
+    def visitRvalue(self, ctx:cParser.RvalueContext):
+        return self.visitChildren(ctx)
+
+
+    # Visit a parse tree produced by cParser#lvalue.
+    def visitLvalue(self, ctx:cParser.LvalueContext):
+        return self.visitChildren(ctx)
+
+
+    # Visit a parse tree produced by cParser#address.
+    def visitAddress(self, ctx:cParser.AddressContext):
         return self.visitChildren(ctx)
 
 

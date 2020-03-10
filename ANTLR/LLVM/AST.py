@@ -161,10 +161,13 @@ class ASTVisitor:
                     else:
                         i += 1
 
-                current_node.children[0].parent = current_node.parent
-                index = current_node.parent.children.index(current_node)
-                current_node.parent.children[index] = current_node.children[0]
-                del current_node
+                try:
+                    current_node.children[0].parent = current_node.parent
+                    index = current_node.parent.children.index(current_node)
+                    current_node.parent.children[index] = current_node.children[0]
+                    del current_node
+                except:
+                    print("halp")
 
     def constant_folding(self):
         nodes = [self.startnode]
