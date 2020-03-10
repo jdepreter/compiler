@@ -151,7 +151,19 @@ class ASTVisitor:
                 i = 0
                 while i < len(current_node.children):
                     child = current_node.children[i]
-                    if child.label == '+' or child.label == '*' or child.label == '-' or child.label == '/':
+                    if child.label in ["+", "-", "*", "/"]:
+                        if i == 0:
+                            if child.label == "+":
+                                current_node.children.remove(child)
+                                del child
+                                continue
+                            elif child.label == '-':
+                                current_node.children[1].label = "-" + current_node.children[1].label
+                                current_node.children.remove(child)
+                                del child
+                                continue
+                            else:
+                                raise Exception("very suspicious" + child.label)
                         index = current_node.children.index(child)
                         current_node.children[index-1].parent = child
                         current_node.children[index+1].parent = child
