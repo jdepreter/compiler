@@ -8,6 +8,7 @@ class Node:
         self.parent = parent
         self.label = label
         self.ctx = ctx
+        self.symbol_table = None
 
     def __repr__(self):
         return "Node: " + str(self.label)
@@ -65,6 +66,29 @@ class Node:
             if c1 == 0:
                 raise ZeroDivisionError
             self.label = c0 / c1
+
+        dic = {True: 1, False: 0}
+
+        if self.label == '==':
+            self.label = dic[c0 == c1]
+        elif self.label == '!=':
+            self.label = dic[c0 != c1]
+        elif self.label == '<':
+            self.label = dic[c0 < c1]
+        elif self.label == '<=':
+            self.label = dic[c0 <= c1]
+        elif self.label == '>':
+            self.label = dic[c0 > c1]
+        elif self.label == '>=':
+            self.label = dic[c0 >= c1]
+
+        elif self.label == '&&':
+            self.label = dic[c0 and c1]
+
+        elif self.label == '||':
+            self.label = dic[c0 or c1]
+
+
 
         # INTEGER OPERATION
         if '.' not in str(self.children[0].label) and '.' not in str(self.children[1].label):
@@ -147,11 +171,11 @@ class ASTVisitor:
                 continue
             visited.append(current_node.id)
             queue += current_node.children
-            if current_node.label == 'vm' or current_node.label == 'plus':
+            if current_node.label == 'vm' or current_node.label == 'plus' or current_node.label == 'bool1':
                 i = 0
                 while i < len(current_node.children):
                     child = current_node.children[i]
-                    if child.label in ["+", "-", "*", "/"]:
+                    if child.label in ["+", "-", "*", "/", "&&", "||"]:
                         if i == 0:
                             if child.label == "+":
                                 current_node.children.remove(child)
@@ -164,22 +188,55 @@ class ASTVisitor:
                                 continue
                             else:
                                 raise Exception("very suspicious" + child.label)
-                        index = current_node.children.index(child)
-                        current_node.children[index-1].parent = child
-                        current_node.children[index+1].parent = child
-                        child.children = [current_node.children[index-1], current_node.children[index+1]]
-                        current_node.children.remove(current_node.children[index+1])
-                        current_node.children.remove(current_node.children[index-1])
+                        try:
+                            index = current_node.children.index(child)
+                            current_node.children[index-1].parent = child
+                            current_node.children[index+1].parent = child
+                            child.children = [current_node.children[index-1], current_node.children[index+1]]
+                            current_node.children.remove(current_node.children[index+1])
+                            current_node.children.remove(current_node.children[index-1])
+                        except:
+                            print("halp")
                     else:
                         i += 1
 
-                try:
-                    current_node.children[0].parent = current_node.parent
-                    index = current_node.parent.children.index(current_node)
-                    current_node.parent.children[index] = current_node.children[0]
-                    del current_node
-                except:
-                    print("halp")
+                current_node.children[0].parent = current_node.parent
+                index = current_node.parent.children.index(current_node)
+                current_node.parent.children[index] = current_node.children[0]
+                del current_node
+
+    def fold_not(self):
+        queue = [self.startnode]
+        visited = []
+        while len(queue) > 0:
+            current_node = queue[len(queue)-1]
+            queue = queue[:-1]
+            if current_node.id in visited:
+                continue
+            visited.append(current_node.id)
+
+            queue = current_node.children + queue
+            if current_node.label == 'Bool2':
+                if current_node.children[0].label == '!':
+
+                    label = current_node.children[1].label
+                    if label == '==':
+                        label = '!='
+                    elif label == '!=':
+                        label = '=='
+                    elif label == '>':
+                        label = '<='
+                    elif label == '<':
+                        label = '>='
+                    elif label == '<=':
+                        label = '>'
+                    elif label == '>=':
+                        label = '<'
+
+                    current_node.children[1].label = label
+
+                    current_node.children.pop(0)
+
 
     def constant_folding(self):
         nodes = [self.startnode]
@@ -187,7 +244,7 @@ class ASTVisitor:
             current_node = nodes[0]
             nodes = nodes[1:]
 
-            if current_node.label in ["+", "-", "*", "/"]:
+            if current_node.label in ["+", "-", "*", "/"] or current_node.label in ["==", "!=", '>', '<', '>=', '<=', '&&', '||']:
                 current_node.only_literal_children()
             else:
                 nodes += current_node.children

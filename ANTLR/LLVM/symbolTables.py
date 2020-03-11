@@ -1,14 +1,19 @@
 class SymbolType:
-    def __init__(self, symbol_type, assigned, const):
+    def __init__(self, symbol_type, assigned, const,current_register):
         self.symbol_type = symbol_type
         self.assigned = assigned
         self.const = const
+        self.current_register = current_register
+
+    def set_reg(self, current_register):
+        self.current_register = current_register
 
 
 class SymbolTable:
     def __init__(self):
         self.table_stack = []
         self.table_list = []
+        self.current_register = 0
 
     def open_scope(self):
         newdict = dict()
@@ -22,7 +27,8 @@ class SymbolTable:
         if symbol in self.table_stack[0]:
             raise Exception("[Error] Line {}, Position {}: Duplicate declaration of variable {} "
                             .format(error.line, error.column, symbol))
-        self.table_stack[0][symbol] = SymbolType(symbol_type, assinged, const)
+        self.table_stack[0][symbol] = SymbolType(symbol_type, assinged, const, self.current_register)
+        self.current_register += 1
 
     def get_symbol(self, symbol, error):
         for scope in self.table_stack:
@@ -32,6 +38,8 @@ class SymbolTable:
         raise Exception("[Error] Line {}, Position {}: variable {} is undeclared"
                         .format(error.line, error.column, symbol))
 
+    def get_currentScope(self):
+        return list(self.table_stack)
 
 # class SymbolTableCreator:
 #     def __init__(self, ast):

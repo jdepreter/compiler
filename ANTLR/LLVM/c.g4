@@ -4,6 +4,8 @@ c: (line)* ;
 
 line: ((declaration SEMICOLON)|(definition SEMICOLON)| (assignment SEMICOLON) | (bool1 SEMICOLON) | scope);
 
+
+
 scope: LCURLYBRACE (line)* RCURLYBRACE;
 
 definition: CONST? var_type IDENTIFIER EQUALS bool1;
@@ -22,16 +24,22 @@ IDENTIFIER: [a-zA-Z_][0-9a-zA-Z_]*;
 pointer_type: (INT_TYPE | FLOAT_TYPE | CHAR_TYPE)'*';
 
 bool1
-    :bool2 ((AND|OR) bool2)*
+    :bool2 (boolop bool2)*
     ;
 
 
 bool2
-    :NOT? LBRACKET bool1 RBRACKET
+    :not_value? LBRACKET bool1 RBRACKET
     |plus (EQ|LT|LE|GT|GE|NE) plus
     |plus
     ;
 
+boolop
+    :AND
+    |OR;
+
+not_value:
+NOT;
 
 plus : (vm|) (operator2 (vm|neg_sol))*
      ;
@@ -118,6 +126,13 @@ GE:'>=';
 LE:'<=';
 LCURLYBRACE:'{';
 RCURLYBRACE: '}';
+
+
+
 // empty : '' ;
 
+COMMENT1:('//'~('\n')* [\n]) -> skip ;
+COMMENT2:('/*' (~('*')*'*')*'/') -> skip ;
 WS : [ \n\t\r]+ -> skip;
+
+

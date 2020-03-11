@@ -59,6 +59,16 @@ class cVisitor(ParseTreeVisitor):
         return self.visitChildren(ctx)
 
 
+    # Visit a parse tree produced by cParser#boolop.
+    def visitBoolop(self, ctx:cParser.BoolopContext):
+        return self.visitChildren(ctx)
+
+
+    # Visit a parse tree produced by cParser#not_value.
+    def visitNot_value(self, ctx:cParser.Not_valueContext):
+        return self.visitChildren(ctx)
+
+
     # Visit a parse tree produced by cParser#plus.
     def visitPlus(self, ctx:cParser.PlusContext):
         return self.visitChildren(ctx)

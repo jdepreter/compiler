@@ -23,6 +23,9 @@ def main(argv):
     # printer.ast.to_dot(open("temp.dot", 'w'))
     visitor = ASTVisitor(printer.ast)
     visitor.clean_tree()
+    visitor.fold_not()
+    # TODO add simple clean to fold_not so it doesn't need to be rerun
+    visitor.clean_tree()
     graph = printer.ast.render_dot()
     graph.save("1.txt", "output")
     graph.render("1")
@@ -31,6 +34,7 @@ def main(argv):
     graph = printer.ast.render_dot()
     graph.save("output.txt", "output")
     graph.render("output")
+
 
 
 if __name__ == '__main__':

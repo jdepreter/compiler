@@ -23,6 +23,7 @@ class CASTGenerator(cListener):
         self.ast = self.create_node("C", self.currentNode, ctx)
         self.currentNode = self.ast
         self.symbol_table.open_scope()
+        self.currentNode.symbol_table = self.symbol_table.get_currentScope()
 
     def enterLine(self, ctx:cParser.LineContext):
         print("enter line")
@@ -40,6 +41,7 @@ class CASTGenerator(cListener):
         self.currentNode.children.append(node)
         self.currentNode = node
         self.symbol_table.open_scope()
+        self.currentNode.symbol_table = self.symbol_table.get_currentScope()
 
     def exitScope(self, ctx:cParser.ScopeContext):
         print("exit scope")
@@ -49,7 +51,7 @@ class CASTGenerator(cListener):
     def enterLvalue(self, ctx:cParser.LvalueContext):
         string = "lvalue"
         if ctx.IDENTIFIER():
-            string = ctx.IDENTIFIER()
+            string = str(ctx.IDENTIFIER())
         node = self.create_node(string, self.currentNode, ctx)
         self.currentNode.children.append(node)
         self.currentNode = node
@@ -64,7 +66,7 @@ class CASTGenerator(cListener):
         elif ctx.FLOAT():
             string = str(ctx.FLOAT())
         elif ctx.IDENTIFIER():
-            string = ctx.IDENTIFIER()
+            string = str(ctx.IDENTIFIER())
         node = self.create_node(string, self.currentNode, ctx)
         self.currentNode.children.append(node)
         self.currentNode = node
@@ -82,8 +84,8 @@ class CASTGenerator(cListener):
 
     def enterAssignment(self, ctx:cParser.AssignmentContext):
         node = self.create_node("ass", self.currentNode, ctx)
-        identifier = self.create_node(str(ctx.IDENTIFIER()), node, ctx)
-        node.children.append(identifier)
+        # identifier = self.create_node(str(ctx.IDENTIFIER()), node, ctx)
+        # node.children.append(identifier)
         self.currentNode.children.append(node)
         self.currentNode = node
 
@@ -127,6 +129,7 @@ class CASTGenerator(cListener):
         self.currentNode = node
 
     def exitAssignment(self, ctx:cParser.AssignmentContext):
+
         var = self.currentNode.children[0].label
         var_type = self.symbol_table.get_symbol(var, ctx.start)
         if var_type.const:
@@ -156,7 +159,7 @@ class CASTGenerator(cListener):
 
     # Expressions ----
     def enterBool1(self, ctx:cParser.Bool1Context):
-        node = self.create_node("Bool1", self.currentNode, ctx)
+        node = self.create_node("bool1", self.currentNode, ctx)
         self.currentNode.children.append(node)
         self.currentNode = node
 
@@ -164,7 +167,22 @@ class CASTGenerator(cListener):
         self.currentNode = self.currentNode.parent
 
     def enterBool2(self, ctx:cParser.Bool2Context):
-        node = self.create_node("Bool2", self.currentNode, ctx)
+        # (EQ | LT | LE | GT | GE | NE)
+        string = "Bool2"
+        if ctx.EQ():
+            string = str(ctx.EQ())
+        elif ctx.LT():
+            string = str(ctx.LT())
+        elif ctx.LE():
+            string = str(ctx.LE())
+        elif ctx.GT():
+            string = str(ctx.GT())
+        elif ctx.GE():
+            string = str(ctx.GE())
+        elif ctx.NE():
+            string = str(ctx.NE())
+
+        node = self.create_node(string, self.currentNode, ctx)
         self.currentNode.children.append(node)
         self.currentNode = node
 
@@ -175,6 +193,14 @@ class CASTGenerator(cListener):
         node = self.create_node("plus", self.currentNode, ctx)
         self.currentNode.children.append(node)
         self.currentNode = node
+
+    def enterNot_value(self, ctx: cParser.Not_valueContext):
+        node = self.create_node(str(ctx.NOT()), self.currentNode, ctx)
+        self.currentNode.children.append(node)
+        self.currentNode = node
+
+    def exitNot_value(self, ctx: cParser.Not_valueContext):
+        self.currentNode = self.currentNode.parent
 
     def exitPlus(self, ctx:cParser.PlusContext):
         self.currentNode = self.currentNode.parent
@@ -257,4 +283,17 @@ class CASTGenerator(cListener):
 
     def exitOperator2(self, ctx:cParser.Operator2Context):
         print('exitop')
+        self.currentNode = self.currentNode.parent
+
+    def enterBoolop(self, ctx:cParser.BoolopContext):
+        string = ""
+        if ctx.AND():
+            string = str(ctx.AND())
+        else:
+            string = str(ctx.OR())
+        node = self.create_node(string, self.currentNode, ctx)
+        self.currentNode.children.append(node)
+        self.currentNode = node
+
+    def exitBoolop(self, ctx:cParser.BoolopContext):
         self.currentNode = self.currentNode.parent

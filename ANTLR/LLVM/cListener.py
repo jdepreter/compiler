@@ -98,6 +98,24 @@ class cListener(ParseTreeListener):
         pass
 
 
+    # Enter a parse tree produced by cParser#boolop.
+    def enterBoolop(self, ctx:cParser.BoolopContext):
+        pass
+
+    # Exit a parse tree produced by cParser#boolop.
+    def exitBoolop(self, ctx:cParser.BoolopContext):
+        pass
+
+
+    # Enter a parse tree produced by cParser#not_value.
+    def enterNot_value(self, ctx:cParser.Not_valueContext):
+        pass
+
+    # Exit a parse tree produced by cParser#not_value.
+    def exitNot_value(self, ctx:cParser.Not_valueContext):
+        pass
+
+
     # Enter a parse tree produced by cParser#plus.
     def enterPlus(self, ctx:cParser.PlusContext):
         pass
