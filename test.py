@@ -9,13 +9,17 @@ from grammer1CustomListener import KeyPrinter
 from cCustomListener import CASTGenerator
 from ANTLR.LLVM.AST import ASTVisitor
 from graphviz import Digraph
-
+from cErrorListener import CErrorListener
 
 def main(argv):
     input_stream = FileStream(argv[1])
     lexer = cLexer(input_stream)
+    lexer.removeErrorListeners()
+    lexer.addErrorListener(CErrorListener())
     stream = CommonTokenStream(lexer)
     parser = cParser(stream)
+    parser.removeErrorListeners()
+    parser.addErrorListener(CErrorListener())
     tree = parser.c()
     printer = CASTGenerator()
     walker = ParseTreeWalker()
