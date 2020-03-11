@@ -83,7 +83,7 @@ def serializedATN():
         buf.write("\2\u00aa\u00ab\7\25\2\2\u00ab\u00ac\5\32\16\2\u00ac\u00ad")
         buf.write("\7\26\2\2\u00ad\u00ae\7\26\2\2\u00ae\u00b0\3\2\2\2\u00af")
         buf.write("\u00a7\3\2\2\2\u00af\u00a8\3\2\2\2\u00b0!\3\2\2\2\u00b1")
-        buf.write("\u00b7\5&\24\2\u00b2\u00b3\7\25\2\2\u00b3\u00b4\5\32\16")
+        buf.write("\u00b7\5&\24\2\u00b2\u00b3\7\25\2\2\u00b3\u00b4\5\22\n")
         buf.write("\2\u00b4\u00b5\7\26\2\2\u00b5\u00b7\3\2\2\2\u00b6\u00b1")
         buf.write("\3\2\2\2\u00b6\u00b2\3\2\2\2\u00b7#\3\2\2\2\u00b8\u00b9")
         buf.write("\7\t\2\2\u00b9%\3\2\2\2\u00ba\u00bd\5*\26\2\u00bb\u00bd")
@@ -1442,8 +1442,8 @@ class cParser ( Parser ):
         def LBRACKET(self):
             return self.getToken(cParser.LBRACKET, 0)
 
-        def plus(self):
-            return self.getTypedRuleContext(cParser.PlusContext,0)
+        def bool1(self):
+            return self.getTypedRuleContext(cParser.Bool1Context,0)
 
 
         def RBRACKET(self):
@@ -1487,7 +1487,7 @@ class cParser ( Parser ):
                 self.state = 176
                 self.match(cParser.LBRACKET)
                 self.state = 177
-                self.plus()
+                self.bool1()
                 self.state = 178
                 self.match(cParser.RBRACKET)
                 pass

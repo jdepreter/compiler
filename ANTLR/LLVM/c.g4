@@ -58,7 +58,7 @@ neg_sol
 
 vm_sol
     : value
-    | LBRACKET plus RBRACKET
+    | LBRACKET bool1 RBRACKET
     ;
 
 neg_value
