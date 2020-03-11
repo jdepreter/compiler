@@ -217,7 +217,7 @@ class ASTVisitor:
 
             queue = current_node.children + queue
             if current_node.label == 'Bool2':
-                if current_node.children[0].label == '!':
+                if len(current_node.children) != 0 and current_node.children[0].label == '!':
 
                     label = current_node.children[1].label
                     if label == '==':
