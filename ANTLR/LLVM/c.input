@@ -1,4 +1,6 @@
 {
-char c = 'a';
-char d = 'a' + 1;
+int c = 1;
+int y = 3;
+
+y=c=4;
 }

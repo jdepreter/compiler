@@ -11,9 +11,24 @@ scope: LCURLYBRACE (line)* RCURLYBRACE;
 definition: CONST? var_type IDENTIFIER EQUALS bool1;
 declaration: CONST? var_type IDENTIFIER;
 
-assignment: lvalue EQUALS bool1;
+assignment
+    :lvalue EQUALS assignment
+    |lvalue EQUALS bool1
+    |increment
+    ;
+
 var_type: (INT_TYPE | FLOAT_TYPE | CHAR_TYPE | pointer_type);
 
+increment
+    :increment_var_first
+    |increment_op_first
+    ;
+
+increment_var_first:
+IDENTIFIER(MINMIN|PLUSPLUS);
+
+increment_op_first:
+(MINMIN|PLUSPLUS)IDENTIFIER;
 
 EQUALS: '=';
 CONST : 'const';
@@ -74,8 +89,6 @@ rvalue
     :INT
     |FLOAT
     |CHAR
-    |plusplusrechts
-    |pluspluslinks
     |AMPERSAND IDENTIFIER
     ;
 lvalue
@@ -91,9 +104,6 @@ address
 
 operator: MAAL | DEEL;
 operator2: PLUS | MIN ;
-
-pluspluslinks : (PLUSPLUS|MINMIN)IDENTIFIER;
-plusplusrechts : IDENTIFIER(PLUSPLUS|MINMIN);
 
 NEG_INT
     :LBRACKET('0'| (MIN?[1-9][0-9]*) )RBRACKET

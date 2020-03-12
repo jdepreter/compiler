@@ -3,7 +3,7 @@ from antlr4 import *
 if __name__ is not None and "." in __name__:
     from .cParser import cParser
 else:
-    from cParser import cParser
+    from ANTLR.LLVM.cParser import cParser
 
 # This class defines a complete listener for a parse tree produced by cParser.
 class cListener(ParseTreeListener):
@@ -68,6 +68,33 @@ class cListener(ParseTreeListener):
 
     # Exit a parse tree produced by cParser#var_type.
     def exitVar_type(self, ctx:cParser.Var_typeContext):
+        pass
+
+
+    # Enter a parse tree produced by cParser#increment.
+    def enterIncrement(self, ctx:cParser.IncrementContext):
+        pass
+
+    # Exit a parse tree produced by cParser#increment.
+    def exitIncrement(self, ctx:cParser.IncrementContext):
+        pass
+
+
+    # Enter a parse tree produced by cParser#increment_var_first.
+    def enterIncrement_var_first(self, ctx:cParser.Increment_var_firstContext):
+        pass
+
+    # Exit a parse tree produced by cParser#increment_var_first.
+    def exitIncrement_var_first(self, ctx:cParser.Increment_var_firstContext):
+        pass
+
+
+    # Enter a parse tree produced by cParser#increment_op_first.
+    def enterIncrement_op_first(self, ctx:cParser.Increment_op_firstContext):
+        pass
+
+    # Exit a parse tree produced by cParser#increment_op_first.
+    def exitIncrement_op_first(self, ctx:cParser.Increment_op_firstContext):
         pass
 
 
@@ -221,24 +248,6 @@ class cListener(ParseTreeListener):
 
     # Exit a parse tree produced by cParser#operator2.
     def exitOperator2(self, ctx:cParser.Operator2Context):
-        pass
-
-
-    # Enter a parse tree produced by cParser#pluspluslinks.
-    def enterPluspluslinks(self, ctx:cParser.PluspluslinksContext):
-        pass
-
-    # Exit a parse tree produced by cParser#pluspluslinks.
-    def exitPluspluslinks(self, ctx:cParser.PluspluslinksContext):
-        pass
-
-
-    # Enter a parse tree produced by cParser#plusplusrechts.
-    def enterPlusplusrechts(self, ctx:cParser.PlusplusrechtsContext):
-        pass
-
-    # Exit a parse tree produced by cParser#plusplusrechts.
-    def exitPlusplusrechts(self, ctx:cParser.PlusplusrechtsContext):
         pass
 
 

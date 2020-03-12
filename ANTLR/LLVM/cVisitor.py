@@ -3,7 +3,7 @@ from antlr4 import *
 if __name__ is not None and "." in __name__:
     from .cParser import cParser
 else:
-    from cParser import cParser
+    from ANTLR.LLVM.cParser import cParser
 
 # This class defines a complete generic visitor for a parse tree produced by cParser.
 
@@ -41,6 +41,21 @@ class cVisitor(ParseTreeVisitor):
 
     # Visit a parse tree produced by cParser#var_type.
     def visitVar_type(self, ctx:cParser.Var_typeContext):
+        return self.visitChildren(ctx)
+
+
+    # Visit a parse tree produced by cParser#increment.
+    def visitIncrement(self, ctx:cParser.IncrementContext):
+        return self.visitChildren(ctx)
+
+
+    # Visit a parse tree produced by cParser#increment_var_first.
+    def visitIncrement_var_first(self, ctx:cParser.Increment_var_firstContext):
+        return self.visitChildren(ctx)
+
+
+    # Visit a parse tree produced by cParser#increment_op_first.
+    def visitIncrement_op_first(self, ctx:cParser.Increment_op_firstContext):
         return self.visitChildren(ctx)
 
 
@@ -126,16 +141,6 @@ class cVisitor(ParseTreeVisitor):
 
     # Visit a parse tree produced by cParser#operator2.
     def visitOperator2(self, ctx:cParser.Operator2Context):
-        return self.visitChildren(ctx)
-
-
-    # Visit a parse tree produced by cParser#pluspluslinks.
-    def visitPluspluslinks(self, ctx:cParser.PluspluslinksContext):
-        return self.visitChildren(ctx)
-
-
-    # Visit a parse tree produced by cParser#plusplusrechts.
-    def visitPlusplusrechts(self, ctx:cParser.PlusplusrechtsContext):
         return self.visitChildren(ctx)
 
 
