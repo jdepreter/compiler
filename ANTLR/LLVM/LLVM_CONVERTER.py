@@ -23,6 +23,12 @@ class LLVM_Converter:
             self.format_dict[str(node.children[0].label)]
         )
         self.file.write(string)
+        reg_nr = symbol_table.get_symbol(str(node.children[1].label), None).current_register
+        self.file.write("%a" + str(reg_nr) + " = alloca "
+                         + self.format_dict[str(node.children[0].label)] + "\n")
+
+        return "%a" + str(reg_nr)
+
 
     def solve_llvm_node(self, node, symbol_table):
         # TODO x++ & ++x staan nog ni ok in den boom && add char / double && maybe arrays && typeswitching + warnings
@@ -32,18 +38,26 @@ class LLVM_Converter:
         if node.label == 'dec':
             self.allocate_node(node, symbol_table)
         elif node.label == 'def':
-            self.allocate_node(node, symbol_table)
-            self.solve_math(node.children[2], symbol_table, 'int')
+            address = self.allocate_node(node, symbol_table)
+            register = self.solve_math(node.children[2], symbol_table, 'int')
+            self.store_symbol(address, register, 'int')
         elif node.label == 'ass':
-            self.solve_math(node.children[1], symbol_table, 'int')
+            address = '%a' +str(symbol_table.get_symbol(str(node.children[0].label), None).current_register)
+            register = self.solve_math(node.children[1], symbol_table, 'int')
+            self.store_symbol(address, register, 'int')
 
-        for child in node.children:
-            if node.symbol_table is not None:
-                symbol_table = node.symbol_table
+        else:
+            for child in node.children:
+                if node.symbol_table is not None:
+                    symbol_table = node.symbol_table
 
-            self.solve_llvm_node(child, symbol_table)
+                self.solve_llvm_node(child, symbol_table)
 
-    def load_symbol(self, SymbolType):
+    def store_symbol(self, address, value, type):
+        string = 'store '+self.format_dict[type]+' '+value+', ' + self.format_dict[type] + '* ' + address + '\n'
+        self.file.write(string)
+
+    def load_symbol(self,SymbolType):
         reg = self.register
         self.register += 1
         string = '%r {} = load {} * %a{} \n'.format(
