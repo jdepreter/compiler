@@ -9,7 +9,7 @@ line: ((definition SEMICOLON)| (assignment SEMICOLON) | (bool1 SEMICOLON) | scop
 scope: LCURLYBRACE (line)* RCURLYBRACE;
 
 //declaration: CONST? var_type IDENTIFIER EQUALS bool1;
-definition: CONST? var_type ((variable_identifier|assignment2)(','(variable_identifier|assignment2))*)?;
+definition: CONST? var_type ((variable_identifier|assignment2)(','(variable_identifier|assignment2))*);
 
 variable_identifier : IDENTIFIER;
 
