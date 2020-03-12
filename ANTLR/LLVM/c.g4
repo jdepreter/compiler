@@ -73,8 +73,9 @@ value
 rvalue
     :INT
     |FLOAT
-    |IDENTIFIER(MINMIN|PLUSPLUS)
-    |(MINMIN|PLUSPLUS)IDENTIFIER
+    |CHAR
+    |plusplusrechts
+    |pluspluslinks
     |AMPERSAND IDENTIFIER
     ;
 lvalue
@@ -90,6 +91,9 @@ address
 
 operator: MAAL | DEEL;
 operator2: PLUS | MIN ;
+
+pluspluslinks : (PLUSPLUS|MINMIN)IDENTIFIER;
+plusplusrechts : IDENTIFIER(PLUSPLUS|MINMIN);
 
 NEG_INT
     :LBRACKET('0'| (MIN?[1-9][0-9]*) )RBRACKET
@@ -127,7 +131,7 @@ LE:'<=';
 LCURLYBRACE:'{';
 RCURLYBRACE: '}';
 
-
+CHAR: '\''[ -~]'\'';
 
 // empty : '' ;
 

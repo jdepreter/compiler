@@ -4,7 +4,7 @@ class LLVM_Converter:
         self.stack = []
         self.register = 0
         self.file = file
-        self.format_dict = {'int': 'i32', 'float': 'f32'}
+        self.format_dict = {'int': 'i32', 'float': 'f32', 'char': 'i8'}
         self.optype = {'+': {'int': 'add', 'float': 'fadd'},
                        '-': {'int': 'sub', 'float': 'fsub'},
                        '*': {'int': 'mul', 'float': 'fmul'},
@@ -116,7 +116,6 @@ class LLVM_Converter:
 
             self.file.write(string)
             return '%r' + str(reg)
-
 
         elif node.label in ['==', '!=', '<', '>', '<=', '>=']:
 

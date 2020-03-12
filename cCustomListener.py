@@ -67,6 +67,8 @@ class CASTGenerator(cListener):
             string = str(ctx.FLOAT())
         elif ctx.IDENTIFIER():
             string = str(ctx.IDENTIFIER())
+        elif ctx.CHAR():
+            string = str(ord(str(ctx.CHAR())[1]))
         node = self.create_node(string, self.currentNode, ctx)
         self.currentNode.children.append(node)
         self.currentNode = node
@@ -296,4 +298,39 @@ class CASTGenerator(cListener):
         self.currentNode = node
 
     def exitBoolop(self, ctx:cParser.BoolopContext):
+        self.currentNode = self.currentNode.parent
+
+    def enterPluspluslinks(self, ctx:cParser.PluspluslinksContext):
+        string = "error"
+        if ctx.PLUSPLUS():
+            string = str(ctx.PLUSPLUS())
+
+        elif ctx.MINMIN():
+            string = str(ctx.MINMIN())
+        string += str(ctx.IDENTIFIER())
+
+        node = self.create_node('+', self.currentNode, ctx)
+        child1 = self.create_node(str(ctx.IDENTIFIER()), node, ctx)
+        child2 = self.create_node(str(1), node, ctx)
+        node.children += [child1, child2]
+        self.currentNode.children.append(node)
+        self.currentNode = node
+
+    def exitPluspluslinks(self, ctx:cParser.PluspluslinksContext):
+        self.currentNode = self.currentNode.parent
+
+    def enterPlusplusrechts(self, ctx:cParser.PlusplusrechtsContext):
+        string = str(ctx.IDENTIFIER())
+        if ctx.PLUSPLUS():
+            string += str(ctx.PLUSPLUS())
+        elif ctx.MINMIN():
+            string += str(ctx.MINMIN())
+        else:
+            string += "error"
+
+        node = self.create_node(string, self.currentNode, ctx)
+        self.currentNode.children.append(node)
+        self.currentNode = node
+
+    def exitPlusplusrechts(self, ctx:cParser.PlusplusrechtsContext):
         self.currentNode = self.currentNode.parent
