@@ -13,8 +13,9 @@ from ANTLR.LLVM.LLVM_CONVERTER import LLVM_Converter
 
 from cErrorListener import CErrorListener
 
-def main(argv):
-    input_stream = FileStream(argv[1])
+
+def to_llvm(filename):
+    input_stream = FileStream(filename)
     lexer = cLexer(input_stream)
     lexer.removeErrorListeners()
     lexer.addErrorListener(CErrorListener())
@@ -38,12 +39,16 @@ def main(argv):
     visitor.maal()
     visitor.constant_folding()
     graph = printer.ast.render_dot()
-    graph.save("output.txt", "output")
-    graph.render("output")
-    f = open('llvm.llvm', 'w')
+    graph.save("output-{}.txt".format(filename), "output")
+    graph.render("output-{}".format(filename))
+    f = open('llvm-{}.llvm'.format(filename), 'w')
     converter = LLVM_Converter(visitor, f)
     converter.to_llvm()
+    f.close()
 
+
+def main(argv):
+    to_llvm(argv[1])
 
 
 
