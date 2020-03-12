@@ -39,8 +39,9 @@ class SymbolTable:
                         .format(error.line, error.column, symbol))
 
     def get_currentScope(self):
-        return list(self.table_stack)
-
+        s = SymbolTable()
+        s.table_stack = list(self.table_stack)
+        return s
 # class SymbolTableCreator:
 #     def __init__(self, ast):
 #         self.ast = ast

@@ -9,6 +9,7 @@ from grammer1CustomListener import KeyPrinter
 from cCustomListener import CASTGenerator
 from ANTLR.LLVM.AST import ASTVisitor
 from graphviz import Digraph
+from ANTLR.LLVM.LLVM_CONVERTER import LLVM_Converter
 
 
 def main(argv):
@@ -34,6 +35,10 @@ def main(argv):
     graph = printer.ast.render_dot()
     graph.save("output.txt", "output")
     graph.render("output")
+    f = open('llvm.llvm', 'w')
+    converter = LLVM_Converter(visitor, f)
+    converter.to_llvm()
+
 
 
 
