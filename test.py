@@ -39,7 +39,7 @@ def to_llvm(filename):
     visitor.maal()
     visitor.constant_folding()
     graph = printer.ast.render_dot()
-    graph.save("output-{}.txt".format(filename), "output")
+    graph.save("output-{}".format(filename), "output")
     graph.render("output-{}".format(filename))
     f = open('llvm-{}.llvm'.format(filename), 'w')
     converter = LLVM_Converter(visitor, f)
@@ -49,7 +49,6 @@ def to_llvm(filename):
 
 def main(argv):
     to_llvm(argv[1])
-
 
 
 if __name__ == '__main__':

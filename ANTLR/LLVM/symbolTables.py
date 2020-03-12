@@ -1,3 +1,6 @@
+from CustomExceptions import UndeclaredVariable, UninitializedVariable, DuplicateDeclaration
+
+
 class SymbolType:
     def __init__(self, symbol_type, assigned, const,current_register):
         self.symbol_type = symbol_type
@@ -25,8 +28,8 @@ class SymbolTable:
 
     def add_symbol(self, symbol, symbol_type, error, assinged=True, const=False):
         if symbol in self.table_stack[0]:
-            raise Exception("[Error] Line {}, Position {}: Duplicate declaration of variable {} "
-                            .format(error.line, error.column, symbol))
+            raise DuplicateDeclaration("[Error] Line {}, Position {}: Duplicate declaration of variable {} "
+                                       .format(error.line, error.column, symbol))
         self.table_stack[0][symbol] = SymbolType(symbol_type, assinged, const, self.current_register)
         self.current_register += 1
 
@@ -35,10 +38,10 @@ class SymbolTable:
             if symbol in scope:
                 return scope[symbol]
 
-        raise Exception("[Error] Line {}, Position {}: variable {} is undeclared"
-                        .format(error.line, error.column, symbol))
+        raise UndeclaredVariable("[Error] Line {}, Position {}: variable {} is undeclared"
+                                 .format(error.line, error.column, symbol))
 
-    def get_currentScope(self):
+    def get_current_scope(self):
         s = SymbolTable()
         s.table_stack = list(self.table_stack)
         return s

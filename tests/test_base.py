@@ -1,6 +1,7 @@
 import unittest
 import test
-
+from CustomExceptions import *
+from antlr4.error.Errors import NoViableAltException
 
 class TestCase(unittest.TestCase):
     def test_basic_files(self):
@@ -10,3 +11,14 @@ class TestCase(unittest.TestCase):
     def test_scope(self):
         test.to_llvm("scope_1.txt")
         test.to_llvm("scope_empty.txt")
+        test.to_llvm("scope_nested.txt")
+
+    def test_folding(self):
+        test.to_llvm("folding.txt")
+
+    def test_errors(self):
+        with self.assertRaises(CSyntaxError):
+            test.to_llvm("syntax_error.txt")
+
+        with self.assertRaises(CSyntaxError):
+            test.to_llvm("syntax_error_1.txt")
