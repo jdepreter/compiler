@@ -13,21 +13,21 @@ class CASTGenerator(cListener):
         self.id = 1
         self.symbol_table = SymbolTable()
 
-    def create_node(self, label, parent, ctx):
-        node = Node(self.id, label, parent, ctx)
+    def create_node(self, label, node_type, parent, ctx):
+        node = Node(self.id, node_type, label, parent, ctx)
         self.id += 1
         return node
 
     def enterC(self, ctx:cParser.CContext):
         print("enter c")
-        self.ast = self.create_node("C", self.currentNode, ctx)
+        self.ast = self.create_node("C", "C", self.currentNode, ctx)
         self.currentNode = self.ast
         self.symbol_table.open_scope()
         self.currentNode.symbol_table = self.symbol_table.get_current_scope()
 
     def enterLine(self, ctx:cParser.LineContext):
         print("enter line")
-        node = self.create_node("line", self.currentNode, ctx)
+        node = self.create_node("line", "line", self.currentNode, ctx)
         self.currentNode.children.append(node)
         self.currentNode = node
         self.currentNode.symbol_table = self.symbol_table.get_current_scope()
@@ -38,7 +38,7 @@ class CASTGenerator(cListener):
 
     def enterScope(self, ctx:cParser.ScopeContext):
         print("enter scope")
-        node = self.create_node("scope", self.currentNode, ctx)
+        node = self.create_node("scope", "scope", self.currentNode, ctx)
         self.currentNode.children.append(node)
         self.currentNode = node
         self.symbol_table.open_scope()
@@ -53,7 +53,7 @@ class CASTGenerator(cListener):
         string = "lvalue"
         if ctx.IDENTIFIER():
             string = str(ctx.IDENTIFIER())
-        node = self.create_node(string, self.currentNode, ctx)
+        node = self.create_node(string, "lvalue", self.currentNode, ctx)
         self.currentNode.children.append(node)
         self.currentNode = node
         self.currentNode.symbol_table = self.symbol_table.get_current_scope()
@@ -71,7 +71,7 @@ class CASTGenerator(cListener):
             string = str(ctx.IDENTIFIER())
         elif ctx.CHAR():
             string = str(ord(str(ctx.CHAR())[1]))
-        node = self.create_node(string, self.currentNode, ctx)
+        node = self.create_node(string, "rvalue", self.currentNode, ctx)
         self.currentNode.children.append(node)
         self.currentNode = node
         self.currentNode.symbol_table = self.symbol_table.get_current_scope()
@@ -80,7 +80,7 @@ class CASTGenerator(cListener):
         self.currentNode = self.currentNode.parent
 
     def enterAddress(self, ctx:cParser.AddressContext):
-        node = self.create_node("address", self.currentNode, ctx)
+        node = self.create_node("address", "address", self.currentNode, ctx)
         self.currentNode.children.append(node)
         self.currentNode = node
         self.currentNode.symbol_table = self.symbol_table.get_current_scope()
@@ -89,7 +89,7 @@ class CASTGenerator(cListener):
         self.currentNode = self.currentNode.parent
 
     def enterAssignment(self, ctx:cParser.AssignmentContext):
-        node = self.create_node("ass", self.currentNode, ctx)
+        node = self.create_node("assignment", "assignment", self.currentNode, ctx)
         # identifier = self.create_node(str(ctx.IDENTIFIER()), node, ctx)
         # node.children.append(identifier)
         self.currentNode.children.append(node)
@@ -97,7 +97,7 @@ class CASTGenerator(cListener):
         self.currentNode.symbol_table = self.symbol_table.get_current_scope()
 
     def enterAssignment2(self, ctx:cParser.Assignment2Context):
-        node = self.create_node("ass2", self.currentNode, ctx)
+        node = self.create_node("assignment2", "assignment2", self.currentNode, ctx)
         # identifier = self.create_node(str(ctx.IDENTIFIER()), node, ctx)
         # node.children.append(identifier)
         self.currentNode.children.append(node)
@@ -105,7 +105,7 @@ class CASTGenerator(cListener):
         self.currentNode.symbol_table = self.symbol_table.get_current_scope()
 
     def enterDefinition(self, ctx:cParser.DefinitionContext):
-        node = self.create_node("def", self.currentNode, ctx)
+        node = self.create_node("definition", "definition", self.currentNode, ctx)
         # identifier = self.create_node(str(ctx.IDENTIFIER()), node, ctx)
         # node.children.append(identifier)
         self.currentNode.children.append(node)
@@ -120,7 +120,7 @@ class CASTGenerator(cListener):
             string = str(ctx.FLOAT_TYPE())
         if ctx.INT_TYPE():
             string = str(ctx.INT_TYPE())
-        node = self.create_node(string, self.currentNode, ctx)
+        node = self.create_node(string, "pointer_type", self.currentNode, ctx)
         self.currentNode.children.append(node)
         self.currentNode = node
         self.currentNode.symbol_table = self.symbol_table.get_current_scope()
@@ -134,7 +134,7 @@ class CASTGenerator(cListener):
         if ctx.INT_TYPE():
             string = str(ctx.INT_TYPE())
 
-        node = self.create_node(string, self.currentNode, ctx)
+        node = self.create_node(string, "var_type", self.currentNode, ctx)
         self.currentNode.children.insert(0, node)
         self.currentNode = node
         self.currentNode.symbol_table = self.symbol_table.get_current_scope()
@@ -153,22 +153,21 @@ class CASTGenerator(cListener):
                             .format(ctx.start.line, ctx.start.column, var))
         self.currentNode = self.currentNode.parent
 
-
     def exitDefinition(self, ctx:cParser.DefinitionContext):
         if ctx.CONST():
-            node = self.create_node("const", self.currentNode, ctx)
+            node = self.create_node("const", "const", self.currentNode, ctx)
             self.currentNode.children.insert(0, node)
             for i in range(2, len(self.currentNode.children)):
                 node = self.currentNode.children[i]
                 symbol = node.label
-                if node.label == 'ass2':
+                if node.node_type == 'assignment2':
                     symbol = node.children[0].label
                 self.symbol_table.add_symbol(symbol, self.currentNode.children[1].label, ctx.start, True, True)
         else:
             for i in range(1, len(self.currentNode.children)):
                 node = self.currentNode.children[i]
                 symbol = node.label
-                if node.label == 'ass2':
+                if node.node_type == 'assignment2':
                     symbol = node.children[0].label
                 self.symbol_table.add_symbol(symbol, self.currentNode.children[0].label, ctx.start, True)
 
@@ -182,7 +181,7 @@ class CASTGenerator(cListener):
 
     # Expressions ----
     def enterBool1(self, ctx:cParser.Bool1Context):
-        node = self.create_node("bool1", self.currentNode, ctx)
+        node = self.create_node("bool1", "bool1", self.currentNode, ctx)
         self.currentNode.children.append(node)
         self.currentNode = node
         self.currentNode.symbol_table = self.symbol_table.get_current_scope()
@@ -192,7 +191,7 @@ class CASTGenerator(cListener):
 
     def enterBool2(self, ctx:cParser.Bool2Context):
         # (EQ | LT | LE | GT | GE | NE)
-        string = "Bool2"
+        string = "bool2"
         if ctx.EQ():
             string = str(ctx.EQ())
         elif ctx.LT():
@@ -206,7 +205,7 @@ class CASTGenerator(cListener):
         elif ctx.NE():
             string = str(ctx.NE())
 
-        node = self.create_node(string, self.currentNode, ctx)
+        node = self.create_node(string, "bool2", self.currentNode, ctx)
         self.currentNode.children.append(node)
         self.currentNode = node
         self.currentNode.symbol_table = self.symbol_table.get_current_scope()
@@ -215,13 +214,13 @@ class CASTGenerator(cListener):
         self.currentNode = self.currentNode.parent
 
     def enterPlus(self, ctx:cParser.PlusContext):
-        node = self.create_node("plus", self.currentNode, ctx)
+        node = self.create_node("plus", "plus", self.currentNode, ctx)
         self.currentNode.children.append(node)
         self.currentNode = node
         self.currentNode.symbol_table = self.symbol_table.get_current_scope()
 
     def enterNot_value(self, ctx: cParser.Not_valueContext):
-        node = self.create_node(str(ctx.NOT()), self.currentNode, ctx)
+        node = self.create_node(str(ctx.NOT()), "not_value", self.currentNode, ctx)
         self.currentNode.children.append(node)
         self.currentNode = node
         self.currentNode.symbol_table = self.symbol_table.get_current_scope()
@@ -233,7 +232,7 @@ class CASTGenerator(cListener):
         self.currentNode = self.currentNode.parent
 
     def enterVm(self, ctx:cParser.VmContext):
-        node = self.create_node("vm", self.currentNode, ctx)
+        node = self.create_node("vm", "vm", self.currentNode, ctx)
         self.currentNode.children.append(node)
         self.currentNode = node
         self.currentNode.symbol_table = self.symbol_table.get_current_scope()
@@ -242,7 +241,7 @@ class CASTGenerator(cListener):
         self.currentNode = self.currentNode.parent
 
     def enterMod(self, ctx:cParser.ModContext):
-        node = self.create_node("mod", self.currentNode, ctx)
+        node = self.create_node("mod", "mod", self.currentNode, ctx)
         self.currentNode.children.append(node)
         self.currentNode = node
         self.currentNode.symbol_table = self.symbol_table.get_current_scope()
@@ -251,7 +250,7 @@ class CASTGenerator(cListener):
         self.currentNode = self.currentNode.parent
 
     def enterNeg_sol(self, ctx:cParser.Neg_solContext):
-        node = self.create_node("negsol", self.currentNode, ctx)
+        node = self.create_node("negsol", "negsol", self.currentNode, ctx)
         self.currentNode.children.append(node)
         self.currentNode = node
         self.currentNode.symbol_table = self.symbol_table.get_current_scope()
@@ -260,7 +259,7 @@ class CASTGenerator(cListener):
         self.currentNode = self.currentNode.parent
 
     def enterVm_sol(self, ctx:cParser.Vm_solContext):
-        node = self.create_node("vmsol", self.currentNode, ctx)
+        node = self.create_node("vmsol", "vmsol", self.currentNode, ctx)
         self.currentNode.children.append(node)
         self.currentNode = node
         self.currentNode.symbol_table = self.symbol_table.get_current_scope()
@@ -269,7 +268,7 @@ class CASTGenerator(cListener):
         self.currentNode = self.currentNode.parent
 
     def enterValue(self, ctx:cParser.ValueContext):
-        node = self.create_node("value", self.currentNode, ctx)
+        node = self.create_node("value", "value", self.currentNode, ctx)
         self.currentNode.children.append(node)
         self.currentNode = node
         self.currentNode.symbol_table = self.symbol_table.get_current_scope()
@@ -278,7 +277,7 @@ class CASTGenerator(cListener):
         self.currentNode = self.currentNode.parent
 
     def enterNeg_value(self, ctx:cParser.Neg_valueContext):
-        node = self.create_node(str(ctx.NEG_INT()), self.currentNode, ctx)
+        node = self.create_node(str(ctx.NEG_INT()), "neg_value", self.currentNode, ctx)
         self.currentNode.children.append(node)
         self.currentNode = node
         self.currentNode.symbol_table = self.symbol_table.get_current_scope()
@@ -292,7 +291,7 @@ class CASTGenerator(cListener):
             string = str(ctx.MAAL())
         else:
             string = str(ctx.DEEL())
-        node = self.create_node(string, self.currentNode, ctx)
+        node = self.create_node(string, "operator", self.currentNode, ctx)
         self.currentNode.children.append(node)
         self.currentNode = node
         self.currentNode.symbol_table = self.symbol_table.get_current_scope()
@@ -306,7 +305,7 @@ class CASTGenerator(cListener):
             string = str(ctx.PLUS())
         else:
             string = str(ctx.MIN())
-        node = self.create_node(string, self.currentNode, ctx)
+        node = self.create_node(string, "operator2", self.currentNode, ctx)
         self.currentNode.children.append(node)
         self.currentNode = node
         self.currentNode.symbol_table = self.symbol_table.get_current_scope()
@@ -320,7 +319,7 @@ class CASTGenerator(cListener):
             string = str(ctx.AND())
         else:
             string = str(ctx.OR())
-        node = self.create_node(string, self.currentNode, ctx)
+        node = self.create_node(string, "boolop", self.currentNode, ctx)
         self.currentNode.children.append(node)
         self.currentNode = node
         self.currentNode.symbol_table = self.symbol_table.get_current_scope()
@@ -329,16 +328,16 @@ class CASTGenerator(cListener):
         self.currentNode = self.currentNode.parent
 
     def enterVariable_identifier(self, ctx: cParser.Variable_identifierContext):
-        node = self.create_node(str(ctx.IDENTIFIER()), self.currentNode, ctx)
+        node = self.create_node(str(ctx.IDENTIFIER()), "var", self.currentNode, ctx)
         self.currentNode.children.append(node)
         self.currentNode = node
-        self.currentNode.symbol_table = self.symbol_table.get_currentScope()
+        self.currentNode.symbol_table = self.symbol_table.get_current_scope()
 
     def exitVariable_identifier(self, ctx:cParser.Variable_identifierContext):
         self.currentNode = self.currentNode.parent
 
     def enterIncrement(self, ctx:cParser.IncrementContext):
-        node = self.create_node("increment", self.currentNode, ctx)
+        node = self.create_node("increment", "increment", self.currentNode, ctx)
         self.currentNode.children.append(node)
         self.currentNode = node
         self.currentNode.symbol_table = self.symbol_table.get_current_scope()
@@ -347,15 +346,15 @@ class CASTGenerator(cListener):
         self.currentNode = self.currentNode.parent
 
     def enterIncrement_op_first(self, ctx:cParser.Increment_op_firstContext):
-        node = self.create_node("Increment_op", self.currentNode, ctx)
+        node = self.create_node("Increment_op", "Increment_op", self.currentNode, ctx)
         self.currentNode.children.append(node)
         self.currentNode = node
         string = '--'
         if ctx.PLUSPLUS():
             string = '++'
 
-        node2 = self.create_node(string, self.currentNode, ctx)
-        node1 = self.create_node(str(ctx.IDENTIFIER()), self.currentNode, ctx)
+        node2 = self.create_node(string, "increment", self.currentNode, ctx)
+        node1 = self.create_node(str(ctx.IDENTIFIER()), "var", self.currentNode, ctx)
         self.currentNode.children.append(node1)
         self.currentNode.children.append(node2)
         self.currentNode.symbol_table = self.symbol_table.get_current_scope()
@@ -367,15 +366,15 @@ class CASTGenerator(cListener):
         self.currentNode = self.currentNode.parent
 
     def enterIncrement_var_first(self, ctx:cParser.Increment_var_firstContext):
-        node = self.create_node("Increment_var", self.currentNode, ctx)
+        node = self.create_node("Increment_var", "Increment_var", self.currentNode, ctx)
         self.currentNode.children.append(node)
         self.currentNode = node
         string = '--'
         if ctx.PLUSPLUS():
             string = '++'
 
-        node2 = self.create_node(string, self.currentNode, ctx)
-        node1 = self.create_node(str(ctx.IDENTIFIER()), self.currentNode, ctx)
+        node2 = self.create_node(string, "Increment_var", self.currentNode, ctx)
+        node1 = self.create_node(str(ctx.IDENTIFIER()), "var", self.currentNode, ctx)
         self.currentNode.children.append(node1)
         self.currentNode.children.append(node2)
         self.currentNode.symbol_table = self.symbol_table.get_current_scope()

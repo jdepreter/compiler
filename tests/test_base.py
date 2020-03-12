@@ -3,6 +3,7 @@ import test
 from CustomExceptions import *
 from antlr4.error.Errors import NoViableAltException
 
+
 class TestCase(unittest.TestCase):
     def test_basic_files(self):
         test.to_llvm("basic_declaration.txt")

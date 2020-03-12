@@ -2,13 +2,14 @@ from graphviz import Digraph
 
 
 class Node:
-    def __init__(self, node_id, label, parent, ctx):
+    def __init__(self, node_id, node_type, label, parent, ctx):
         self.id = node_id
         self.children = []
         self.parent = parent
         self.label = label
         self.ctx = ctx
         self.symbol_table = None
+        self.node_type = node_type
 
     def __repr__(self):
         return "Node: " + str(self.label)
