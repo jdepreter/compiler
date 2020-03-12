@@ -244,7 +244,7 @@ class ASTVisitor:
             current_node = nodes[0]
             nodes = nodes[1:]
 
-            if current_node.label in ["+", "-", "*", "/"] or current_node.label in ["==", "!=", '>', '<', '>=', '<=', '&&', '||']:
+            if current_node.label in ["+", "-", "*", "/", "==", "!=", '>', '<', '>=', '<=', '&&', '||']:
                 current_node.only_literal_children()
             else:
                 nodes += current_node.children

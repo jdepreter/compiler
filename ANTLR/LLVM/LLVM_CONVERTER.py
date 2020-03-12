@@ -5,11 +5,11 @@ class LLVM_Converter:
         self.register = 0
         self.file = file
         self.format_dict = {'int': 'i32', 'float': 'float'}
-        self.optype ={'+': {'int': 'add', 'float': 'fadd'},
-                      '-': {'int': 'sub', 'float': 'fsub'},
-                      '*': {'int': 'mul', 'float': 'fmul'},
-                      '/': {'int': 'sdiv', 'float': 'fdiv'},
-                      '%': {'int': 'srem', 'float': 'frem'}}
+        self.optype = {'+': {'int': 'add', 'float': 'fadd'},
+                       '-': {'int': 'sub', 'float': 'fsub'},
+                       '*': {'int': 'mul', 'float': 'fmul'},
+                       '/': {'int': 'sdiv', 'float': 'fdiv'},
+                       '%': {'int': 'srem', 'float': 'frem'}}
 
     def to_llvm(self):
         # self.stack.insert(0, self.ast.startnode)
