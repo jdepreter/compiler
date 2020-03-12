@@ -18,9 +18,11 @@ class LLVM_Converter:
 
     # helpermethod to write used for declaration or definition
     def allocate_node(self, node, symbol_table):
-
-        self.file.write("%a" + str(symbol_table.get_symbol(str(node.children[1].label), None).current_register)
-                        + " = alloca " + self.format_dict[str(node.children[0].label)] + "\n")
+        string = "%a {} = alloca {} \n".format(
+            str(symbol_table.get_symbol(str(node.children[1].label), None).current_register),
+            self.format_dict[str(node.children[0].label)]
+        )
+        self.file.write(string)
 
     def solve_llvm_node(self, node, symbol_table):
         # TODO x++ & ++x staan nog ni ok in den boom && add char / double && maybe arrays && typeswitching + warnings
@@ -44,9 +46,9 @@ class LLVM_Converter:
     def load_symbol(self, SymbolType):
         reg = self.register
         self.register += 1
-        string = '%r {} = load {} * %a{} \n'\
-            .format(str(reg), self.format_dict[SymbolType.symbol_type], SymbolType.current_register)
-        # string = '%r' + str(reg) + ' = load '+self.format_dict[SymbolType.symbol_type]+'* %a'+str(SymbolType.current_register)+ '\n'
+        string = '%r {} = load {} * %a{} \n'.format(
+            str(reg), self.format_dict[SymbolType.symbol_type], SymbolType.current_register
+        )
         self.file.write(string)
         return '%r' + str(reg)
 
@@ -55,12 +57,11 @@ class LLVM_Converter:
         if node.label in ['+', '-', '*', '/', '%']:
             reg = self.register
             self.register += 1
-            string = '%r {} = {} {} {}, {}\n'.format(str(reg), self.optype[node.label][symbol_type], self.format_dict[symbol_type],
-                                                     self.solve_math(node.children[0], symbol_table, symbol_type),
-                                                     self.solve_math(node.children[1], symbol_table, symbol_type))
-
-            #string = '%r' + str(reg) + ' = '+self.optype[node.label][type] +' ' + self.format_dict[type] +' '+ \
-            #         self.solve_math(node.children[0], symbol_table, type)+', '+self.solve_math(node.children[1], symbol_table, type) + '\n'
+            string = '%r {} = {} {} {}, {}\n'.format(
+                str(reg), self.optype[node.label][symbol_type], self.format_dict[symbol_type],
+                self.solve_math(node.children[0], symbol_table, symbol_type),
+                self.solve_math(node.children[1], symbol_table, symbol_type)
+            )
 
             self.file.write(string)
             return '%r' + str(reg)
