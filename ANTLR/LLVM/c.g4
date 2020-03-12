@@ -2,16 +2,23 @@ grammar c;
 
 c: (line)* ;
 
-line: ((declaration SEMICOLON)|(definition SEMICOLON)| (assignment SEMICOLON) | (bool1 SEMICOLON) | scope);
+line: ((definition SEMICOLON)| (assignment SEMICOLON) | (bool1 SEMICOLON) | scope);
 
 
 
 scope: LCURLYBRACE (line)* RCURLYBRACE;
 
-definition: CONST? var_type IDENTIFIER EQUALS bool1;
-declaration: CONST? var_type IDENTIFIER;
+//declaration: CONST? var_type IDENTIFIER EQUALS bool1;
+definition: CONST? var_type ((variable_identifier|assignment2)(','(variable_identifier|assignment2))*)?;
+
+variable_identifier : IDENTIFIER;
 
 assignment
+    :lvalue EQUALS assignment
+    |lvalue EQUALS bool1
+    ;
+
+assignment2
     :lvalue EQUALS assignment
     |lvalue EQUALS bool1
     |increment

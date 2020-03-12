@@ -40,9 +40,9 @@ def main(argv):
     graph = printer.ast.render_dot()
     graph.save("output.txt", "output")
     graph.render("output")
-    f = open('llvm.llvm', 'w')
-    converter = LLVM_Converter(visitor, f)
-    converter.to_llvm()
+    # f = open('llvm.llvm', 'w')
+    # converter = LLVM_Converter(visitor, f)
+    # converter.to_llvm()
 
 
 

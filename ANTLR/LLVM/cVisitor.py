@@ -29,13 +29,18 @@ class cVisitor(ParseTreeVisitor):
         return self.visitChildren(ctx)
 
 
-    # Visit a parse tree produced by cParser#declaration.
-    def visitDeclaration(self, ctx:cParser.DeclarationContext):
+    # Visit a parse tree produced by cParser#variable_identifier.
+    def visitVariable_identifier(self, ctx:cParser.Variable_identifierContext):
         return self.visitChildren(ctx)
 
 
     # Visit a parse tree produced by cParser#assignment.
     def visitAssignment(self, ctx:cParser.AssignmentContext):
+        return self.visitChildren(ctx)
+
+
+    # Visit a parse tree produced by cParser#assignment2.
+    def visitAssignment2(self, ctx:cParser.Assignment2Context):
         return self.visitChildren(ctx)
 
 

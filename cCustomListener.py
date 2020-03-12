@@ -96,18 +96,18 @@ class CASTGenerator(cListener):
         self.currentNode = node
         self.currentNode.symbol_table = self.symbol_table.get_currentScope()
 
-    def enterDeclaration(self, ctx:cParser.DeclarationContext):
-        node = self.create_node("dec", self.currentNode, ctx)
-        identifier = self.create_node(str(ctx.IDENTIFIER()), node, ctx)
-        node.children.append(identifier)
+    def enterAssignment2(self, ctx:cParser.Assignment2Context):
+        node = self.create_node("ass2", self.currentNode, ctx)
+        # identifier = self.create_node(str(ctx.IDENTIFIER()), node, ctx)
+        # node.children.append(identifier)
         self.currentNode.children.append(node)
         self.currentNode = node
         self.currentNode.symbol_table = self.symbol_table.get_currentScope()
 
     def enterDefinition(self, ctx:cParser.DefinitionContext):
         node = self.create_node("def", self.currentNode, ctx)
-        identifier = self.create_node(str(ctx.IDENTIFIER()), node, ctx)
-        node.children.append(identifier)
+        # identifier = self.create_node(str(ctx.IDENTIFIER()), node, ctx)
+        # node.children.append(identifier)
         self.currentNode.children.append(node)
         self.currentNode = node
         self.currentNode.symbol_table = self.symbol_table.get_currentScope()
@@ -139,6 +139,9 @@ class CASTGenerator(cListener):
         self.currentNode = node
         self.currentNode.symbol_table = self.symbol_table.get_currentScope()
 
+    def exitAssignment2(self, ctx:cParser.AssignmentContext):
+        self.currentNode = self.currentNode.parent
+
     def exitAssignment(self, ctx:cParser.AssignmentContext):
 
         var = self.currentNode.children[0]
@@ -151,17 +154,23 @@ class CASTGenerator(cListener):
         self.currentNode = self.currentNode.parent
 
 
-    def exitDeclaration(self, ctx:cParser.DeclarationContext):
-        self.symbol_table.add_symbol(self.currentNode.children[1].label, self.currentNode.children[0].label, ctx.start, False)
-        self.currentNode = self.currentNode.parent
-
     def exitDefinition(self, ctx:cParser.DefinitionContext):
         if ctx.CONST():
             node = self.create_node("const", self.currentNode, ctx)
             self.currentNode.children.insert(0, node)
-            self.symbol_table.add_symbol(self.currentNode.children[2].label, self.currentNode.children[1].label, ctx.start, True, True)
+            for i in range(2, len(self.currentNode.children)):
+                node = self.currentNode.children[i]
+                symbol = node.label
+                if node.label == 'ass2':
+                    symbol = node.children[0].label
+                self.symbol_table.add_symbol(symbol, self.currentNode.children[1].label, ctx.start, True, True)
         else:
-            self.symbol_table.add_symbol(self.currentNode.children[1].label, self.currentNode.children[0].label, ctx.start, True)
+            for i in range(1, len(self.currentNode.children)):
+                node = self.currentNode.children[i]
+                symbol = node.label
+                if node.label == 'ass2':
+                    symbol = node.children[0].label
+                self.symbol_table.add_symbol(symbol, self.currentNode.children[0].label, ctx.start, True)
 
         self.currentNode = self.currentNode.parent
 
@@ -319,6 +328,15 @@ class CASTGenerator(cListener):
     def exitBoolop(self, ctx:cParser.BoolopContext):
         self.currentNode = self.currentNode.parent
 
+    def enterVariable_identifier(self, ctx: cParser.Variable_identifierContext):
+        node = self.create_node(str(ctx.IDENTIFIER()), self.currentNode, ctx)
+        self.currentNode.children.append(node)
+        self.currentNode = node
+        self.currentNode.symbol_table = self.symbol_table.get_currentScope()
+
+    def exitVariable_identifier(self, ctx:cParser.Variable_identifierContext):
+        self.currentNode = self.currentNode.parent
+
     def enterIncrement(self, ctx:cParser.IncrementContext):
         node = self.create_node("increment", self.currentNode, ctx)
         self.currentNode.children.append(node)
@@ -366,4 +384,5 @@ class CASTGenerator(cListener):
 
     def exitIncrement_var_first(self, ctx:cParser.Increment_var_firstContext):
         self.currentNode = self.currentNode.parent
+
 
