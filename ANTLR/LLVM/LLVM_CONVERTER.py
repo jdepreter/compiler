@@ -4,12 +4,32 @@ class LLVM_Converter:
         self.stack = []
         self.register = 0
         self.file = file
-        self.format_dict = {'int': 'i32', 'float': 'float'}
+        self.format_dict = {'int': 'i32', 'float': 'f32'}
         self.optype = {'+': {'int': 'add', 'float': 'fadd'},
                        '-': {'int': 'sub', 'float': 'fsub'},
                        '*': {'int': 'mul', 'float': 'fmul'},
                        '/': {'int': 'sdiv', 'float': 'fdiv'},
                        '%': {'int': 'srem', 'float': 'frem'}}
+
+        self.bool_dict = {'int':
+                              {
+                                  '==': 'icmp eq',
+                                  '!=': 'icmp ne',
+                                  '>': 'icmp sgt',
+                                  '<': 'icmp slt',
+                                  '>=': 'icmp sge',
+                                  '<=': 'icmp sle'
+                              },
+                          'float':
+                              {
+                                  '==': 'fcmp oeq',
+                                  '!=': 'fcmp ole',
+                                  '>': 'fcmp ogt',
+                                  '<': 'fcmp olt',
+                                  '>=': 'fcmp oge',
+                                  '<=': 'fcmp ole'
+                              }
+                          }
 
     def to_llvm(self):
         # self.stack.insert(0, self.ast.startnode)
@@ -77,9 +97,39 @@ class LLVM_Converter:
             return '%r' + str(reg)
 
         elif node.label == '&&':
-            ...
+            reg = self.register
+            self.register += 1
+            string = '%r' + str(reg) + ' = and i32 ' + \
+                     self.solve_math(node.children[0], symbol_table, symbol_type) + ', ' + self.solve_math(node.children[1],
+                                                                                                    symbol_table,
+                                                                                                    symbol_type) + '\n'
+
+            self.file.write(string)
+            return '%r' + str(reg)
         elif node.label == '||':
-            ...
+            reg = self.register
+            self.register += 1
+            string = '%r' + str(reg) + ' = or i32 ' + \
+                     self.solve_math(node.children[0], symbol_table, symbol_type) + ', ' + self.solve_math(node.children[1],
+                                                                                                    symbol_table,
+                                                                                                    symbol_type) + '\n'
+
+            self.file.write(string)
+            return '%r' + str(reg)
+
+
+        elif node.label in ['==', '!=', '<', '>', '<=', '>=']:
+
+            reg = self.register
+            self.register += 1
+            string = '%r{} = {} {} {}, {} \n'.format(
+                str(reg), self.bool_dict[symbol_type][node.label], self.format_dict[symbol_type],
+                self.solve_math(node.children[0], symbol_table, symbol_type),
+                self.solve_math(node.children[1], symbol_table, symbol_type)
+            )
+            self.file.write(string)
+            return '%r' + str(reg)
+
         else:
             try:
                 newval = int(node.label)
