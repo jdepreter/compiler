@@ -1,15 +1,10 @@
 import sys
 from antlr4 import *
-from ANTLR.LLVM.grammer1Lexer import grammer1Lexer
 from ANTLR.LLVM.cLexer import cLexer
-from ANTLR.LLVM.grammer1Parser import grammer1Parser
 from ANTLR.LLVM.cParser import cParser
-from ANTLR.LLVM.grammer1Visitor import grammer1Visitor
-from grammer1CustomListener import KeyPrinter
 from cCustomListener import CASTGenerator
-from ANTLR.LLVM.AST import ASTVisitor
-from graphviz import Digraph
-from ANTLR.LLVM.LLVM_CONVERTER import LLVM_Converter
+from AST import ASTVisitor
+from LLVM_CONVERTER import LLVM_Converter
 
 from cErrorListener import CErrorListener
 

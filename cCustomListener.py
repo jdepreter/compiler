@@ -1,8 +1,7 @@
-from antlr4 import *
 from ANTLR.LLVM.cListener import cListener
 from ANTLR.LLVM.cParser import cParser
-from ANTLR.LLVM.symbolTables import SymbolTable
-from ANTLR.LLVM.AST import Node
+from symbolTables import SymbolTable
+from AST import Node
 
 
 # Depth first
@@ -291,7 +290,7 @@ class CASTGenerator(cListener):
             string = str(ctx.MAAL())
         else:
             string = str(ctx.DEEL())
-        node = self.create_node(string, "operator", self.currentNode, ctx)
+        node = self.create_node(string, string, self.currentNode, ctx)
         self.currentNode.children.append(node)
         self.currentNode = node
         self.currentNode.symbol_table = self.symbol_table.get_current_scope()
@@ -305,7 +304,7 @@ class CASTGenerator(cListener):
             string = str(ctx.PLUS())
         else:
             string = str(ctx.MIN())
-        node = self.create_node(string, "operator2", self.currentNode, ctx)
+        node = self.create_node(string, string, self.currentNode, ctx)
         self.currentNode.children.append(node)
         self.currentNode = node
         self.currentNode.symbol_table = self.symbol_table.get_current_scope()
