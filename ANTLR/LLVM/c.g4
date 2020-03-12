@@ -11,9 +11,24 @@ scope: LCURLYBRACE (line)* RCURLYBRACE;
 definition: CONST? var_type IDENTIFIER EQUALS bool1;
 declaration: CONST? var_type IDENTIFIER;
 
-assignment: lvalue EQUALS bool1;
+assignment
+    :lvalue EQUALS assignment
+    |lvalue EQUALS bool1
+    |increment
+    ;
+
 var_type: (INT_TYPE | FLOAT_TYPE | CHAR_TYPE | pointer_type);
 
+increment
+    :increment_var_first
+    |increment_op_first
+    ;
+
+increment_var_first:
+IDENTIFIER(MINMIN|PLUSPLUS);
+
+increment_op_first:
+(MINMIN|PLUSPLUS)IDENTIFIER;
 
 EQUALS: '=';
 CONST : 'const';
@@ -73,8 +88,6 @@ value
 rvalue
     :INT
     |FLOAT
-    |IDENTIFIER(MINMIN|PLUSPLUS)
-    |(MINMIN|PLUSPLUS)IDENTIFIER
     |AMPERSAND IDENTIFIER
     ;
 lvalue

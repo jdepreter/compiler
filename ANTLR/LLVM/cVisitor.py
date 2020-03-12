@@ -44,6 +44,21 @@ class cVisitor(ParseTreeVisitor):
         return self.visitChildren(ctx)
 
 
+    # Visit a parse tree produced by cParser#increment.
+    def visitIncrement(self, ctx:cParser.IncrementContext):
+        return self.visitChildren(ctx)
+
+
+    # Visit a parse tree produced by cParser#increment_var_first.
+    def visitIncrement_var_first(self, ctx:cParser.Increment_var_firstContext):
+        return self.visitChildren(ctx)
+
+
+    # Visit a parse tree produced by cParser#increment_op_first.
+    def visitIncrement_op_first(self, ctx:cParser.Increment_op_firstContext):
+        return self.visitChildren(ctx)
+
+
     # Visit a parse tree produced by cParser#pointer_type.
     def visitPointer_type(self, ctx:cParser.Pointer_typeContext):
         return self.visitChildren(ctx)

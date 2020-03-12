@@ -5,11 +5,23 @@ class LLVM_Converter:
         self.register = 0
         self.file = file
         self.format_dict = {'int': 'i32', 'float': 'f32'}
-        self.optype ={'+': {'int': 'add', 'float': 'fadd'},
-                      '-': {'int': 'sub', 'float': 'fsub'},
-                      '*': {'int': 'mul', 'float': 'fmul'},
-                      '/': {'int': 'sdiv', 'float': 'fdiv'},
-                      '%': {'int': 'srem', 'float': 'frem'}}
+        self.optype = {'int':
+            {
+                '+': 'add',
+                '-': 'sub',
+                '*': 'mul',
+                '/': 'sdiv',
+                '%': 'srem'
+            },
+            'float':{
+                '+': 'fadd',
+                '-': 'fsub',
+                '*': 'fmul',
+                '/': 'fdiv',
+                '%': 'frem'
+            }
+
+        }
 
         self.bool_dict = {'int':
                               {
@@ -88,7 +100,7 @@ class LLVM_Converter:
             reg = self.register
             self.register += 1
             string = '%r{} = {} {} {}, {}\n'.format(
-                str(reg), self.optype[node.label][symbol_type], self.format_dict[symbol_type],
+                str(reg), self.optype[symbol_type][node.label], self.format_dict[symbol_type],
                 self.solve_math(node.children[0], symbol_table, symbol_type),
                 self.solve_math(node.children[1], symbol_table, symbol_type)
             )
@@ -103,7 +115,6 @@ class LLVM_Converter:
                      self.solve_math(node.children[0], symbol_table, symbol_type) + ', ' + self.solve_math(node.children[1],
                                                                                                     symbol_table,
                                                                                                     symbol_type) + '\n'
-
             self.file.write(string)
             return '%r' + str(reg)
         elif node.label == '||':
@@ -116,7 +127,6 @@ class LLVM_Converter:
 
             self.file.write(string)
             return '%r' + str(reg)
-
 
         elif node.label in ['==', '!=', '<', '>', '<=', '>=']:
 

@@ -71,6 +71,33 @@ class cListener(ParseTreeListener):
         pass
 
 
+    # Enter a parse tree produced by cParser#increment.
+    def enterIncrement(self, ctx:cParser.IncrementContext):
+        pass
+
+    # Exit a parse tree produced by cParser#increment.
+    def exitIncrement(self, ctx:cParser.IncrementContext):
+        pass
+
+
+    # Enter a parse tree produced by cParser#increment_var_first.
+    def enterIncrement_var_first(self, ctx:cParser.Increment_var_firstContext):
+        pass
+
+    # Exit a parse tree produced by cParser#increment_var_first.
+    def exitIncrement_var_first(self, ctx:cParser.Increment_var_firstContext):
+        pass
+
+
+    # Enter a parse tree produced by cParser#increment_op_first.
+    def enterIncrement_op_first(self, ctx:cParser.Increment_op_firstContext):
+        pass
+
+    # Exit a parse tree produced by cParser#increment_op_first.
+    def exitIncrement_op_first(self, ctx:cParser.Increment_op_firstContext):
+        pass
+
+
     # Enter a parse tree produced by cParser#pointer_type.
     def enterPointer_type(self, ctx:cParser.Pointer_typeContext):
         pass
