@@ -88,6 +88,7 @@ value
 rvalue
     :INT
     |FLOAT
+    |CHAR
     |AMPERSAND IDENTIFIER
     ;
 lvalue
@@ -140,7 +141,7 @@ LE:'<=';
 LCURLYBRACE:'{';
 RCURLYBRACE: '}';
 
-
+CHAR: '\''[ -~]'\'';
 
 // empty : '' ;
 

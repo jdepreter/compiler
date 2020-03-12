@@ -69,6 +69,8 @@ class CASTGenerator(cListener):
             string = str(ctx.FLOAT())
         elif ctx.IDENTIFIER():
             string = str(ctx.IDENTIFIER())
+        elif ctx.CHAR():
+            string = str(ord(str(ctx.CHAR())[1]))
         node = self.create_node(string, self.currentNode, ctx)
         self.currentNode.children.append(node)
         self.currentNode = node

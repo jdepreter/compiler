@@ -4,7 +4,7 @@ class LLVM_Converter:
         self.stack = []
         self.register = 0
         self.file = file
-        self.format_dict = {'int': 'i32', 'float': 'f32'}
+        self.format_dict = {'int': 'i32', 'float': 'f32', 'char': 'i8'}
         self.optype = {'int':
             {
                 '+': 'add',
@@ -30,7 +30,8 @@ class LLVM_Converter:
                                   '>': 'icmp sgt',
                                   '<': 'icmp slt',
                                   '>=': 'icmp sge',
-                                  '<=': 'icmp sle'},
+                                  '<=': 'icmp sle'
+                              },
                           'float':
                               {
                                   '==': 'fcmp oeq',
@@ -46,7 +47,6 @@ class LLVM_Converter:
         # self.stack.insert(0, self.ast.startnode)
         current_symbol_table = self.ast.startnode.symbol_table
         self.solve_llvm_node(self.ast.startnode, current_symbol_table)
-
 
     # helpermethod to write used for declaration or definition
     def allocate_node(self, node, symbol_table):
