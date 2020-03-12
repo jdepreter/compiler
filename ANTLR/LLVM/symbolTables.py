@@ -2,7 +2,7 @@ from CustomExceptions import UndeclaredVariable, UninitializedVariable, Duplicat
 
 
 class SymbolType:
-    def __init__(self, symbol_type, assigned, const,current_register):
+    def __init__(self, symbol_type, assigned, const, current_register):
         self.symbol_type = symbol_type
         self.assigned = assigned
         self.const = const

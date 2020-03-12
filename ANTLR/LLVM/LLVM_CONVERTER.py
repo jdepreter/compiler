@@ -8,14 +8,18 @@ class LLVM_Converter:
         self.optype = {'int':
             {
                 '+': 'add',
+                '++': 'add',
                 '-': 'sub',
+                '-*': 'sub',
                 '*': 'mul',
                 '/': 'sdiv',
                 '%': 'srem'
             },
             'float':{
                 '+': 'fadd',
+                '++': 'fadd',
                 '-': 'fsub',
+                '--': 'fsub',
                 '*': 'fmul',
                 '/': 'fdiv',
                 '%': 'frem'
@@ -49,30 +53,57 @@ class LLVM_Converter:
         self.solve_llvm_node(self.ast.startnode, current_symbol_table)
 
     # helpermethod to write used for declaration or definition
-    def allocate_node(self, node, symbol_table):
-        reg_nr = symbol_table.get_symbol(str(node.children[1].label), None).current_register
+    def allocate_node(self, node, symbol_table, type):
+        variable = node.label
+        if node.node_type == 'assignment2':
+            variable = node.children[0].label
+        reg_nr = symbol_table.get_symbol(variable, None).current_register
         string = "%a{} = alloca {} \n".format(
             reg_nr,
-            self.format_dict[str(node.children[0].label)]
+            self.format_dict[type]
         )
         self.file.write(string)
+        if node.node_type == 'assignment2':
+            register = None
+            if node.children[1].node_type == 'assignment':
+                register = self.assign_node(node.children[1], symbol_table)
+            else:
+                register = self.solve_math(node.children[1], symbol_table, type)
+            self.store_symbol("%a" + str(reg_nr), register, type)
+
         return "%a" + str(reg_nr)
+
+    def assign_node(self, node, symbol_table):
+        symbol = symbol_table.get_symbol(str(node.children[0].label), None)
+        address = '%a' + str(symbol.current_register)
+        if node.children[1].node_type == 'assignment':
+            register = self.assign_node(node.children[1], symbol_table)
+        else:
+            register = self.solve_math(node.children[1], symbol_table, symbol.symbol_type)
+        self.store_symbol(address, register, symbol.symbol_type)
+        return register
 
     def solve_llvm_node(self, node, symbol_table):
         # TODO x++ & ++x staan nog ni ok in den boom && add char / double && maybe arrays && typeswitching + warnings
         if node.symbol_table is not None:
             symbol_table = node.symbol_table
 
-        if node.label == 'dec':
-            self.allocate_node(node, symbol_table)
-        elif node.label == 'def':
-            address = self.allocate_node(node, symbol_table)
-            register = self.solve_math(node.children[2], symbol_table, 'int')
-            self.store_symbol(address, register, 'int')
-        elif node.label == 'ass':
-            address = '%a' + str(symbol_table.get_symbol(str(node.children[0].label), None).current_register)
-            register = self.solve_math(node.children[1], symbol_table, 'int')
-            self.store_symbol(address, register, 'int')
+        if node.node_type == 'definition':
+            typing = node.children[0]
+            varstart = 1
+            if typing.node_type == 'const':
+                typing = node.children[1]
+                varstart = 2
+            for i in range(varstart, len(node.children)):
+                address = self.allocate_node(node.children[i], symbol_table, typing.label)
+
+        elif node.node_type == 'assignment':
+            self.assign_node(node, symbol_table)
+            # symbol = symbol_table.get_symbol(str(node.children[0].label), None)
+            # address = '%a' + str(symbol.current_register)
+            # register = self.solve_math(node.children[1], symbol_table, symbol.symbol_type)
+            # self.store_symbol(address, register, symbol.symbol_type)
+
 
         else:
             for child in node.children:
@@ -85,11 +116,11 @@ class LLVM_Converter:
         string = 'store ' + self.format_dict[symbol_type] + ' ' + value + ', ' + self.format_dict[symbol_type] + '* ' + address + '\n'
         self.file.write(string)
 
-    def load_symbol(self, symbol_type):
+    def load_symbol(self, symbol):
         reg = self.register
         self.register += 1
         string = '%r{} = load {} * %a{} \n'.format(
-            str(reg), self.format_dict[symbol_type.symbol_type], symbol_type.current_register
+            str(reg), self.format_dict[symbol.symbol_type], symbol.current_register
         )
         self.file.write(string)
         return '%r' + str(reg)
@@ -140,14 +171,43 @@ class LLVM_Converter:
             self.file.write(string)
             return '%r' + str(reg)
 
-        else:
-            try:
-                newval = int(node.label)
-                return str(newval)
-            except:
-                # assume we'll have a symbol
-                sym = symbol_table.get_symbol(node.label, None)
-                return self.load_symbol(sym)
+        elif node.node_type == 'Increment_var':
+
+            symbol = symbol_table.get_symbol(node.children[0].label, None)
+            new_sym = self.load_symbol(symbol)
+
+            reg = self.register
+            self.register += 1
+            string = '%r{} = {} {} {}, 1\n'.format(
+                str(reg), self.optype[symbol_type][node.children[1].label], self.format_dict[symbol_type],
+                new_sym
+            )
+            self.file.write(string)
+            self.store_symbol('%a'+str(symbol.current_register), '%r'+str(reg), symbol_type)
+
+            return new_sym
+
+        elif node.node_type == 'Increment_op':
+            symbol = symbol_table.get_symbol(node.children[0].label, None)
+            new_sym = self.load_symbol(symbol)
+
+            reg = self.register
+            self.register += 1
+            string = '%r{} = {} {} {}, 1\n'.format(
+                str(reg), self.optype[symbol_type][node.children[1].label], self.format_dict[symbol_type],
+                new_sym
+            )
+            self.file.write(string)
+            self.store_symbol('%a' + str(symbol.current_register), '%r' + str(reg), symbol_type)
+
+            return '%r' + str(reg)
+        elif node.node_type =='rvalue':
+            return node.label
+
+        elif node.node_type =='lvalue':
+            sym = symbol_table.get_symbol(node.label, None)
+            return self.load_symbol(sym)
+
 
 
 

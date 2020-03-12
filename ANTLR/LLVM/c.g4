@@ -21,7 +21,6 @@ assignment
 assignment2
     :lvalue EQUALS assignment
     |lvalue EQUALS bool1
-    |increment
     ;
 
 var_type: (INT_TYPE | FLOAT_TYPE | CHAR_TYPE | pointer_type);
@@ -91,6 +90,7 @@ neg_value
 value
     : lvalue
     | rvalue
+    |increment
     ;
 rvalue
     :INT
