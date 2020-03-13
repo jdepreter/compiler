@@ -49,8 +49,13 @@ class LLVM_Converter:
 
     def to_llvm(self):
         # self.stack.insert(0, self.ast.startnode)
+        self.file.write("define i32 @main() {\n"
+                        "start:\n")
         current_symbol_table = self.ast.startnode.symbol_table
         self.solve_llvm_node(self.ast.startnode, current_symbol_table)
+
+        self.file.write("ret i32 0\n"
+                        "}\n")
 
     # helpermethod to write used for declaration or definition
     def allocate_node(self, node, symbol_table, type):
@@ -106,11 +111,15 @@ class LLVM_Converter:
 
 
         else:
-            for child in node.children:
-                if node.symbol_table is not None:
-                    symbol_table = node.symbol_table
 
-                self.solve_llvm_node(child, symbol_table)
+            sol = self.solve_math(node, symbol_table, 'int')
+
+            if sol is None:
+                for child in node.children:
+                    if node.symbol_table is not None:
+                        symbol_table = node.symbol_table
+
+                    self.solve_llvm_node(child, symbol_table)
 
     def store_symbol(self, address, value, symbol_type):
         string = 'store ' + self.format_dict[symbol_type] + ' ' + value + ', ' + self.format_dict[symbol_type] + '* ' + address + '\n'
@@ -119,8 +128,8 @@ class LLVM_Converter:
     def load_symbol(self, symbol):
         reg = self.register
         self.register += 1
-        string = '%r{} = load {} * %a{} \n'.format(
-            str(reg), self.format_dict[symbol.symbol_type], symbol.current_register
+        string = '%r{} = load {} ,{}* %a{} \n'.format(
+            str(reg), self.format_dict[symbol.symbol_type],self.format_dict[symbol.symbol_type], symbol.current_register
         )
         self.file.write(string)
         return '%r' + str(reg)
