@@ -7,7 +7,7 @@ line: ((definition SEMICOLON)| (assignment SEMICOLON) | (bool1 SEMICOLON)| (meth
 
 method_call: IDENTIFIER LBRACKET (args)? RBRACKET;
 
-args :  value (',' args)?;
+args :  value (',' value)*;
 
 scope: LCURLYBRACE (line)* RCURLYBRACE;
 
@@ -33,11 +33,9 @@ increment
     |increment_op_first
     ;
 
-increment_var_first:
-IDENTIFIER(MINMIN|PLUSPLUS);
+increment_var_first: IDENTIFIER(MINMIN|PLUSPLUS);
 
-increment_op_first:
-(MINMIN|PLUSPLUS)IDENTIFIER;
+increment_op_first: (MINMIN|PLUSPLUS)IDENTIFIER;
 
 EQUALS: '=';
 CONST : 'const';
@@ -115,14 +113,11 @@ address
 operator: MAAL | DEEL;
 operator2: PLUS | MIN ;
 
-NEG_INT
-    :LBRACKET('0'| (MIN?[1-9][0-9]*) )RBRACKET
-    ;
-
 INT
     : '0'
-    | [1-9][0-9]*
+    | MIN?[1-9][0-9]*
     ;
+
 
 FLOAT:
     [1-9][0-9]*('.'[0-9]+)
