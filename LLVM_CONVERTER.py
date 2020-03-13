@@ -185,14 +185,7 @@ class LLVM_Converter:
             symbol = symbol_table.get_symbol(node.children[0].label, None)
             new_sym = self.load_symbol(symbol)
 
-            reg = self.register
-            self.register += 1
-            string = '%r{} = {} {} {}, 1\n'.format(
-                str(reg), self.optype[symbol_type][node.children[1].label], self.format_dict[symbol_type],
-                new_sym
-            )
-            self.file.write(string)
-            self.store_symbol('%a'+str(symbol.current_register), '%r'+str(reg), symbol_type)
+            self.increment_var(new_sym, node, symbol, symbol_type)
 
             return new_sym
 
@@ -200,39 +193,25 @@ class LLVM_Converter:
             symbol = symbol_table.get_symbol(node.children[0].label, None)
             new_sym = self.load_symbol(symbol)
 
-            reg = self.register
-            self.register += 1
-            string = '%r{} = {} {} {}, 1\n'.format(
-                str(reg), self.optype[symbol_type][node.children[1].label], self.format_dict[symbol_type],
-                new_sym
-            )
-            self.file.write(string)
-            self.store_symbol('%a' + str(symbol.current_register), '%r' + str(reg), symbol_type)
+            reg = self.increment_var(new_sym, node, symbol, symbol_type)
 
             return '%r' + str(reg)
-        elif node.node_type =='rvalue':
+        elif node.node_type == 'rvalue':
             return str(node.label)
 
-        elif node.node_type =='lvalue':
+        elif node.node_type == 'lvalue':
             sym = symbol_table.get_symbol(node.label, None)
             return self.load_symbol(sym)
 
         return None
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+    def increment_var(self, new_sym, node, symbol, symbol_type):
+        reg = self.register
+        self.register += 1
+        string = '%r{} = {} {} {}, 1\n'.format(
+            str(reg), self.optype[symbol_type][node.children[1].label], self.format_dict[symbol_type],
+            new_sym
+        )
+        self.file.write(string)
+        self.store_symbol('%a' + str(symbol.current_register), '%r' + str(reg), symbol_type)
+        return reg
