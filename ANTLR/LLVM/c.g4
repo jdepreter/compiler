@@ -2,9 +2,12 @@ grammar c;
 
 c: (line)* ;
 
-line: ((definition SEMICOLON)| (assignment SEMICOLON) | (bool1 SEMICOLON) | scope);
+line: ((definition SEMICOLON)| (assignment SEMICOLON) | (bool1 SEMICOLON)| (method_call SEMICOLON) | scope);
 
 
+method_call: IDENTIFIER LBRACKET (args)? RBRACKET;
+
+args : CONST? var_type variable_identifier (',' args)?;
 
 scope: LCURLYBRACE (line)* RCURLYBRACE;
 

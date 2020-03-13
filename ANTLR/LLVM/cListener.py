@@ -26,6 +26,24 @@ class cListener(ParseTreeListener):
         pass
 
 
+    # Enter a parse tree produced by cParser#method_call.
+    def enterMethod_call(self, ctx:cParser.Method_callContext):
+        pass
+
+    # Exit a parse tree produced by cParser#method_call.
+    def exitMethod_call(self, ctx:cParser.Method_callContext):
+        pass
+
+
+    # Enter a parse tree produced by cParser#args.
+    def enterArgs(self, ctx:cParser.ArgsContext):
+        pass
+
+    # Exit a parse tree produced by cParser#args.
+    def exitArgs(self, ctx:cParser.ArgsContext):
+        pass
+
+
     # Enter a parse tree produced by cParser#scope.
     def enterScope(self, ctx:cParser.ScopeContext):
         pass

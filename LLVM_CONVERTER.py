@@ -4,7 +4,7 @@ class LLVM_Converter:
         self.stack = []
         self.register = 0
         self.file = file
-        self.format_dict = {'int': 'i32', 'float': 'f32', 'char': 'i8'}
+        self.format_dict = {'int': 'i32', 'float': 'float', 'char': 'i8'}
         self.optype = {'int':
             {
                 '+': 'add',
@@ -217,7 +217,7 @@ class LLVM_Converter:
             sym = symbol_table.get_symbol(node.label, None)
             return self.load_symbol(sym)
 
-
+        return None
 
 
 

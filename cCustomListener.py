@@ -335,6 +335,27 @@ class CASTGenerator(cListener):
     def exitVariable_identifier(self, ctx:cParser.Variable_identifierContext):
         self.currentNode = self.currentNode.parent
 
+    def enterMethod_call(self, ctx:cParser.Method_callContext):
+        node = self.create_node("method_call", "method_call", self.currentNode, ctx)
+        self.currentNode.children.append(node)
+        self.currentNode = node
+        id = self.create_node(str(ctx.IDENTIFIER()), "method_call_id", self.currentNode, ctx)
+        self.currentNode.children.append(id)
+        self.currentNode.symbol_table = self.symbol_table.get_current_scope()
+
+    def exitMethod_call(self, ctx:cParser.Method_callContext):
+        self.currentNode = self.currentNode.parent
+
+    def enterArgs(self, ctx:cParser.ArgsContext):
+        node = self.create_node("args", "args", self.currentNode, ctx)
+        self.currentNode.children.append(node)
+        self.currentNode = node
+        self.currentNode.symbol_table = self.symbol_table.get_current_scope()
+
+    def exitArgs(self, ctx:cParser.ArgsContext):
+        self.currentNode = self.currentNode.parent
+
+
     def enterIncrement(self, ctx:cParser.IncrementContext):
         node = self.create_node("increment", "increment", self.currentNode, ctx)
         self.currentNode.children.append(node)
