@@ -96,6 +96,7 @@ class Node:
             self.label = int(self.label)
 
         self.children = []
+        self.node_type = 'rvalue'
         return True
 
     def render_dot(self, graph=None):
