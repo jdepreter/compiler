@@ -1,8 +1,7 @@
-from antlr4 import *
 from ANTLR.LLVM.grammer1Listener import grammer1Listener
 from ANTLR.LLVM.grammer1Parser import grammer1Parser
 
-from ANTLR.LLVM.AST import Node
+from AST import Node
 
 
 # Depth first

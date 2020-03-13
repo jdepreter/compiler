@@ -1,5 +1,5 @@
 {
-int c,r=3,p;
+int c,r=3+4,p;
 int y ;
 int z = y = 7;
 

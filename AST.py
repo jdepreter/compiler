@@ -57,36 +57,36 @@ class Node:
         else:
             c1 = float(self.children[1].label)
 
-        if self.label == '+':
+        if self.node_type == '+':
             self.label = c0 + c1
-        elif self.label == '-':
+        elif self.node_type == '-':
             self.label = c0 - c1
-        elif self.label == '*':
+        elif self.node_type == '*':
             self.label = c0 * c1
-        elif self.label == '/':
+        elif self.node_type == '/':
             if c1 == 0:
                 raise ZeroDivisionError
             self.label = c0 / c1
 
         dic = {True: 1, False: 0}
 
-        if self.label == '==':
+        if self.node_type == '==':
             self.label = dic[c0 == c1]
-        elif self.label == '!=':
+        elif self.node_type == '!=':
             self.label = dic[c0 != c1]
-        elif self.label == '<':
+        elif self.node_type == '<':
             self.label = dic[c0 < c1]
-        elif self.label == '<=':
+        elif self.node_type == '<=':
             self.label = dic[c0 <= c1]
-        elif self.label == '>':
+        elif self.node_type == '>':
             self.label = dic[c0 > c1]
-        elif self.label == '>=':
+        elif self.node_type == '>=':
             self.label = dic[c0 >= c1]
 
-        elif self.label == '&&':
+        elif self.node_type == '&&':
             self.label = dic[c0 and c1]
 
-        elif self.label == '||':
+        elif self.node_type == '||':
             self.label = dic[c0 or c1]
 
 
@@ -126,22 +126,6 @@ class Node:
             file.write("}\n")
 
 
-class Plus(Node):
-    def __init__(self, children, parent=None):
-        Node.__init__(self, children, parent)
-
-    def toDot(self, file):
-        file.write('plus')
-
-
-class Min(Node):
-    def __init__(self, children, parent):
-        Node.__init__(children, parent)
-
-    def toDot(self, file):
-        file.write('min')
-
-
 class ASTVisitor:
     def __init__(self, node):
         self.startnode = node
@@ -172,23 +156,23 @@ class ASTVisitor:
                 continue
             visited.append(current_node.id)
             queue += current_node.children
-            if current_node.label == 'vm' or current_node.label == 'plus' or current_node.label == 'bool1':
+            if current_node.node_type == 'vm' or current_node.node_type == 'plus' or current_node.node_type == 'bool1':
                 i = 0
                 while i < len(current_node.children):
                     child = current_node.children[i]
-                    if child.label in ["+", "-", "*", "/", "&&", "||"]:
+                    if child.node_type in ["+", "-", "*", "/", "&&", "||"]:
                         if i == 0:
-                            if child.label == "+":
+                            if child.node_type == "+":
                                 current_node.children.remove(child)
                                 del child
                                 continue
-                            elif child.label == '-':
+                            elif child.node_type == '-':
                                 current_node.children[1].label = "-" + current_node.children[1].label
                                 current_node.children.remove(child)
                                 del child
                                 continue
                             else:
-                                raise Exception("very suspicious" + child.label)
+                                raise Exception("very suspicious " + child.node_type)
                         try:
                             index = current_node.children.index(child)
                             current_node.children[index-1].parent = child
@@ -217,27 +201,26 @@ class ASTVisitor:
             visited.append(current_node.id)
 
             queue = current_node.children + queue
-            if current_node.label == 'Bool2':
-                if len(current_node.children) != 0 and current_node.children[0].label == '!':
+            if current_node.node_type == 'Bool2':
+                if len(current_node.children) != 0 and current_node.children[0].node_type == '!':
 
-                    label = current_node.children[1].label
-                    if label == '==':
-                        label = '!='
-                    elif label == '!=':
-                        label = '=='
-                    elif label == '>':
-                        label = '<='
-                    elif label == '<':
-                        label = '>='
-                    elif label == '<=':
-                        label = '>'
-                    elif label == '>=':
-                        label = '<'
+                    node_type = current_node.children[1].node_type
+                    if node_type == '==':
+                        node_type = '!='
+                    elif node_type == '!=':
+                        node_type = '=='
+                    elif node_type == '>':
+                        node_type = '<='
+                    elif node_type == '<':
+                        node_type = '>='
+                    elif node_type == '<=':
+                        node_type = '>'
+                    elif node_type == '>=':
+                        node_type = '<'
 
-                    current_node.children[1].label = label
+                    current_node.children[1].node_type = node_type
 
                     current_node.children.pop(0)
-
 
     def constant_folding(self):
         nodes = [self.startnode]
@@ -245,7 +228,7 @@ class ASTVisitor:
             current_node = nodes[0]
             nodes = nodes[1:]
 
-            if current_node.label in ["+", "-", "*", "/", "==", "!=", '>', '<', '>=', '<=', '&&', '||']:
+            if current_node.node_type in ["+", "-", "*", "/", "==", "!=", '>', '<', '>=', '<=', '&&', '||']:
                 current_node.only_literal_children()
             else:
                 nodes += current_node.children
