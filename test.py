@@ -8,6 +8,8 @@ from LLVM_CONVERTER import LLVM_Converter
 
 from cErrorListener import CErrorListener
 
+import os, platform
+
 
 def to_llvm(filename, outputname ):
     input_stream = FileStream(filename)
@@ -36,10 +38,13 @@ def to_llvm(filename, outputname ):
     graph = printer.ast.render_dot()
     graph.save("output-{}".format(outputname), "output")
     graph.render("output-{}".format(outputname))
-    f = open('llvm-{}.llvm'.format(outputname), 'w')
+    f = open('llvm-{}.ll'.format(outputname), 'w')
     converter = LLVM_Converter(visitor, f)
     converter.to_llvm()
     f.close()
+
+    if platform.system() == 'Linux':
+        os.system("clang llvm-{}.ll -o main && ./main".format(outputname))
 
 
 def main(argv):
