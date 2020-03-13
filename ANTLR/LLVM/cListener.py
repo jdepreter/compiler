@@ -215,15 +215,6 @@ class cListener(ParseTreeListener):
         pass
 
 
-    # Enter a parse tree produced by cParser#neg_value.
-    def enterNeg_value(self, ctx:cParser.Neg_valueContext):
-        pass
-
-    # Exit a parse tree produced by cParser#neg_value.
-    def exitNeg_value(self, ctx:cParser.Neg_valueContext):
-        pass
-
-
     # Enter a parse tree produced by cParser#value.
     def enterValue(self, ctx:cParser.ValueContext):
         pass

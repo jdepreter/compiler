@@ -77,7 +77,7 @@ mod  :
     ;
 
 neg_sol
-    :neg_value|(LBRACKET MIN LBRACKET plus RBRACKET RBRACKET) // 1+-3 not allowed 1+(-3) allowed
+    :(LBRACKET MIN LBRACKET plus RBRACKET RBRACKET) // 1+-3 not allowed 1+(-3) allowed
     ;
 
 vm_sol
@@ -85,15 +85,11 @@ vm_sol
     | LBRACKET bool1 RBRACKET
     ;
 
-neg_value
-    :NEG_INT
-    ;
-
-
 value
     : lvalue
     | rvalue
     |increment
+    |LBRACKET value RBRACKET
     ;
 rvalue
     :INT
@@ -115,9 +111,6 @@ address
 operator: MAAL | DEEL;
 operator2: PLUS | MIN ;
 
-NEG_INT
-    :LBRACKET('0'| (MIN?[1-9][0-9]*) )RBRACKET
-    ;
 
 INT
     : '0'

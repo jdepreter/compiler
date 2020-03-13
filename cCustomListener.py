@@ -275,14 +275,14 @@ class CASTGenerator(cListener):
     def exitValue(self, ctx:cParser.ValueContext):
         self.currentNode = self.currentNode.parent
 
-    def enterNeg_value(self, ctx:cParser.Neg_valueContext):
-        node = self.create_node(str(ctx.NEG_INT()), "neg_value", self.currentNode, ctx)
-        self.currentNode.children.append(node)
-        self.currentNode = node
-        self.currentNode.symbol_table = self.symbol_table.get_current_scope()
-
-    def exitNeg_value(self, ctx:cParser.Neg_valueContext):
-        self.currentNode = self.currentNode.parent
+    # def enterNeg_value(self, ctx:cParser.Neg_valueContext):
+    #     node = self.create_node(str(ctx.NEG_INT()), "neg_value", self.currentNode, ctx)
+    #     self.currentNode.children.append(node)
+    #     self.currentNode = node
+    #     self.currentNode.symbol_table = self.symbol_table.get_current_scope()
+    #
+    # def exitNeg_value(self, ctx:cParser.Neg_valueContext):
+    #     self.currentNode = self.currentNode.parent
 
     def enterOperator(self, ctx:cParser.OperatorContext):
         string = ""

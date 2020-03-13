@@ -124,11 +124,6 @@ class cVisitor(ParseTreeVisitor):
         return self.visitChildren(ctx)
 
 
-    # Visit a parse tree produced by cParser#neg_value.
-    def visitNeg_value(self, ctx:cParser.Neg_valueContext):
-        return self.visitChildren(ctx)
-
-
     # Visit a parse tree produced by cParser#value.
     def visitValue(self, ctx:cParser.ValueContext):
         return self.visitChildren(ctx)
