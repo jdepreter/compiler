@@ -344,6 +344,7 @@ class CASTGenerator(cListener):
         self.currentNode.symbol_table = self.symbol_table.get_current_scope()
 
     def exitMethod_call(self, ctx:cParser.Method_callContext):
+        self.currentNode.children.append(self.create_node("empty arg", "arg", self.currentNode, ctx))
         self.currentNode = self.currentNode.parent
 
     def enterArgs(self, ctx:cParser.ArgsContext):
