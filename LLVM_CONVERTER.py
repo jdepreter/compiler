@@ -211,7 +211,7 @@ class LLVM_Converter:
 
             return '%r' + str(reg)
         elif node.node_type =='rvalue':
-            return node.label
+            return str(node.label)
 
         elif node.node_type =='lvalue':
             sym = symbol_table.get_symbol(node.label, None)
