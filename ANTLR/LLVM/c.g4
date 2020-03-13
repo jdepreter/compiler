@@ -7,7 +7,7 @@ line: ((definition SEMICOLON)| (assignment SEMICOLON) | (bool1 SEMICOLON)| (meth
 
 method_call: IDENTIFIER LBRACKET (args)? RBRACKET;
 
-args : CONST? var_type variable_identifier (',' args)?;
+args :  value (',' args)?;
 
 scope: LCURLYBRACE (line)* RCURLYBRACE;
 
