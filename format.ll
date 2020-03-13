@@ -43,7 +43,7 @@ define i32 @main() {
         %r2 = load i8, i8* %a0
         %r0 = add i8 %r1, %r2
         store i8 %r0, i8* %a2
-        call void (i8) @print_char(i8 %r0)
+        call void (i32) @print_int(i32 %r0)
         ret i32 0
 }
 

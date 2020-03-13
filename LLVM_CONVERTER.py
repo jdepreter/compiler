@@ -109,6 +109,8 @@ class LLVM_Converter:
             # register = self.solve_math(node.children[1], symbol_table, symbol.symbol_type)
             # self.store_symbol(address, register, symbol.symbol_type)
 
+        elif node.node_type == 'method_call':
+            self.call_method(node)
 
         else:
 
@@ -215,3 +217,17 @@ class LLVM_Converter:
         self.file.write(string)
         self.store_symbol('%a' + str(symbol.current_register), '%r' + str(reg), symbol_type)
         return reg
+
+    def call_method(self, node):
+        method_name = node.children[0].label
+        # TODO args
+        args = [node.children[1].label]
+        method = node.symbol_table.get_method(method_name, args, None)
+
+        string = "call {} ({}) @{}({})".format(
+            method.symbol_type,
+            "",
+            "",
+            ""
+        )
+        print(string)
