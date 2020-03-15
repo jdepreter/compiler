@@ -1,3 +1,4 @@
+import struct
 import sys
 from antlr4 import *
 from ANTLR.LLVM.cLexer import cLexer
@@ -47,7 +48,12 @@ def to_llvm(filename, outputname ):
         os.system("clang llvm-{}.ll -o main && ./main".format(outputname))
 
 
+def float_to_hex(f):
+    return hex(struct.unpack('<I', struct.pack('<f', f))[0])
+
+
 def main(argv):
+    print(float_to_hex(12.99))
     to_llvm(argv[1], argv[2])
 
 

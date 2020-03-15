@@ -1,5 +1,4 @@
 declare i32 @printf(i8*, ...)
-; @format = private constant [8 x i8] c"d = %d\0A\00"
 @format = private constant [4 x i8] c"%d\0A\00"
 @format_float = private constant [4 x i8] c"%f\0A\00"
 @format_char = private constant [4 x i8] c"%c\0A\00"
