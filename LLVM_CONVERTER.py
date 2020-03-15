@@ -113,8 +113,8 @@ define void @print_char(i8 %a){
             if node.children[1].node_type == 'assignment':
                 register = self.assign_node(node.children[1], symbol_table)
             else:
-                register = self.solve_math(node.children[1], symbol_table)[0]
-            self.store_symbol("%a" + str(reg_nr), register, type)
+                register = self.solve_math(node.children[1], symbol_table)
+            self.store_symbol("%a" + str(reg_nr), register[0],register[1], type)
 
         return "%a" + str(reg_nr)
 
@@ -124,8 +124,8 @@ define void @print_char(i8 %a){
         if node.children[1].node_type == 'assignment':
             register = self.assign_node(node.children[1], symbol_table)
         else:
-            register = self.solve_math(node.children[1], symbol_table)[0]
-        self.store_symbol(address, register, symbol.symbol_type)
+            register = self.solve_math(node.children[1], symbol_table)
+        self.store_symbol(address, register[0], register[1], symbol.symbol_type)
         return register
 
     def solve_llvm_node(self, node, symbol_table):
@@ -291,7 +291,7 @@ define void @print_char(i8 %a){
             new_sym
         )
         self.file.write(string)
-        self.store_symbol('%a' + str(symbol.current_register), '%r' + str(reg), symbol_type)
+        self.store_symbol('%a' + str(symbol.current_register), '%r' + str(reg), symbol_type, symbol_type)
         return reg
 
     def call_method(self, node, symbol_table):
