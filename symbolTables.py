@@ -2,11 +2,12 @@ from CustomExceptions import UndeclaredVariable, UninitializedVariable, Duplicat
 
 
 class MethodType:
-    def __init__(self, symbol_type, arguments, const, name, current_register):
+    def __init__(self, symbol_type, arguments, const, name, internal_name, current_register):
         self.symbol_type = symbol_type
         self.arguments = arguments
         self.const = const
         self.name = name
+        self.internal_name = internal_name
         self.current_register = current_register
 
 
@@ -29,17 +30,12 @@ class SymbolTable:
 
         self.method_register = 3
 
-
         outer_method_scope = dict()
-        outer_method_scope['printf_int'] = MethodType('void', ['int'], False,  'printf', 0)
-        outer_method_scope['printf_char'] = MethodType('void', ['char'], False,  'printf', 1)
-        outer_method_scope['printf_float'] = MethodType('void', ['float'], False,  'printf', 2)
+        outer_method_scope['printf_int'] = MethodType('void', ['int'], False, 'printf', 'print_int', 0)
+        outer_method_scope['printf_char'] = MethodType('void', ['char'], False, 'printf', 'print_char', 1)
+        outer_method_scope['printf_float'] = MethodType('void', ['float'], False, 'printf', 'print_float', 2)
         self.method_stack = [outer_method_scope]
         self.method_list = [outer_method_scope]
-
-
-
-
 
     def open_scope(self):
         newdict = dict()
@@ -68,10 +64,11 @@ class SymbolTable:
         raise UndeclaredVariable("[Error] Line {}, Position {}: variable {} is undeclared"
                                  .format(error.line, error.column, symbol))
 
-    def generate_key(self,method,  args):
+    def generate_key(self, method, arg_types):
         key = method
-        for arg in args:
-            key += '_' +arg
+        for arg_type in arg_types:
+            key += '_' + arg_type
+        return key
 
     def add_method(self, method, method_type, error,  args):
         key = self.generate_key(method, args)
@@ -81,9 +78,9 @@ class SymbolTable:
         self.table_stack[0][key] = MethodType(method_type, args, False, method, self.method_register)
         self.method_register += 1
 
-    def get_method(self, method, args, error):
-        key = self.generate_key(method, args)
-        for scope in self.table_stack:
+    def get_method(self, method, arg_types, error):
+        key = self.generate_key(method, arg_types)
+        for scope in self.method_stack:
             if key in scope:
                 return scope[key]
 

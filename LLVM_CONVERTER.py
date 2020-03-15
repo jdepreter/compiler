@@ -48,8 +48,41 @@ class LLVM_Converter:
                                   '<=': 'fcmp ole'
                               }
                           }
+        self.convert = lambda x: self.format_dict[x]
 
     def to_llvm(self):
+        self.file.write("""
+declare i32 @printf(i8*, ...)
+@format = private constant [4 x i8] c"%d\\0A\\00"
+@format_float = private constant [4 x i8] c"%f\\0A\\00"
+@format_char = private constant [4 x i8] c"%c\\0A\\00"
+
+define void @print_int(i32 %a){
+  %p = call i32 (i8*, ...)
+       @printf(i8* getelementptr inbounds ([4 x i8],
+                                           [4 x i8]* @format,
+                                           i32 0, i32 0),
+               i32 %a)
+  ret void
+}
+
+define void @print_float(float %a){
+  %p = call i32 (i8*, ...)
+       @printf(i8* getelementptr inbounds ([4 x i8],
+                                           [4 x i8]* @format_float,
+                                           i32 0, i32 0),
+               float %a)
+  ret void
+}
+
+define void @print_char(i8 %a){
+  %p = call i32 (i8*, ...)
+       @printf(i8* getelementptr inbounds ([4 x i8],
+                                           [4 x i8]* @format_char,
+                                           i32 0, i32 0),
+               i8 %a)
+  ret void
+}\n""")
         # self.stack.insert(0, self.ast.startnode)
         self.file.write("define i32 @main() {\n"
                         "start:\n")
@@ -112,7 +145,7 @@ class LLVM_Converter:
             # self.store_symbol(address, register, symbol.symbol_type)
 
         elif node.node_type == 'method_call':
-            self.call_method(node)
+            self.call_method(node, symbol_table)
 
         else:
 
@@ -227,16 +260,25 @@ class LLVM_Converter:
         self.store_symbol('%a' + str(symbol.current_register), '%r' + str(reg), symbol_type)
         return reg
 
-    def call_method(self, node):
+    def call_method(self, node, symbol_table):
         method_name = node.children[0].label
-        # TODO args
-        args = [node.children[1].label]
-        method = node.symbol_table.get_method(method_name, args, None)
+        args = [node.children[1]]
+        arg_types = []
+        arg_reg = []
+        for arg in args:
+            reg, symbol_type = self.solve_math(arg, symbol_table)
+            arg_reg.append(reg)
+            arg_types.append(symbol_type)
 
-        string = "call {} ({}) @{}({})".format(
+        method = node.symbol_table.get_method(method_name, arg_types, None)
+        m = list(map(self.convert, method.arguments))
+        for i in range(len(args)):
+            args[i] = m[i] + ' ' + arg_reg[i]
+
+        string = "call {} ({}) @{}({})\n".format(
             method.symbol_type,
-            "",
-            "",
-            ""
+            ','.join(m),
+            method.internal_name,
+            ','.join(args)
         )
-        print(string)
+        self.file.write(string)

@@ -1,6 +1,7 @@
 {
-int c,r=3+-4,p;
+int c,r=3+4,p;
 int y ;
 int z = y = 7;
 y;
+printf(r);
 }
