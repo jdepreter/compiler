@@ -163,18 +163,22 @@ define void @print_char(i8 %a){
 
                     self.solve_llvm_node(child, symbol_table)
 
-    def store_symbol(self, address, value, address_symbol_type, value_symbol_type):
-        value_to_store = value
+    def cast_value(self, register, current_type, new_type):
+        if current_type == new_type:
+            return register
+        reg = self.register
+        self.register += 1
+        string = "%r{} = {} {} {} to {}\n".format(
+            str(reg), self.cast_dict[current_type][new_type], self.format_dict[current_type],
+            register, self.format_dict[new_type]
+        )
+        self.file.write(string)
+        return '%r' + str(reg)
 
-        if address_symbol_type != value_symbol_type:
-            reg = self.register
-            self.register += 1
-            string = "%r{} = {} {} {} to {}\n".format(
-                str(reg), self.cast_dict[value_symbol_type][address_symbol_type], self.format_dict[value_symbol_type],
-                value, self.format_dict[address_symbol_type]
-            )
-            self.file.write(string)
-            value_to_store ='%r'+str(reg)
+    def store_symbol(self, address, value, address_symbol_type, value_symbol_type):
+        value_to_store = self.cast_value(value, value_symbol_type, address_symbol_type)
+
+
 
 
         string = 'store ' + self.format_dict[address_symbol_type] + ' ' + value_to_store + ', ' + self.format_dict[address_symbol_type] + '* ' + address + '\n'
@@ -197,10 +201,12 @@ define void @print_char(i8 %a){
             child1 = self.solve_math(node.children[0], symbol_table)
             child2 = self.solve_math(node.children[1], symbol_table)
             symbol_type = get_return_type(child1[1], child2[1])
+            child_1 = self.cast_value(child1[0], child1[1], symbol_type)
+            child_2 = self.cast_value(child2[0], child2[1], symbol_type)
             string = '%r{} = {} {} {}, {}\n'.format(
                 str(reg), self.optype[symbol_type][node.label], self.format_dict[symbol_type],
-                child1[0],
-                child2[0]
+                child_1,
+                child_2
             )
 
             self.file.write(string)
@@ -211,8 +217,10 @@ define void @print_char(i8 %a){
             self.register += 1
             child1 = self.solve_math(node.children[0], symbol_table)
             child2 = self.solve_math(node.children[1], symbol_table)
+            child_1 = self.cast_value(child1[0], child1[1], 'int')
+            child_2 = self.cast_value(child2[0], child2[1], 'int')
             string = "%r{} = and i32 {}, {}\n".format(
-                str(reg), child1[0], child2[0]
+                str(reg), child_1, child_2
             )
             self.file.write(string)
             return '%r' + str(reg), "int"
@@ -221,8 +229,10 @@ define void @print_char(i8 %a){
             self.register += 1
             child1 = self.solve_math(node.children[0], symbol_table)
             child2 = self.solve_math(node.children[1], symbol_table)
+            child_1 = self.cast_value(child1[0], child1[1], 'int')
+            child_2 = self.cast_value(child2[0], child2[1], 'int')
             string = "%r{} = or i32 {}, {}\n".format(
-                str(reg), child1[0], child2[0]
+                str(reg), child_1, child_2
             )
             self.file.write(string)
             return '%r' + str(reg), "int"
@@ -234,10 +244,12 @@ define void @print_char(i8 %a){
             child1 = self.solve_math(node.children[0], symbol_table)
             child2 = self.solve_math(node.children[1], symbol_table)
             symbol_type = get_return_type(child1[1], child2[1])
+            child_1 = self.cast_value(child1[0], child1[1], symbol_type)
+            child_2 = self.cast_value(child2[0], child2[1], symbol_type)
             string = '%r{} = {} {} {}, {} \n'.format(
                 str(reg), self.bool_dict[symbol_type][node.label], self.format_dict[symbol_type],
-                child1[0],
-                child2[0]
+                child_1,
+                child_2
             )
             self.file.write(string)
             return '%r' + str(reg), symbol_type
