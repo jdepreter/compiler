@@ -10,6 +10,7 @@ class Node:
         self.ctx = ctx
         self.symbol_table = None
         self.node_type = node_type
+        self.symbol_type = None
 
     def __repr__(self):
         return "Node: " + str(self.label)

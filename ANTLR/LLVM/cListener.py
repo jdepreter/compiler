@@ -269,5 +269,23 @@ class cListener(ParseTreeListener):
         pass
 
 
+    # Enter a parse tree produced by cParser#unary_min.
+    def enterUnary_min(self, ctx:cParser.Unary_minContext):
+        pass
+
+    # Exit a parse tree produced by cParser#unary_min.
+    def exitUnary_min(self, ctx:cParser.Unary_minContext):
+        pass
+
+
+    # Enter a parse tree produced by cParser#unary_plus.
+    def enterUnary_plus(self, ctx:cParser.Unary_plusContext):
+        pass
+
+    # Exit a parse tree produced by cParser#unary_plus.
+    def exitUnary_plus(self, ctx:cParser.Unary_plusContext):
+        pass
+
+
 
 del cParser

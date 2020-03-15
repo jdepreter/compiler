@@ -154,5 +154,15 @@ class cVisitor(ParseTreeVisitor):
         return self.visitChildren(ctx)
 
 
+    # Visit a parse tree produced by cParser#unary_min.
+    def visitUnary_min(self, ctx:cParser.Unary_minContext):
+        return self.visitChildren(ctx)
+
+
+    # Visit a parse tree produced by cParser#unary_plus.
+    def visitUnary_plus(self, ctx:cParser.Unary_plusContext):
+        return self.visitChildren(ctx)
+
+
 
 del cParser

@@ -50,30 +50,39 @@ class CASTGenerator(cListener):
 
     def enterLvalue(self, ctx:cParser.LvalueContext):
         string = "lvalue"
+        symbol_type = 'Unknown'
         if ctx.IDENTIFIER():
             string = str(ctx.IDENTIFIER())
+
         node = self.create_node(string, "lvalue", self.currentNode, ctx)
         self.currentNode.children.append(node)
         self.currentNode = node
         self.currentNode.symbol_table = self.symbol_table.get_current_scope()
+
 
     def exitLvalue(self, ctx:cParser.LvalueContext):
         self.currentNode = self.currentNode.parent
 
     def enterRvalue(self, ctx:cParser.RvalueContext):
         string = "nothing"
+        symbol_type = ""
         if ctx.INT():
             string = str(ctx.INT())
+            symbol_type = "int"
         elif ctx.FLOAT():
             string = str(ctx.FLOAT())
+            symbol_type = "float"
         elif ctx.IDENTIFIER():
             string = str(ctx.IDENTIFIER())
+
         elif ctx.CHAR():
             string = str(ord(str(ctx.CHAR())[1]))
+            symbol_type = "char"
         node = self.create_node(string, "rvalue", self.currentNode, ctx)
         self.currentNode.children.append(node)
         self.currentNode = node
         self.currentNode.symbol_table = self.symbol_table.get_current_scope()
+        self.currentNode.symbol_type = symbol_type
 
     def exitRvalue(self, ctx:cParser.RvalueContext):
         self.currentNode = self.currentNode.parent
@@ -115,28 +124,36 @@ class CASTGenerator(cListener):
         string = "pointer"
         if ctx.CHAR_TYPE():
             string = str(ctx.CHAR_TYPE())
+            symbol_type = "char"
         if ctx.FLOAT_TYPE():
             string = str(ctx.FLOAT_TYPE())
+            symbol_type = "float"
         if ctx.INT_TYPE():
             string = str(ctx.INT_TYPE())
+            symbol_type = "int"
         node = self.create_node(string, "pointer_type", self.currentNode, ctx)
         self.currentNode.children.append(node)
         self.currentNode = node
         self.currentNode.symbol_table = self.symbol_table.get_current_scope()
+        self.currentNode.symbol_type = symbol_type
 
     def enterVar_type(self, ctx:cParser.Var_typeContext):
         string = "pointer"
         if ctx.CHAR_TYPE():
             string = str(ctx.CHAR_TYPE())
+            symbol_type = "char"
         if ctx.FLOAT_TYPE():
             string = str(ctx.FLOAT_TYPE())
+            symbol_type = "float"
         if ctx.INT_TYPE():
             string = str(ctx.INT_TYPE())
+            symbol_type = "int"
 
         node = self.create_node(string, "var_type", self.currentNode, ctx)
         self.currentNode.children.insert(0, node)
         self.currentNode = node
         self.currentNode.symbol_table = self.symbol_table.get_current_scope()
+        self.currentNode.symbol_type = symbol_type
 
     def exitAssignment2(self, ctx:cParser.AssignmentContext):
         self.currentNode = self.currentNode.parent
@@ -328,9 +345,12 @@ class CASTGenerator(cListener):
 
     def enterVariable_identifier(self, ctx: cParser.Variable_identifierContext):
         node = self.create_node(str(ctx.IDENTIFIER()), "var", self.currentNode, ctx)
+
         self.currentNode.children.append(node)
         self.currentNode = node
         self.currentNode.symbol_table = self.symbol_table.get_current_scope()
+
+
 
     def exitVariable_identifier(self, ctx:cParser.Variable_identifierContext):
         self.currentNode = self.currentNode.parent
@@ -381,6 +401,7 @@ class CASTGenerator(cListener):
         self.currentNode.symbol_table = self.symbol_table.get_current_scope()
         node1.symbol_table = self.symbol_table.get_current_scope()
         node2.symbol_table = self.symbol_table.get_current_scope()
+        node1.symbol_type = node1.symbol_table.get_symbol(str(ctx.IDENTIFIER()), None).symbol_type
 
 
     def exitIncrement_op_first(self, ctx:cParser.Increment_op_firstContext):
@@ -401,8 +422,33 @@ class CASTGenerator(cListener):
         self.currentNode.symbol_table = self.symbol_table.get_current_scope()
         node1.symbol_table = self.symbol_table.get_current_scope()
         node2.symbol_table = self.symbol_table.get_current_scope()
+        node1.symbol_type = node1.symbol_table.get_symbol(str(ctx.IDENTIFIER()), None).symbol_type
 
     def exitIncrement_var_first(self, ctx:cParser.Increment_var_firstContext):
         self.currentNode = self.currentNode.parent
+
+    def enterUnary_min(self, ctx:cParser.Unary_minContext):
+        node = self.create_node("unary min", "unary min", self.currentNode, ctx)
+        self.currentNode.children.append(node)
+        self.currentNode = node
+        self.currentNode.symbol_table = self.symbol_table.get_current_scope()
+        node_min = self.create_node('-', 'min', self.currentNode, ctx)
+        self.currentNode.children.append(node_min)
+
+    def exitUnary_min(self, ctx:cParser.Unary_minContext):
+        self.currentNode = self.currentNode.parent
+
+    def enterUnary_plus(self, ctx:cParser.Unary_plusContext):
+        node = self.create_node("unary plus", "unary plus", self.currentNode, ctx)
+        self.currentNode.children.append(node)
+        self.currentNode = node
+        self.currentNode.symbol_table = self.symbol_table.get_current_scope()
+        node_min = self.create_node('+', 'plus', self.currentNode, ctx)
+        self.currentNode.children.append(node_min)
+
+    def exitUnary_plus(self, ctx:cParser.Unary_plusContext):
+        self.currentNode = self.currentNode.parent
+
+
 
 
