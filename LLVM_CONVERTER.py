@@ -189,14 +189,14 @@ class LLVM_Converter:
                 child2[0]
             )
             self.file.write(string)
-            return '%r' + str(reg)
+            return '%r' + str(reg), symbol_type
 
         elif node.node_type == 'Increment_var':
 
             symbol = symbol_table.get_symbol(node.children[0].label, None)
             new_sym = self.load_symbol(symbol)
 
-            var = self.increment_var(new_sym, node, symbol, symbol.symbol_type)
+            self.increment_var(new_sym, node, symbol, symbol.symbol_type)
 
             return new_sym, symbol.symbol_type
 
@@ -207,14 +207,30 @@ class LLVM_Converter:
             reg = self.increment_var(new_sym, node, symbol, symbol.symbol_type)
 
             return '%r' + str(reg), symbol.symbol_type
+
+        elif node.node_type == 'unary plus':
+            return self.solve_math(node.children[1], symbol_table)
+
+        elif node.node_type == 'unary min':
+            value = self.solve_math(node.children[1], symbol_table)
+            reg = self.register
+            self.register += 1
+            string = "%r{} = fneg {} {}".format(
+                reg, self.format_dict[value[1]], value[0]
+            )
+            self.file.write(string)
+            return '%r' + str(reg), value[1]
+
+
+
         elif node.node_type == 'rvalue':
-            return str(node.label), str(node.symbol_type)#fix
+            return str(node.label), str(node.symbol_type)
 
         elif node.node_type == 'lvalue':
             sym = symbol_table.get_symbol(node.label, None)
             return self.load_symbol(sym), sym.symbol_type
 
-        return None,None
+        return None, None
 
     def increment_var(self, new_sym, node, symbol, symbol_type):
         reg = self.register
