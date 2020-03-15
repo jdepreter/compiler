@@ -7,7 +7,7 @@ line: ((definition SEMICOLON)| (assignment SEMICOLON) | (bool1 SEMICOLON)| (meth
 
 method_call: IDENTIFIER LBRACKET (args)? RBRACKET;
 
-args :  value (',' value)*;
+args :  bool1 (',' bool1)*;
 
 scope: LCURLYBRACE (line)* RCURLYBRACE;
 
@@ -51,9 +51,9 @@ bool1
 
 
 bool2
-    :not_value? LBRACKET bool1 RBRACKET
-    |plus (EQ|LT|LE|GT|GE|NE) plus
-    |plus
+    : not_value? LBRACKET bool1 RBRACKET
+    | plus (EQ|LT|LE|GT|GE|NE) plus
+    | plus
     ;
 
 boolop
@@ -63,7 +63,7 @@ boolop
 not_value:
 NOT;
 
-plus : (vm|) (operator2 (vm|neg_sol))*
+plus : vm (operator2 (vm|neg_sol))*
      ;
 
 vm   :
@@ -80,14 +80,15 @@ neg_sol
 
 vm_sol
     : value
+    | unary_min
+    | unary_plus
     | LBRACKET bool1 RBRACKET
     ;
 
 value
     : lvalue
     | rvalue
-    |increment
-    |LBRACKET value RBRACKET
+    | increment
     ;
 rvalue
     :INT
@@ -109,22 +110,24 @@ address
 operator: MAAL | DEEL;
 operator2: PLUS | MIN ;
 
-
-INT
-    : '0'
-    | MIN?[1-9][0-9]*
-    ;
-
+unary_min : MIN value
+          | MIN unary_plus
+          | MIN LBRACKET bool1 RBRACKET
+          ;
+unary_plus : PLUS value
+           | PLUS unary_min
+           | PLUS LBRACKET bool1 RBRACKET
+           ;
 
 FLOAT:
     [1-9][0-9]*('.'[0-9]+)
     ;
 
 AMPERSAND: '&';
-PLUS : '+';
 PLUSPLUS : '++';
-MIN  : '-';
+PLUS : '+';
 MINMIN  : '--';
+MIN  : '-';
 MAAL : '*';
 DEEL : '/';
 MOD  : '%';
@@ -142,6 +145,10 @@ GE:'>=';
 LE:'<=';
 LCURLYBRACE:'{';
 RCURLYBRACE: '}';
+INT
+    : '0'
+    | [1-9][0-9]*
+    ;
 
 CHAR: '\''[ -~]'\'';
 
