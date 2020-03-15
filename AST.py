@@ -1,5 +1,5 @@
 from graphviz import Digraph
-
+from helperfuncs import get_return_type
 
 class Node:
     def __init__(self, node_id, node_type, label, parent, ctx):
@@ -48,6 +48,9 @@ class Node:
 
         c0 = None
         c1 = None
+        c0_type =self.children[0].symbol_type
+        c1_type =self.children[1].symbol_type
+        symbol_type = get_return_type(c0_type, c1_type)
         if '.' not in str(self.children[0].label):
             c0 = int(self.children[0].label)
         else:
@@ -57,6 +60,7 @@ class Node:
             c1 = int(self.children[1].label)
         else:
             c1 = float(self.children[1].label)
+        self.symbol_type = symbol_type
 
         if self.node_type == '+':
             self.label = c0 + c1
