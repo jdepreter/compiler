@@ -169,7 +169,7 @@ define void @print_char(i8 %a){
         if address_symbol_type != value_symbol_type:
             reg = self.register
             self.register += 1
-            string = "%r{} = {} {} {} to {}".format(
+            string = "%r{} = {} {} {} to {}\n".format(
                 str(reg), self.cast_dict[value_symbol_type][address_symbol_type], self.format_dict[value_symbol_type],
                 value, self.format_dict[address_symbol_type]
             )
