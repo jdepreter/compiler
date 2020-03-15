@@ -114,7 +114,7 @@ define void @print_char(i8 %a){
                 register = self.assign_node(node.children[1], symbol_table)
             else:
                 register = self.solve_math(node.children[1], symbol_table)
-            self.store_symbol("%a" + str(reg_nr), register[0],register[1], type)
+            self.store_symbol("%a" + str(reg_nr), register[0], type,register[1])
 
         return "%a" + str(reg_nr)
 
@@ -125,8 +125,17 @@ define void @print_char(i8 %a){
             register = self.assign_node(node.children[1], symbol_table)
         else:
             register = self.solve_math(node.children[1], symbol_table)
-        self.store_symbol(address, register[0], register[1], symbol.symbol_type)
+        self.store_symbol(address, register[0], symbol.symbol_type, register[1])
         return register
+
+    def cast_to_fp(self, value):
+        reg =self.register
+        self.register+=1
+
+        string = "%r{} = fptrunc double {} to float\n".format(str(reg), str(float(value)))
+        self.file.write(string)
+        return '%r'+str(reg)
+
 
     def solve_llvm_node(self, node, symbol_table):
         # TODO x++ & ++x staan nog ni ok in den boom && add char / double && maybe arrays && typeswitching + warnings

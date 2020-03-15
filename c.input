@@ -1,6 +1,6 @@
 {
 int x = 7;
-int y = 5;
+float y = 5.0;
 float z = x + y;
 int a = x + y;
 }
