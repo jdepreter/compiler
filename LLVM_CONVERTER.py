@@ -1,3 +1,5 @@
+from helperfuncs import get_return_type
+
 class LLVM_Converter:
     def __init__(self, ast, file):
         self.ast = ast
@@ -73,7 +75,7 @@ class LLVM_Converter:
             if node.children[1].node_type == 'assignment':
                 register = self.assign_node(node.children[1], symbol_table)
             else:
-                register = self.solve_math(node.children[1], symbol_table, type)
+                register = self.solve_math(node.children[1], symbol_table)[0]
             self.store_symbol("%a" + str(reg_nr), register, type)
 
         return "%a" + str(reg_nr)
@@ -84,7 +86,7 @@ class LLVM_Converter:
         if node.children[1].node_type == 'assignment':
             register = self.assign_node(node.children[1], symbol_table)
         else:
-            register = self.solve_math(node.children[1], symbol_table, symbol.symbol_type)
+            register = self.solve_math(node.children[1], symbol_table)[0]
         self.store_symbol(address, register, symbol.symbol_type)
         return register
 
@@ -114,7 +116,7 @@ class LLVM_Converter:
 
         else:
 
-            sol = self.solve_math(node, symbol_table, 'int')
+            sol = self.solve_math(node, symbol_table)[0]
 
             if sol is None:
                 for child in node.children:
@@ -136,48 +138,55 @@ class LLVM_Converter:
         self.file.write(string)
         return '%r' + str(reg)
 
-    def solve_math(self, node, symbol_table, symbol_type):
+    def solve_math(self, node, symbol_table):
         string = ''
         if node.label in ['+', '-', '*', '/', '%']:
             reg = self.register
             self.register += 1
+            child1 = self.solve_math(node.children[0], symbol_table)
+            child2 = self.solve_math(node.children[1], symbol_table)
+            symbol_type = get_return_type(child1[1], child2[1])
             string = '%r{} = {} {} {}, {}\n'.format(
                 str(reg), self.optype[symbol_type][node.label], self.format_dict[symbol_type],
-                self.solve_math(node.children[0], symbol_table, symbol_type),
-                self.solve_math(node.children[1], symbol_table, symbol_type)
+                child1[0],
+                child2[0]
             )
 
             self.file.write(string)
-            return '%r' + str(reg)
+            return '%r' + str(reg), symbol_type
 
         elif node.label == '&&':
             reg = self.register
             self.register += 1
-            string = '%r' + str(reg) + ' = and i32 ' + \
-                     self.solve_math(node.children[0], symbol_table, symbol_type) + ', ' + self.solve_math(node.children[1],
-                                                                                                    symbol_table,
-                                                                                                    symbol_type) + '\n'
+            child1 = self.solve_math(node.children[0], symbol_table)
+            child2 = self.solve_math(node.children[1], symbol_table)
+            string = "%r{} = and i32 {}, {}\n".format(
+                str(reg), child1[0], child2[0]
+            )
             self.file.write(string)
-            return '%r' + str(reg)
+            return '%r' + str(reg), "int"
         elif node.label == '||':
             reg = self.register
             self.register += 1
-            string = '%r' + str(reg) + ' = or i32 ' + \
-                     self.solve_math(node.children[0], symbol_table, symbol_type) + ', ' + self.solve_math(node.children[1],
-                                                                                                    symbol_table,
-                                                                                                    symbol_type) + '\n'
-
+            child1 = self.solve_math(node.children[0], symbol_table)
+            child2 = self.solve_math(node.children[1], symbol_table)
+            string = "%r{} = or i32 {}, {}\n".format(
+                str(reg), child1[0], child2[0]
+            )
             self.file.write(string)
-            return '%r' + str(reg)
+            return '%r' + str(reg), "int"
 
         elif node.label in ['==', '!=', '<', '>', '<=', '>=']:
 
             reg = self.register
             self.register += 1
+            child1 = self.solve_math(node.children[0], symbol_table)
+            child2 = self.solve_math(node.children[1], symbol_table)
+            symbol_type = get_return_type(child1[1], child2[1])
             string = '%r{} = {} {} {}, {} \n'.format(
                 str(reg), self.bool_dict[symbol_type][node.label], self.format_dict[symbol_type],
-                self.solve_math(node.children[0], symbol_table, symbol_type),
-                self.solve_math(node.children[1], symbol_table, symbol_type)
+                child1[0],
+                child2[0]
             )
             self.file.write(string)
             return '%r' + str(reg)
@@ -187,25 +196,25 @@ class LLVM_Converter:
             symbol = symbol_table.get_symbol(node.children[0].label, None)
             new_sym = self.load_symbol(symbol)
 
-            self.increment_var(new_sym, node, symbol, symbol_type)
+            var = self.increment_var(new_sym, node, symbol, symbol.symbol_type)
 
-            return new_sym
+            return new_sym, symbol.symbol_type
 
         elif node.node_type == 'Increment_op':
             symbol = symbol_table.get_symbol(node.children[0].label, None)
             new_sym = self.load_symbol(symbol)
 
-            reg = self.increment_var(new_sym, node, symbol, symbol_type)
+            reg = self.increment_var(new_sym, node, symbol, symbol.symbol_type)
 
-            return '%r' + str(reg)
+            return '%r' + str(reg), symbol.symbol_type
         elif node.node_type == 'rvalue':
-            return str(node.label)
+            return str(node.label), str(node.symbol_type)#fix
 
         elif node.node_type == 'lvalue':
             sym = symbol_table.get_symbol(node.label, None)
-            return self.load_symbol(sym)
+            return self.load_symbol(sym), sym.symbol_type
 
-        return None
+        return None,None
 
     def increment_var(self, new_sym, node, symbol, symbol_type):
         reg = self.register

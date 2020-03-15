@@ -50,7 +50,6 @@ class CASTGenerator(cListener):
 
     def enterLvalue(self, ctx:cParser.LvalueContext):
         string = "lvalue"
-        symbol_type = 'Unknown'
         if ctx.IDENTIFIER():
             string = str(ctx.IDENTIFIER())
 
@@ -74,7 +73,7 @@ class CASTGenerator(cListener):
             symbol_type = "float"
         elif ctx.IDENTIFIER():
             string = str(ctx.IDENTIFIER())
-
+            symbol_type = "address"
         elif ctx.CHAR():
             string = str(ord(str(ctx.CHAR())[1]))
             symbol_type = "char"
