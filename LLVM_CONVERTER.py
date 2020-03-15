@@ -28,7 +28,12 @@ class LLVM_Converter:
             }
 
         }
+        self.cast_dict = {
+            'int': {'float': 'sitofp'},
+            'float': {'int': 'fptosi'}
 
+
+        }
         self.bool_dict = {'int':
                               {
                                   '==': 'icmp eq',
@@ -158,8 +163,21 @@ define void @print_char(i8 %a){
 
                     self.solve_llvm_node(child, symbol_table)
 
-    def store_symbol(self, address, value, symbol_type):
-        string = 'store ' + self.format_dict[symbol_type] + ' ' + value + ', ' + self.format_dict[symbol_type] + '* ' + address + '\n'
+    def store_symbol(self, address, value, address_symbol_type, value_symbol_type):
+        value_to_store = value
+
+        if address_symbol_type != value_symbol_type:
+            reg = self.register
+            self.register += 1
+            string = "%r{} = {} {} {} to {}".format(
+                str(reg), self.cast_dict[value_symbol_type][address_symbol_type], self.format_dict[value_symbol_type],
+                value, self.format_dict[address_symbol_type]
+            )
+            self.file.write(string)
+            value_to_store ='%r'+str(reg)
+
+
+        string = 'store ' + self.format_dict[address_symbol_type] + ' ' + value_to_store + ', ' + self.format_dict[address_symbol_type] + '* ' + address + '\n'
         self.file.write(string)
 
     def load_symbol(self, symbol):
