@@ -111,6 +111,13 @@ class CASTGenerator(cListener):
         self.currentNode = node
         self.currentNode.symbol_table = self.symbol_table.get_current_scope()
 
+        node = self.create_node(str(ctx.IDENTIFIER()), "var", self.currentNode, ctx)
+
+        self.currentNode.children.append(node)
+        self.currentNode = node
+        self.currentNode.symbol_table = self.symbol_table.get_current_scope()
+        self.currentNode = self.currentNode.parent
+
     def enterDefinition(self, ctx:cParser.DefinitionContext):
         node = self.create_node("definition", "definition", self.currentNode, ctx)
         # identifier = self.create_node(str(ctx.IDENTIFIER()), node, ctx)
@@ -130,6 +137,7 @@ class CASTGenerator(cListener):
         if ctx.INT_TYPE():
             string = str(ctx.INT_TYPE())
             symbol_type = "int*"
+        string += '*'
         node = self.create_node(string, "pointer_type", self.currentNode, ctx)
         self.currentNode.children.append(node)
         self.currentNode = node
@@ -138,6 +146,7 @@ class CASTGenerator(cListener):
 
     def enterVar_type(self, ctx:cParser.Var_typeContext):
         string = "pointer"
+        symbol_type = "pointer"
         if ctx.CHAR_TYPE():
             string = str(ctx.CHAR_TYPE())
             symbol_type = "char"
@@ -192,6 +201,14 @@ class CASTGenerator(cListener):
         self.currentNode = self.currentNode.parent
 
     def exitVar_type(self, ctx:cParser.Var_typeContext):
+        # if self.currentNode.label == "pointer":
+        #     self.currentNode.children[0].parent = self.currentNode.parent
+        #     index = self.currentNode.parent.children.index(self.currentNode)
+        #     self.currentNode.parent.children.remove(self.currentNode)
+        #     self.currentNode.parent.children.insert(index, self.currentNode.children[0])
+        #     self.currentNode = self.currentNode.parent
+        #     del self.currentNode
+        # else:
         self.currentNode = self.currentNode.parent
 
     # Expressions ----
