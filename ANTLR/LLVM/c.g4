@@ -43,7 +43,7 @@ INT_TYPE: 'int';
 FLOAT_TYPE: 'float';
 CHAR_TYPE: 'char';
 IDENTIFIER: [a-zA-Z_][0-9a-zA-Z_]*;
-pointer_type: (INT_TYPE | FLOAT_TYPE | CHAR_TYPE)MAAL;
+pointer_type: (INT_TYPE | FLOAT_TYPE | CHAR_TYPE)MAAL+;
 
 bool1
     :bool2 (boolop bool2)*

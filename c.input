@@ -1,5 +1,5 @@
 {
 float x = 12.99;
-float* y = &x;
+float*** y = &x;
 printf(x);
 }
