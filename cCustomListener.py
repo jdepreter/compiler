@@ -73,7 +73,8 @@ class CASTGenerator(cListener):
             symbol_type = "float"
         elif ctx.IDENTIFIER():
             string = str(ctx.IDENTIFIER())
-            symbol_type = "address"
+            # symbol_type = "address"
+            symbol_type = "&" + self.symbol_table.get_symbol(string, None).symbol_type
         elif ctx.CHAR():
             string = str(ord(str(ctx.CHAR())[1]))
             symbol_type = "char"

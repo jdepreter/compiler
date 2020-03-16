@@ -1,4 +1,4 @@
-from helperfuncs import get_return_type, double_to_hex
+from helperfuncs import get_return_type, double_to_hex, get_type_and_stars
 
 
 class LLVM_Converter:
@@ -54,7 +54,7 @@ class LLVM_Converter:
                                   '<=': 'fcmp ole'
                               }
                           }
-        self.convert = lambda x: self.format_dict[x]
+        self.convert = lambda x: self.format_dict[get_type_and_stars(x)[0]]
 
     def to_llvm(self):
         self.file.write("""
@@ -105,9 +105,10 @@ define void @print_char(i8 %a){
         if node.node_type == 'assignment2':
             variable = node.children[0].label
         reg_nr = symbol_table.get_symbol(variable, None).current_register
-        string = "%a{} = alloca {} \n".format(
+        sym_type, stars= get_type_and_stars(type)
+        string = "%a{} = alloca {}{} \n".format(
             reg_nr,
-            self.format_dict[type]
+            self.format_dict[sym_type], stars
         )
         self.file.write(string)
         if node.node_type == 'assignment2':
@@ -178,19 +179,22 @@ define void @print_char(i8 %a){
             return register
         reg = self.register
         self.register += 1
-        string = "%r{} = {} {} {} to {}\n".format(
-            str(reg), self.cast_dict[current_type][new_type], self.format_dict[current_type],
-            register, self.format_dict[new_type]
+        current_sym_type, current_stars = get_type_and_stars(current_type)
+        new_sym_type, new_stars = get_type_and_stars(new_type)
+        string = "%r{} = {} {}{} {} to {}{}\n".format(
+            str(reg), self.cast_dict[current_sym_type][new_sym_type], self.format_dict[current_sym_type],current_stars,
+            register, self.format_dict[new_sym_type], new_stars
         )
         self.file.write(string)
         return '%r' + str(reg)
 
     def store_symbol(self, address, value, address_symbol_type, value_symbol_type):
         value_to_store = self.cast_value(value, value_symbol_type, address_symbol_type)
+        address_sym_type, address_stars = get_type_and_stars(address_symbol_type)
         string = "store {} {}, {}* {}\n".format(
-            self.format_dict[address_symbol_type],
+            self.format_dict[address_sym_type],
             value_to_store,
-            self.format_dict[address_symbol_type],
+            self.format_dict[address_sym_type],
             address
         )
         self.file.write(string)
@@ -198,8 +202,9 @@ define void @print_char(i8 %a){
     def load_symbol(self, symbol):
         reg = self.register
         self.register += 1
-        string = '%r{} = load {} ,{}* %a{} \n'.format(
-            str(reg), self.format_dict[symbol.symbol_type],self.format_dict[symbol.symbol_type], symbol.current_register
+        sym_type, stars = get_type_and_stars(symbol.symbol_type)
+        string = '%r{} = load {}{} ,{}{}* %a{} \n'.format(
+            str(reg), self.format_dict[sym_type],stars, self.format_dict[sym_type], stars, symbol.current_register
         )
         self.file.write(string)
         return '%r' + str(reg)
@@ -214,8 +219,9 @@ define void @print_char(i8 %a){
             symbol_type = get_return_type(child1[1], child2[1])
             child_1 = self.cast_value(child1[0], child1[1], symbol_type)
             child_2 = self.cast_value(child2[0], child2[1], symbol_type)
-            string = '%r{} = {} {} {}, {}\n'.format(
-                str(reg), self.optype[symbol_type][node.label], self.format_dict[symbol_type],
+            sym_type, stars = get_type_and_stars(symbol_type)
+            string = '%r{} = {} {}{} {}, {}\n'.format(
+                str(reg), self.optype[symbol_type][node.label], self.format_dict[sym_type], stars,
                 child_1,
                 child_2
             )
@@ -257,8 +263,9 @@ define void @print_char(i8 %a){
             symbol_type = get_return_type(child1[1], child2[1])
             child_1 = self.cast_value(child1[0], child1[1], symbol_type)
             child_2 = self.cast_value(child2[0], child2[1], symbol_type)
-            string = '%r{} = {} {} {}, {} \n'.format(
-                str(reg), self.bool_dict[symbol_type][node.label], self.format_dict[symbol_type],
+            sym_type, stars = get_type_and_stars(symbol_type)
+            string = '%r{} = {} {}{} {}, {} \n'.format(
+                str(reg), self.bool_dict[sym_type][node.label], self.format_dict[sym_type], stars,
                 child_1,
                 child_2
             )
@@ -311,8 +318,9 @@ define void @print_char(i8 %a){
     def increment_var(self, new_sym, node, symbol, symbol_type):
         reg = self.register
         self.register += 1
-        string = '%r{} = {} {} {}, 1\n'.format(
-            str(reg), self.optype[symbol_type][node.children[1].label], self.format_dict[symbol_type],
+        sym_type, stars = get_type_and_stars(symbol_type)
+        string = '%r{} = {} {}{} {}, 1\n'.format(
+            str(reg), self.optype[symbol_type][node.children[1].label], self.format_dict[sym_type], stars,
             new_sym
         )
         self.file.write(string)

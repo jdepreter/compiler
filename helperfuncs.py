@@ -17,3 +17,12 @@ def double_to_hex(f):
     hex_string = hex_string[:11]
     hex_string += "0000000"
     return hex_string
+
+
+def get_type_and_stars(type):
+    stars = type.count('*')
+    if stars == 0:
+        symbol_type = type
+    else:
+        symbol_type = type[:-stars]
+    return symbol_type, type[len(type)-stars:]
