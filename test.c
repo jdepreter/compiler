@@ -2,8 +2,7 @@
 
 int main()
 {
-    int x = 6;
-    float y = 3+x;
+    float x = 12.99;
     printf("%i\n", x);
     x;
 }

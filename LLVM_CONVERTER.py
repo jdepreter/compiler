@@ -1,5 +1,6 @@
 from helperfuncs import get_return_type
 
+
 class LLVM_Converter:
     def __init__(self, ast, file):
         self.ast = ast
@@ -135,7 +136,6 @@ define void @print_char(i8 %a){
         string = "%r{} = fptrunc double {} to float\n".format(str(reg), str(float(value)))
         self.file.write(string)
         return '%r'+str(reg)
-
 
     def solve_llvm_node(self, node, symbol_table):
         # TODO x++ & ++x staan nog ni ok in den boom && add char / double && maybe arrays && typeswitching + warnings
@@ -292,8 +292,6 @@ define void @print_char(i8 %a){
             )
             self.file.write(string)
             return '%r' + str(reg), value[1]
-
-
 
         elif node.node_type == 'rvalue':
             return str(node.label), str(node.symbol_type)

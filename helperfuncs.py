@@ -1,3 +1,5 @@
+import struct
+
 
 def get_return_type(type1, type2):
     if type1 == "float" or type2 == "float":
@@ -8,3 +10,10 @@ def get_return_type(type1, type2):
         return 'char'
     else:
         raise Exception('false types')
+
+
+def double_to_hex(f):
+    hex_string = hex(struct.unpack('<Q', struct.pack('<d', f))[0])
+    hex_string = hex_string[:11]
+    hex_string += "0000000"
+    return hex_string

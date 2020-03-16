@@ -48,13 +48,16 @@ def to_llvm(filename, outputname ):
         os.system("clang llvm-{}.ll -o main && ./main".format(outputname))
 
 
-def float_to_hex(f):
-    return hex(struct.unpack('<I', struct.pack('<f', f))[0])
+def double_to_hex(f):
+    hex_string = hex(struct.unpack('<Q', struct.pack('<d', f))[0])
+    hex_string = hex_string[:11]
+    hex_string += "0000000"
+    return hex_string
 
 
 def main(argv):
-    print(float_to_hex(12.99))
-    to_llvm(argv[1], argv[2])
+    print(double_to_hex(12.99))
+    # to_llvm(argv[1], argv[2])
 
 
 if __name__ == '__main__':
