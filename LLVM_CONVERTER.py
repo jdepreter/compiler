@@ -73,11 +73,12 @@ define void @print_int(i32 %a){
 }
 
 define void @print_float(float %a){
+  %a_1 = fpext float %a to double
   %p = call i32 (i8*, ...)
        @printf(i8* getelementptr inbounds ([4 x i8],
                                            [4 x i8]* @format_float,
                                            i32 0, i32 0),
-               float %a)
+               double %a_1)
   ret void
 }
 
