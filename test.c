@@ -2,7 +2,7 @@
 
 int main()
 {
-    float x = 12.99;
+    int* x;
     printf("%i\n", x);
     x;
 }

@@ -116,7 +116,7 @@ define void @print_char(i8 %a){
                 register = self.assign_node(node.children[1], symbol_table)
             else:
                 register = self.solve_math(node.children[1], symbol_table)
-            self.store_symbol("%a" + str(reg_nr), register[0], type,register[1])
+            self.store_symbol("%a" + str(reg_nr), register[0], type, register[1])
 
         return "%a" + str(reg_nr)
 
@@ -187,11 +187,12 @@ define void @print_char(i8 %a){
 
     def store_symbol(self, address, value, address_symbol_type, value_symbol_type):
         value_to_store = self.cast_value(value, value_symbol_type, address_symbol_type)
-
-
-
-
-        string = 'store ' + self.format_dict[address_symbol_type] + ' ' + value_to_store + ', ' + self.format_dict[address_symbol_type] + '* ' + address + '\n'
+        string = "store {} {}, {}* {}\n".format(
+            self.format_dict[address_symbol_type],
+            value_to_store,
+            self.format_dict[address_symbol_type],
+            address
+        )
         self.file.write(string)
 
     def load_symbol(self, symbol):

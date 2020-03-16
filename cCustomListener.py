@@ -123,13 +123,13 @@ class CASTGenerator(cListener):
         string = "pointer"
         if ctx.CHAR_TYPE():
             string = str(ctx.CHAR_TYPE())
-            symbol_type = "char"
+            symbol_type = "char*"
         if ctx.FLOAT_TYPE():
             string = str(ctx.FLOAT_TYPE())
-            symbol_type = "float"
+            symbol_type = "float*"
         if ctx.INT_TYPE():
             string = str(ctx.INT_TYPE())
-            symbol_type = "int"
+            symbol_type = "int*"
         node = self.create_node(string, "pointer_type", self.currentNode, ctx)
         self.currentNode.children.append(node)
         self.currentNode = node

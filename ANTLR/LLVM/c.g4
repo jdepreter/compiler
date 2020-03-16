@@ -22,11 +22,11 @@ assignment
     ;
 
 assignment2
-    :lvalue EQUALS assignment
-    |lvalue EQUALS bool1
+    :IDENTIFIER EQUALS assignment
+    |IDENTIFIER EQUALS bool1
     ;
 
-var_type: (INT_TYPE | FLOAT_TYPE | CHAR_TYPE | pointer_type);
+var_type: (pointer_type | INT_TYPE | FLOAT_TYPE | CHAR_TYPE);
 
 increment
     :increment_var_first
@@ -43,7 +43,7 @@ INT_TYPE: 'int';
 FLOAT_TYPE: 'float';
 CHAR_TYPE: 'char';
 IDENTIFIER: [a-zA-Z_][0-9a-zA-Z_]*;
-pointer_type: (INT_TYPE | FLOAT_TYPE | CHAR_TYPE)'*';
+pointer_type: (INT_TYPE | FLOAT_TYPE | CHAR_TYPE)MAAL;
 
 bool1
     :bool2 (boolop bool2)*
