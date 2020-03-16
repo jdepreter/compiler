@@ -1,4 +1,4 @@
-from helperfuncs import get_return_type
+from helperfuncs import get_return_type, double_to_hex
 
 
 class LLVM_Converter:
@@ -294,7 +294,11 @@ define void @print_char(i8 %a){
             return '%r' + str(reg), value[1]
 
         elif node.node_type == 'rvalue':
-            return str(node.label), str(node.symbol_type)
+            value = str(node.label)
+
+            if str(node.symbol_type) == "float":
+                value = double_to_hex(float(node.label))
+            return value, str(node.symbol_type)
 
         elif node.node_type == 'lvalue':
             sym = symbol_table.get_symbol(node.label, None)

@@ -1,3 +1,4 @@
 {
 float x = 12.99;
+printf(x);
 }
