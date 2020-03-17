@@ -75,23 +75,24 @@ class Node:
 
         dic = {True: 1, False: 0}
 
-        if self.node_type == '==':
-            self.label = dic[c0 == c1]
-        elif self.node_type == '!=':
-            self.label = dic[c0 != c1]
-        elif self.node_type == '<':
-            self.label = dic[c0 < c1]
-        elif self.node_type == '<=':
-            self.label = dic[c0 <= c1]
-        elif self.node_type == '>':
-            self.label = dic[c0 > c1]
-        elif self.node_type == '>=':
-            self.label = dic[c0 >= c1]
+        if self.node_type == 'bool2':
+            if self.label == '==':
+                self.label = dic[c0 == c1]
+            elif self.label == '!=':
+                self.label = dic[c0 != c1]
+            elif self.label == '<':
+                self.label = dic[c0 < c1]
+            elif self.label == '<=':
+                self.label = dic[c0 <= c1]
+            elif self.label == '>':
+                self.label = dic[c0 > c1]
+            elif self.label == '>=':
+                self.label = dic[c0 >= c1]
 
-        elif self.node_type == '&&':
+        if self.label == '&&':
             self.label = dic[c0 and c1]
 
-        elif self.node_type == '||':
+        elif self.label == '||':
             self.label = dic[c0 or c1]
 
 
@@ -166,7 +167,7 @@ class ASTVisitor:
                 i = 0
                 while i < len(current_node.children):
                     child = current_node.children[i]
-                    if child.node_type in ["+", "-", "*", "/", "&&", "||"]:
+                    if child.node_type in ["+", "-", "*", "/", "&&", "||", "boolop"]:
                         if i == 0:
                             if child.node_type == "+":
                                 current_node.children.remove(child)
@@ -234,7 +235,7 @@ class ASTVisitor:
             current_node = nodes[0]
             nodes = nodes[1:]
 
-            if current_node.node_type in ["+", "-", "*", "/", "==", "!=", '>', '<', '>=', '<=', '&&', '||']:
+            if current_node.node_type in ["+", "-", "*", "/", "==", "!=", '>', '<', '>=', '<=', '&&', '||', 'boolop', 'bool2']:
                 current_node.only_literal_children()
             else:
                 nodes += current_node.children

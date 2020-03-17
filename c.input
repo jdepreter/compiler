@@ -1,5 +1,5 @@
-{
-float x = 12.99;
-float*** y = &x;
-printf(x);
-}
+int c= 5+(1==1);
+int j =1;
+int p = 1 && j || 1==2;
+int i =  (1==2 && 2!=1);
+printf(c);
