@@ -18,7 +18,7 @@ class LLVM_Converter:
                 '/': 'sdiv',
                 '%': 'srem'
             },
-            'float':{
+            'float': {
                 '+': 'fadd',
                 '++': 'fadd',
                 '-': 'fsub',
@@ -132,8 +132,8 @@ define void @print_char(i8 %a){
         return register
 
     def cast_to_fp(self, value):
-        reg =self.register
-        self.register+=1
+        reg = self.register
+        self.register += 1
 
         string = "%r{} = fptrunc double {} to float\n".format(str(reg), str(float(value)))
         self.file.write(string)
@@ -175,14 +175,15 @@ define void @print_char(i8 %a){
                     self.solve_llvm_node(child, symbol_table)
 
     def cast_value(self, register, current_type, new_type):
-        if current_type == new_type:
+        current_sym_type, current_stars = get_type_and_stars(current_type)
+        new_sym_type, new_stars = get_type_and_stars(new_type)
+        if current_sym_type == new_sym_type:
             return register
         reg = self.register
         self.register += 1
-        current_sym_type, current_stars = get_type_and_stars(current_type)
-        new_sym_type, new_stars = get_type_and_stars(new_type)
+
         string = "%r{} = {} {}{} {} to {}{}\n".format(
-            str(reg), self.cast_dict[current_sym_type][new_sym_type], self.format_dict[current_sym_type],current_stars,
+            str(reg), self.cast_dict[current_sym_type][new_sym_type], self.format_dict[current_sym_type], current_stars,
             register, self.format_dict[new_sym_type], new_stars
         )
         self.file.write(string)
@@ -191,10 +192,12 @@ define void @print_char(i8 %a){
     def store_symbol(self, address, value, address_symbol_type, value_symbol_type):
         value_to_store = self.cast_value(value, value_symbol_type, address_symbol_type)
         address_sym_type, address_stars = get_type_and_stars(address_symbol_type)
-        string = "store {} {}, {}* {}\n".format(
+        string = "store {}{} {}, {}*{} {}\n".format(
             self.format_dict[address_sym_type],
+            address_stars,
             value_to_store,
             self.format_dict[address_sym_type],
+            address_stars,
             address
         )
         self.file.write(string)
@@ -307,6 +310,8 @@ define void @print_char(i8 %a){
 
             if str(node.symbol_type) == "float":
                 value = double_to_hex(float(node.label))
+            if str(node.symbol_type)[0] == '&':
+                value = '%a' + str(symbol_table.get_symbol(value, None).current_register)
             return value, str(node.symbol_type)
 
         elif node.node_type == 'lvalue':

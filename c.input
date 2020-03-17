@@ -1,5 +1,4 @@
-int c= 5+(1==1);
-int j =1;
-int p = 1 && j || 1==2;
-int i =  (1==2 && 2!=1);
-printf(c);
+{
+float x = 1;
+float* y = &x;
+}
