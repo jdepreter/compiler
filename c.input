@@ -1,5 +1,4 @@
 {
-float x = 12.99;
-float*** y = &x;
-printf(x);
+float x = 1;
+float* y = &x;
 }

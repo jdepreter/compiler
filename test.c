@@ -2,8 +2,8 @@
 
 int main()
 {
-    int x = 5;
+    int x = -0;
     int* y = &x;
-    int** z = &y;
-    printf("%i\n", x);
+    int******* z = &y;
+    printf("%i\n", **z);
 }

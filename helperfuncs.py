@@ -19,10 +19,12 @@ def double_to_hex(f):
     return hex_string
 
 
-def get_type_and_stars(type):
-    stars = type.count('*')
+def get_type_and_stars(input_type):
+    if '&' == input_type[0]:
+        return input_type[1:], '&'
+    stars = input_type.count('*')
     if stars == 0:
-        symbol_type = type
+        symbol_type = input_type
     else:
-        symbol_type = type[:-stars]
-    return symbol_type, type[len(type)-stars:]
+        symbol_type = input_type[:-stars]
+    return symbol_type, input_type[len(input_type) - stars:]
