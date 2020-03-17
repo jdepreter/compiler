@@ -19,6 +19,9 @@ class TestCase(unittest.TestCase):
     def test_bool_folding(self):
         to_llvm("bool_testing.txt", "bool_testing.txt")
 
+    def test_pointers(self):
+        to_llvm("pointers.txt", "bool_testing.txt")
+
     def test_errors(self):
         with self.assertRaises(CSyntaxError):
             to_llvm("syntax_error.txt", "syntax_error.txt")
