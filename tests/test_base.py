@@ -13,8 +13,11 @@ class TestCase(unittest.TestCase):
         to_llvm("scope_empty.txt", "scope_empty.txt")
         to_llvm("scope_nested.txt", "scope_nested.txt")
 
-    def test_folding(self):
+    def test_int_folding(self):
         to_llvm("folding.txt", "folding.txt")
+
+    def test_bool_folding(self):
+        to_llvm("bool_testing.txt", "bool_testing.txt")
 
     def test_errors(self):
         with self.assertRaises(CSyntaxError):
