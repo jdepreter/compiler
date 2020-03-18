@@ -1,5 +1,5 @@
 import unittest
-from test import to_llvm
+from compile import to_llvm
 from CustomExceptions import *
 
 
