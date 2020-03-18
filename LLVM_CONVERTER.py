@@ -213,6 +213,14 @@ define void @print_char(i8 %a){
         )
         self.file.write(string)
 
+    def store_float(self, _float):
+        _float =float(_float)
+        reg = self.register
+        self.register+=1
+        string = "%r{} = fptrunc double {} to float".format(str(reg), str(_float))
+        self.file.write(string)
+        return '%r'+str(reg)
+
     def load_symbol(self, symbol):
         reg = self.register
         self.register += 1
@@ -294,7 +302,7 @@ define void @print_char(i8 %a){
             reg2 = self.register
             self.register += 1
             string2 = '%r{} = zext i1 %r{} to i32'.format(str(reg2), str(reg))
-            self.file.write(string)
+            self.file.write(string2)
 
 
             return '%r' + str(reg2), symbol_type
@@ -333,7 +341,7 @@ define void @print_char(i8 %a){
             value = str(node.label)
 
             if str(node.symbol_type) == "float":
-                value = double_to_hex(float(node.label))
+                value = self.store_float(float(node.label))
             if str(node.symbol_type)[0] == '&':
                 value = '%a' + str(symbol_table.get_assigned_symbol(value, node.ctx.start).current_register)
             return value, str(node.symbol_type)
