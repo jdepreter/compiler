@@ -301,7 +301,7 @@ define void @print_char(i8 %a){
             self.file.write(string)
             reg2 = self.register
             self.register += 1
-            string2 = '%r{} = zext i1 %r{} to i32'.format(str(reg2), str(reg))
+            string2 = '%r{} = zext i1 %r{} to i32\n'.format(str(reg2), str(reg))
             self.file.write(string2)
 
 
