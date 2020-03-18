@@ -1,6 +1,6 @@
-import os, pathlib
+import os, pathlib, sys
 import pytest
 
 os.chdir(pathlib.Path.cwd() / 'tests')
 
-pytest.main()
+sys.exit(pytest.main())
