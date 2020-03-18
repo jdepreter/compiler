@@ -1,8 +1,3 @@
 {
 char c = 'c';
-int x = c+5;
-float* y = &x;
-float* z = &x;
-z = z + 1;
-float * p = &y;
 }
