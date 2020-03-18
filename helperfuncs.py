@@ -22,7 +22,7 @@ def double_to_hex(f):
 
 def get_type_and_stars(input_type):
     if '&' == input_type[0]:
-        return input_type[1:], '&'
+        input_type = input_type[1:]
     stars = input_type.count('*')
     if stars == 0:
         symbol_type = input_type

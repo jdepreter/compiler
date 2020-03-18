@@ -105,7 +105,7 @@ define void @print_char(i8 %a){
         if node.node_type == 'assignment2':
             variable = node.children[0].label
         reg_nr = symbol_table.get_symbol(variable, None).current_register
-        sym_type, stars= get_type_and_stars(type)
+        sym_type, stars = get_type_and_stars(type)
         string = "%a{} = alloca {}{} \n".format(
             reg_nr,
             self.format_dict[sym_type], stars
