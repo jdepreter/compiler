@@ -1,8 +1,4 @@
 int x = 15%10;
 int y = x+6.2;
 int z = y%x;
-float a = 2.1;
-float b = 0.4;
-float c = a%b;
 printf(z);
-printf(c);
