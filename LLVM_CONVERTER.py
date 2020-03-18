@@ -7,6 +7,7 @@ class LLVM_Converter:
         self.stack = []
         self.register = 0
         self.file = file
+        self.null = {'int': '0', 'float': double_to_hex(0.0)}
         self.format_dict = {'int': 'i32', 'float': 'float', 'char': 'i8'}
         self.optype = {'int':
             {
@@ -309,8 +310,8 @@ define void @print_char(i8 %a){
             value = self.solve_math(node.children[1], symbol_table)
             reg = self.register
             self.register += 1
-            string = "%r{} = fneg {} {}".format(
-                reg, self.format_dict[value[1]], value[0]
+            string = "%r{} = {} {} {} {}".format(
+                reg, self.optype[value[1]]['-'] ,self.format_dict[value[1]], self.null[value[1]], value[0]
             )
             self.file.write(string)
             return '%r' + str(reg), value[1]
