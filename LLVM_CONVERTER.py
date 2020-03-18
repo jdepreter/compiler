@@ -217,7 +217,7 @@ define void @print_char(i8 %a){
         _float =float(_float)
         reg = self.register
         self.register+=1
-        string = "%r{} = fptrunc double {} to float".format(str(reg), str(_float))
+        string = "%r{} = fptrunc double {} to float\n".format(str(reg), str(_float))
         self.file.write(string)
         return '%r'+str(reg)
 
