@@ -331,7 +331,7 @@ define void @print_char(i8 %a){
             value = self.solve_math(node.children[1], symbol_table)
             reg = self.register
             self.register += 1
-            string = "%r{} = {} {} {} {}\n".format(
+            string = "%r{} = {} {} {}, {}\n".format(
                 reg, self.optype[value[1]]['-'] ,self.format_dict[value[1]], self.null[value[1]], value[0]
             )
             self.file.write(string)

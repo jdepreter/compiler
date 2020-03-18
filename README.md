@@ -19,6 +19,7 @@ en `char_casting.txt` volledig corrupt en dus niet meer leesbaar door ons progra
 
 | File  | Tests |
 | ------------- | ------------- |
+| assignment_to_r_value.txt         | definition, assignment to rvalue  |
 | basic_definition.txt              | definition  |
 | basic_declaration.txt             | declaration, assignment  |
 | bool_testing.txt                  | definition, boolean folding, print |

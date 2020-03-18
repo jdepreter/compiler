@@ -41,6 +41,9 @@ class TestCase(unittest.TestCase):
         with self.assertRaises(CSyntaxError):
             to_llvm("syntax_error_1.txt", "syntax_error_1")
 
+        with self.assertRaises(CSyntaxError):
+            to_llvm("assignment_to_r_value.txt", "assignment_to_r_value")
+
         with self.assertRaises(UninitializedVariable):
             to_llvm("uninitialised_var_error.txt", "uninit_var_error")
 
