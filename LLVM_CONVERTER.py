@@ -13,7 +13,7 @@ class LLVM_Converter:
                 '+': 'add',
                 '++': 'add',
                 '-': 'sub',
-                '-*': 'sub',
+                '--': 'sub',
                 '*': 'mul',
                 '/': 'sdiv',
                 '%': 'srem'
@@ -129,6 +129,7 @@ define void @print_char(i8 %a){
         else:
             register = self.solve_math(node.children[1], symbol_table)
         self.store_symbol(address, register[0], symbol.symbol_type, register[1])
+        symbol.assigned = True
         return register
 
     def cast_to_fp(self, value):
@@ -282,7 +283,7 @@ define void @print_char(i8 %a){
 
         elif node.node_type == 'Increment_var':
 
-            symbol = symbol_table.get_symbol(node.children[0].label, None)
+            symbol = symbol_table.get_assigned_symbol(node.children[0].label, node.ctx.start)
             new_sym = self.load_symbol(symbol)
 
             self.increment_var(new_sym, node, symbol, symbol.symbol_type)
@@ -290,7 +291,7 @@ define void @print_char(i8 %a){
             return new_sym, symbol.symbol_type
 
         elif node.node_type == 'Increment_op':
-            symbol = symbol_table.get_symbol(node.children[0].label, None)
+            symbol = symbol_table.get_assigned_symbol(node.children[0].label, node.ctx.start)
             new_sym = self.load_symbol(symbol)
 
             reg = self.increment_var(new_sym, node, symbol, symbol.symbol_type)
@@ -304,7 +305,7 @@ define void @print_char(i8 %a){
             value = self.solve_math(node.children[1], symbol_table)
             reg = self.register
             self.register += 1
-            string = "%r{} = fneg {} {}".format(
+            string = "%r{} = fneg {} {}\n".format(
                 reg, self.format_dict[value[1]], value[0]
             )
             self.file.write(string)
@@ -316,11 +317,11 @@ define void @print_char(i8 %a){
             if str(node.symbol_type) == "float":
                 value = double_to_hex(float(node.label))
             if str(node.symbol_type)[0] == '&':
-                value = '%a' + str(symbol_table.get_symbol(value, None).current_register)
+                value = '%a' + str(symbol_table.get_assigned_symbol(value, node.ctx.start).current_register)
             return value, str(node.symbol_type)
 
         elif node.node_type == 'lvalue':
-            sym = symbol_table.get_symbol(node.label, None)
+            sym = symbol_table.get_assigned_symbol(node.label, node.ctx.start)
             return self.load_symbol(sym), sym.symbol_type
 
         return None, None

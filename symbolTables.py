@@ -56,6 +56,14 @@ class SymbolTable:
         self.table_stack[0][symbol] = SymbolType(symbol_type, assinged, const, self.current_register)
         self.current_register += 1
 
+    def get_assigned_symbol(self, symbol_name, error):
+        symbol = self.get_symbol(symbol_name, error)
+        if not symbol.assigned:
+            raise UninitializedVariable("[Error] Line {}, Position {}: variable {} is not initialised"
+                                        .format(error.line, error.column, symbol_name))
+
+        return symbol
+
     def get_symbol(self, symbol, error):
         for scope in self.table_stack:
             if symbol in scope:

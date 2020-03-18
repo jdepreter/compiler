@@ -188,16 +188,18 @@ class CASTGenerator(cListener):
             for i in range(2, len(self.currentNode.children)):
                 node = self.currentNode.children[i]
                 symbol = node.label
-                if node.node_type == 'assignment2':
+                assigned = node.node_type == 'assignment2'
+                if assigned:
                     symbol = node.children[0].label
-                self.symbol_table.add_symbol(symbol, self.currentNode.children[1].label, ctx.start, True, True)
+                self.symbol_table.add_symbol(symbol, self.currentNode.children[1].label, ctx.start, assigned, True)
         else:
             for i in range(1, len(self.currentNode.children)):
                 node = self.currentNode.children[i]
                 symbol = node.label
-                if node.node_type == 'assignment2':
+                assigned = node.node_type == 'assignment2'
+                if assigned:
                     symbol = node.children[0].label
-                self.symbol_table.add_symbol(symbol, self.currentNode.children[0].label, ctx.start, True)
+                self.symbol_table.add_symbol(symbol, self.currentNode.children[0].label, ctx.start, assigned, False)
 
         self.currentNode = self.currentNode.parent
 
@@ -448,7 +450,7 @@ class CASTGenerator(cListener):
         self.currentNode.children.append(node)
         self.currentNode = node
         self.currentNode.symbol_table = self.symbol_table.get_current_scope()
-        node_min = self.create_node('-', 'min', self.currentNode, ctx)
+        node_min = self.create_node('-', '-', self.currentNode, ctx)
         self.currentNode.children.append(node_min)
 
     def exitUnary_min(self, ctx:cParser.Unary_minContext):
@@ -459,7 +461,7 @@ class CASTGenerator(cListener):
         self.currentNode.children.append(node)
         self.currentNode = node
         self.currentNode.symbol_table = self.symbol_table.get_current_scope()
-        node_min = self.create_node('+', 'plus', self.currentNode, ctx)
+        node_min = self.create_node('+', '+', self.currentNode, ctx)
         self.currentNode.children.append(node_min)
 
     def exitUnary_plus(self, ctx:cParser.Unary_plusContext):
