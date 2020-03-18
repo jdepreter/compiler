@@ -30,10 +30,9 @@ class LLVM_Converter:
 
         }
         self.cast_dict = {
-            'int': {'float': 'sitofp'},
-            'float': {'int': 'fptosi'}
-
-
+            'int': {'float': 'sitofp', 'char': 'trunc'},
+            'float': {'int': 'fptosi', 'char': 'fptosi'},
+            'char': {'int': 'zext', 'float': 'sitofp'}
         }
         self.bool_dict = {'int':
                               {
@@ -175,10 +174,7 @@ define void @print_char(i8 %a){
                     self.solve_llvm_node(child, symbol_table)
 
     def cast_value(self, register, current_type, new_type):
-        if current_type == 'char':
-            current_type = "int"
-        if new_type == 'char':
-            new_type = "int"
+
         current_sym_type, current_stars = get_type_and_stars(current_type)
         new_sym_type, new_stars = get_type_and_stars(new_type)
         if current_sym_type == new_sym_type:

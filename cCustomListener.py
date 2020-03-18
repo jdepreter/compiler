@@ -57,6 +57,7 @@ class CASTGenerator(cListener):
         self.currentNode.children.append(node)
         self.currentNode = node
         self.currentNode.symbol_table = self.symbol_table.get_current_scope()
+        self.currentNode.symbol_type = self.currentNode.symbol_table.get_symbol(string,None)
 
 
     def exitLvalue(self, ctx:cParser.LvalueContext):
