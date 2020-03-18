@@ -112,7 +112,7 @@ define void @print_char(i8 %a){
         variable = node.label
         if node.node_type == 'assignment2':
             variable = node.children[0].label
-        reg_nr = symbol_table.get_symbol(variable, None).current_register
+        reg_nr = symbol_table.get_symbol(variable, node.ctx.start).current_register
         sym_type, stars = get_type_and_stars(type)
         string = "%a{} = alloca {}{} \n".format(
             reg_nr,
@@ -130,7 +130,7 @@ define void @print_char(i8 %a){
         return "%a" + str(reg_nr)
 
     def assign_node(self, node, symbol_table):
-        symbol = symbol_table.get_symbol(str(node.children[0].label), None)
+        symbol = symbol_table.get_symbol(str(node.children[0].label), node.ctx.start)
         address = '%a' + str(symbol.current_register)
         if node.children[1].node_type == 'assignment':
             register = self.assign_node(node.children[1], symbol_table)

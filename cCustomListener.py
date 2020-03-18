@@ -57,7 +57,7 @@ class CASTGenerator(cListener):
         self.currentNode.children.append(node)
         self.currentNode = node
         self.currentNode.symbol_table = self.symbol_table.get_current_scope()
-        self.currentNode.symbol_type = self.currentNode.symbol_table.get_symbol(string,None)
+        self.currentNode.symbol_type = self.currentNode.symbol_table.get_symbol(string, ctx.start)
 
 
     def exitLvalue(self, ctx:cParser.LvalueContext):
@@ -421,7 +421,7 @@ class CASTGenerator(cListener):
         self.currentNode.symbol_table = self.symbol_table.get_current_scope()
         node1.symbol_table = self.symbol_table.get_current_scope()
         node2.symbol_table = self.symbol_table.get_current_scope()
-        node1.symbol_type = node1.symbol_table.get_symbol(str(ctx.IDENTIFIER()), None).symbol_type
+        node1.symbol_type = node1.symbol_table.get_symbol(str(ctx.IDENTIFIER()), ctx.start).symbol_type
 
     def exitIncrement_op_first(self, ctx:cParser.Increment_op_firstContext):
         self.currentNode = self.currentNode.parent
@@ -441,7 +441,7 @@ class CASTGenerator(cListener):
         self.currentNode.symbol_table = self.symbol_table.get_current_scope()
         node1.symbol_table = self.symbol_table.get_current_scope()
         node2.symbol_table = self.symbol_table.get_current_scope()
-        node1.symbol_type = node1.symbol_table.get_symbol(str(ctx.IDENTIFIER()), None).symbol_type
+        node1.symbol_type = node1.symbol_table.get_symbol(str(ctx.IDENTIFIER()), ctx.start).symbol_type
 
     def exitIncrement_var_first(self, ctx:cParser.Increment_var_firstContext):
         self.currentNode = self.currentNode.parent
