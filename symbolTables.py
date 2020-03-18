@@ -17,6 +17,7 @@ class SymbolType:
         self.assigned = assigned
         self.const = const
         self.current_register = current_register
+        self.used = False
 
     def set_reg(self, current_register):
         self.current_register = current_register
@@ -36,6 +37,14 @@ class SymbolTable:
         outer_method_scope['printf_float'] = MethodType('void', ['float'], False, 'printf', 'print_float', 2)
         self.method_stack = [outer_method_scope]
         self.method_list = [outer_method_scope]
+
+    def warn_unused(self):
+        for table in self.table_list:
+            for key in table:
+                if not table[key].used:
+                    warn = "Warning: {} is unused".format(key)
+                    print(warn)
+
 
     def open_scope(self):
         newdict = dict()
@@ -67,6 +76,7 @@ class SymbolTable:
     def get_symbol(self, symbol, error):
         for scope in self.table_stack:
             if symbol in scope:
+                scope[symbol].used = True
                 return scope[symbol]
 
         raise UndeclaredVariable("[Error] Line {}, Position {}: variable {} is undeclared"
@@ -99,6 +109,7 @@ class SymbolTable:
         s = SymbolTable()
         s.table_stack = list(self.table_stack)
         s.method_stack = list(self.method_stack)
+        s.table_list = self.table_list
         return s
 # class SymbolTableCreator:
 #     def __init__(self, ast):
