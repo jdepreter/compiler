@@ -29,6 +29,9 @@ class TestCase(unittest.TestCase):
     def test_pointers(self):
         to_llvm("pointers.txt", "pointers")
 
+    def test_not(self):
+        to_llvm("not_testing.txt", "not_testing")
+
     def test_unary(self):
         to_llvm("unary_magic.txt", "unary_magic")
         to_llvm("unary_++.txt", "unary_++")
