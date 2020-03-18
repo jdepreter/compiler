@@ -1,5 +1,6 @@
 {
-float x = 1;
+char c = 'c';
+int x = c+5;
 float* y = &x;
 float* z = &x;
 z = z + 1;

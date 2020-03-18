@@ -103,7 +103,7 @@ lvalue
     ;
 
 address
-    :(INT(PLUS|MIN))*IDENTIFIER((PLUS|MIN)INT)*
+    :(INT(PLUS))*IDENTIFIER((PLUS|MIN)INT)*
 
     ;
 
