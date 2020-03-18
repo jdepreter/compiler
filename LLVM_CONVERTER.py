@@ -305,7 +305,7 @@ define void @print_char(i8 %a){
             self.file.write(string2)
 
 
-            return '%r' + str(reg2), symbol_type
+            return '%r' + str(reg2), 'int'
 
         elif node.node_type == 'Increment_var':
 
