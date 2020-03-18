@@ -9,24 +9,25 @@ class TestCase(unittest.TestCase):
         to_llvm("basic_definition.txt", "basic_definition")
 
     def test_scope(self):
-        to_llvm("scope_1.txt", "scope_1.txt")
+        to_llvm("scope_1.txt", "scope_1")
         to_llvm("scope_empty.txt", "scope_empty")
         to_llvm("scope_nested.txt", "scope_nested")
 
-    def test_int_folding(self):
-        to_llvm("folding.txt", "folding.txt")
+    def test_folding(self):
+        to_llvm("folding.txt", "folding")
 
     def test_bool_folding(self):
         to_llvm("bool_testing.txt", "bool_testing")
 
     def test_modulo(self):
-        to_llvm("modulo.txt", "modulo.txt")
+        to_llvm("modulo.txt", "modulo")
 
     def test_char(self):
-        to_llvm("char_casting.txt", "char_casting.txt")
+        to_llvm("char_casting.txt", "char_casting")
+        to_llvm("char_folding.txt", "char_folding")
 
     def test_pointers(self):
-        to_llvm("pointers.txt", "bool_testing")
+        to_llvm("pointers.txt", "pointers")
 
     def test_unary(self):
         to_llvm("unary_magic.txt", "unary_magic")
@@ -45,6 +46,15 @@ class TestCase(unittest.TestCase):
 
         with self.assertRaises(UndeclaredVariable):
             to_llvm("undeclared_var_error.txt", "undeclared_var_error")
+
+        with self.assertRaises(ConstAssignment):
+            to_llvm("const_assignment_error.txt", "const_assignment")
+
+        with self.assertRaises(DuplicateDeclaration):
+            to_llvm("duplicate_declaration_error.txt", "duplicate_declaration")
+
+        with self.assertRaises(IncompatibleType):
+            to_llvm("incompatible_type_error.txt", "incompatible_type")
 
 
 if __name__ == '__main__':

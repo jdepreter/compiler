@@ -18,3 +18,7 @@ class DuplicateDeclaration(Exception):
 
 class IncompatibleType(Exception):
     pass
+
+
+class ConstAssignment(Exception):
+    pass

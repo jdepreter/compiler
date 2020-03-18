@@ -2,6 +2,7 @@ from ANTLR.LLVM.cListener import cListener
 from ANTLR.LLVM.cParser import cParser
 from symbolTables import SymbolTable
 from AST import Node
+from CustomExceptions import ConstAssignment
 
 
 # Depth first
@@ -178,8 +179,8 @@ class CASTGenerator(cListener):
             var = var.children[0]
         var_type = self.symbol_table.get_symbol(var.label, ctx.start)
         if var_type.const:
-            raise Exception("[Error] Line {}, Position {}: variable {} is declared const"
-                            .format(ctx.start.line, ctx.start.column, var))
+            raise ConstAssignment("[Error] Line {}, Position {}: variable {} is declared const"
+                                  .format(ctx.start.line, ctx.start.column, var))
         self.currentNode = self.currentNode.parent
 
     def exitDefinition(self, ctx:cParser.DefinitionContext):
