@@ -8,7 +8,7 @@ class LLVM_Converter:
         self.register = 0
         self.file = file
         self.null = {'int': '0', 'float': double_to_hex(0.0)}
-        self.format_dict = {'int': 'i32', 'float': 'float', 'char': 'i8'}
+        self.format_dict = {'int': 'i32', 'float': 'float', 'char': 'i8', 'bool':'i1'}
         self.optype = {'int':
             {
                 '+': 'add',
@@ -40,9 +40,9 @@ class LLVM_Converter:
         }
 
         self.cast_dict = {
-            'int': {'float': 'sitofp', 'char': 'trunc'},
-            'float': {'int': 'fptosi', 'char': 'fptosi'},
-            'char': {'int': 'zext', 'float': 'sitofp'}
+            'int': {'float': 'sitofp', 'char': 'trunc', 'bool': 'trunc'},
+            'float': {'int': 'fptosi', 'char': 'fptosi', 'bool': 'fptoui'},
+            'char': {'int': 'zext', 'float': 'sitofp', 'bool': 'trunc'}
         }
         self.bool_dict = {'int':
                               {
@@ -141,13 +141,22 @@ define void @print_char(i8 %a){
         symbol.assigned = True
         return register
 
-    def cast_to_fp(self, value):
+    def not_value(self, register, symbol_type):
         reg = self.register
         self.register += 1
-
-        string = "%r{} = fptrunc double {} to float\n".format(str(reg), str(float(value)))
+        new = self.cast_value(register, symbol_type, 'bool')
+        string = "%r{} = add i1 {}, 1\n".format(reg, new)
         self.file.write(string)
-        return '%r'+str(reg)
+        reg2 = self.register
+        self.register += 1
+        string2 = "%r{} = zext i1 %r{} to i32".format(reg2, reg)
+        self.file.write(string2)
+
+        return '%r'+str(reg2), 'int'
+
+
+
+
 
     def solve_llvm_node(self, node, symbol_table):
         # TODO x++ & ++x staan nog ni ok in den boom && add char / double && maybe arrays && typeswitching + warnings
@@ -349,6 +358,11 @@ define void @print_char(i8 %a){
         elif node.node_type == 'lvalue':
             sym = symbol_table.get_assigned_symbol(node.label, node.ctx.start)
             return self.load_symbol(sym), sym.symbol_type
+
+        elif node.node_type == 'bool2' and node.children[0].label == '!':
+
+            value = self.solve_math(node.children[1], symbol_table)
+            return self.not_value(value[0], value[1])
 
         return None, None
 
