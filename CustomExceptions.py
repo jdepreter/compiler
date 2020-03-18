@@ -14,3 +14,7 @@ class UninitializedVariable(Exception):
 
 class DuplicateDeclaration(Exception):
     pass
+
+
+class IncompatibleType(Exception):
+    pass

@@ -1,4 +1,6 @@
 {
 float x = 1;
 float* y = &x;
+float* z = &x;
+z = z + 1;
 }

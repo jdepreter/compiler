@@ -1,4 +1,5 @@
 import struct
+from CustomExceptions import *
 
 
 def get_return_type(type1, type2):
@@ -28,3 +29,18 @@ def get_type_and_stars(input_type):
     else:
         symbol_type = input_type[:-stars]
     return symbol_type, input_type[len(input_type) - stars:]
+
+
+def allowed_operation(symbol_type1, symbol_type2, operation, ctx):
+    if ('*' in symbol_type1 or '&' in symbol_type1) and ('*' in symbol_type2 or '&' in symbol_type2):
+        raise IncompatibleType("[Error] Line {} Position {}: Incompatible Operation {} {} {}".format(
+            ctx.line, ctx.column,
+            symbol_type1, operation, symbol_type2
+        ))
+
+    if ('*' in symbol_type1 or '&' in symbol_type1) or ('*' in symbol_type2 or '&' in symbol_type2):
+        if operation not in ['+', '-']:
+            raise IncompatibleType("[Error] Line {} Position {}: Incompatible Operation {} {} {}".format(
+                ctx.line, ctx.column,
+                symbol_type1, operation, symbol_type2
+            ))

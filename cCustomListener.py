@@ -205,15 +205,13 @@ class CASTGenerator(cListener):
         self.currentNode = self.currentNode.parent
 
     def exitVar_type(self, ctx:cParser.Var_typeContext):
-        # if self.currentNode.label == "pointer":
-        #     self.currentNode.children[0].parent = self.currentNode.parent
-        #     index = self.currentNode.parent.children.index(self.currentNode)
-        #     self.currentNode.parent.children.remove(self.currentNode)
-        #     self.currentNode.parent.children.insert(index, self.currentNode.children[0])
-        #     self.currentNode = self.currentNode.parent
-        #     del self.currentNode
-        # else:
+        if self.currentNode.label == 'pointer':
+            self.currentNode.children[0].parent = self.currentNode.parent
+            self.currentNode.parent.children[0] = self.currentNode.children[0]
+        temp = self.currentNode
         self.currentNode = self.currentNode.parent
+        del temp
+
 
     # Expressions ----
     def enterBool1(self, ctx:cParser.Bool1Context):
@@ -396,7 +394,6 @@ class CASTGenerator(cListener):
     def exitArgs(self, ctx:cParser.ArgsContext):
         self.currentNode = self.currentNode.parent
 
-
     def enterIncrement(self, ctx:cParser.IncrementContext):
         node = self.create_node("increment", "increment", self.currentNode, ctx)
         self.currentNode.children.append(node)
@@ -422,7 +419,6 @@ class CASTGenerator(cListener):
         node1.symbol_table = self.symbol_table.get_current_scope()
         node2.symbol_table = self.symbol_table.get_current_scope()
         node1.symbol_type = node1.symbol_table.get_symbol(str(ctx.IDENTIFIER()), None).symbol_type
-
 
     def exitIncrement_op_first(self, ctx:cParser.Increment_op_firstContext):
         self.currentNode = self.currentNode.parent

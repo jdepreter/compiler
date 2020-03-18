@@ -1,4 +1,4 @@
-from helperfuncs import get_return_type, double_to_hex, get_type_and_stars
+from helperfuncs import *
 
 
 class LLVM_Converter:
@@ -219,6 +219,7 @@ define void @print_char(i8 %a){
             self.register += 1
             child1 = self.solve_math(node.children[0], symbol_table)
             child2 = self.solve_math(node.children[1], symbol_table)
+            allowed_operation(child1[1], child2[1], node.label, node.ctx.start)
             symbol_type = get_return_type(child1[1], child2[1])
             child_1 = self.cast_value(child1[0], child1[1], symbol_type)
             child_2 = self.cast_value(child2[0], child2[1], symbol_type)
