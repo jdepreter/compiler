@@ -126,7 +126,7 @@ def serializedATN():
         buf.write("\u0102\7\20\2\2\u0102\u0103\7\24\2\2\u0103\u0104\5\66")
         buf.write("\34\2\u0104\u0105\7\25\2\2\u0105\u0107\3\2\2\2\u0106\u00fe")
         buf.write("\3\2\2\2\u0106\u00ff\3\2\2\2\u0106\u0101\3\2\2\2\u0107")
-        buf.write("\65\3\2\2\2\u0108\u0109\7!\2\2\u0109\u010b\t\6\2\2\u010a")
+        buf.write("\65\3\2\2\2\u0108\u0109\7!\2\2\u0109\u010b\7\r\2\2\u010a")
         buf.write("\u0108\3\2\2\2\u010b\u010e\3\2\2\2\u010c\u010a\3\2\2\2")
         buf.write("\u010c\u010d\3\2\2\2\u010d\u010f\3\2\2\2\u010e\u010c\3")
         buf.write("\2\2\2\u010f\u0114\7\t\2\2\u0110\u0111\t\6\2\2\u0111\u0113")
@@ -2292,13 +2292,9 @@ class cParser ( Parser ):
             while _la==cParser.INT:
                 self.state = 262
                 self.match(cParser.INT)
+
                 self.state = 263
-                _la = self._input.LA(1)
-                if not(_la==cParser.PLUS or _la==cParser.MIN):
-                    self._errHandler.recoverInline(self)
-                else:
-                    self._errHandler.reportMatch(self)
-                    self.consume()
+                self.match(cParser.PLUS)
                 self.state = 268
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
