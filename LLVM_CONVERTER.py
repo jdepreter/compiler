@@ -13,7 +13,16 @@ class LLVM_Converter:
                 '+': 'add',
                 '++': 'add',
                 '-': 'sub',
-                '-*': 'sub',
+                '--': 'sub',
+                '*': 'mul',
+                '/': 'sdiv',
+                '%': 'srem'
+            },
+            'char': {
+                '+': 'add',
+                '++': 'add',
+                '-': 'sub',
+                '--': 'sub',
                 '*': 'mul',
                 '/': 'sdiv',
                 '%': 'srem'

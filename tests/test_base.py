@@ -19,6 +19,9 @@ class TestCase(unittest.TestCase):
     def test_bool_folding(self):
         to_llvm("bool_testing.txt", "bool_testing.txt")
 
+    def test_char(self):
+        to_llvm("char_casting.txt", "char_casting.txt")
+
     def test_pointers(self):
         to_llvm("pointers.txt", "bool_testing.txt")
 
