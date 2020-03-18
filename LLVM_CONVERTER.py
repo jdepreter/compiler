@@ -35,10 +35,10 @@ class LLVM_Converter:
                 '--': 'fsub',
                 '*': 'fmul',
                 '/': 'fdiv',
-                '%': 'frem'
             }
 
         }
+
         self.cast_dict = {
             'int': {'float': 'sitofp', 'char': 'trunc'},
             'float': {'int': 'fptosi', 'char': 'fptosi'},
@@ -235,11 +235,17 @@ define void @print_char(i8 %a){
             child_1 = self.cast_value(child1[0], child1[1], symbol_type)
             child_2 = self.cast_value(child2[0], child2[1], symbol_type)
             sym_type, stars = get_type_and_stars(symbol_type)
+            if symbol_type== 'float' and node.label == '%':
+                raise Exception("Error: incompatible type %: float")
+
             string = '%r{} = {} {}{} {}, {}\n'.format(
                 str(reg), self.optype[symbol_type][node.label], self.format_dict[sym_type], stars,
                 child_1,
                 child_2
             )
+
+
+
 
             self.file.write(string)
             return '%r' + str(reg), symbol_type
