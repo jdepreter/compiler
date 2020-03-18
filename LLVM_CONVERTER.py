@@ -291,7 +291,13 @@ define void @print_char(i8 %a){
                 child_2
             )
             self.file.write(string)
-            return '%r' + str(reg), symbol_type
+            reg2 = self.register
+            self.register += 1
+            string2 = '%r{} = zext i1 %r{} to i32'.format(str(reg2), str(reg))
+            self.file.write(string)
+
+
+            return '%r' + str(reg2), symbol_type
 
         elif node.node_type == 'Increment_var':
 
