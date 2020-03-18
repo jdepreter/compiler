@@ -47,7 +47,7 @@ def to_llvm(filename, outputname ):
     f.close()
 
     if platform.system() == 'Linux':
-        os.system("clang llvm-{}.ll -o main && ./main".format(outputname))
+        os.system("clang llvm-{}.ll -o {} && ./{}".format(outputname, outputname, outputname))
 
 
 def double_to_hex(f):
