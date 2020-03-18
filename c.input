@@ -1,8 +1,2 @@
-char c = 'c';
-char b = 'b';
-char a = b+c;
-int x = a+1;
-int y = b-1;
-printf(b);
-printf(c);
-printf(y);
+int j = 5+-+-+-+-+-+-+3;
+printf(j+1&&2-3);

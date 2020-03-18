@@ -276,7 +276,7 @@ class CASTGenerator(cListener):
         self.currentNode = self.currentNode.parent
 
     def enterMod(self, ctx:cParser.ModContext):
-        node = self.create_node("mod", "mod", self.currentNode, ctx)
+        node = self.create_node("%", "mod", self.currentNode, ctx)
         self.currentNode.children.append(node)
         self.currentNode = node
         self.currentNode.symbol_table = self.symbol_table.get_current_scope()
