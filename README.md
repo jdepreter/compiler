@@ -5,16 +5,18 @@ Also make sure graphviz is installed on your system for AST dot output.
 `pip install -r requirements.txt`
 
 ### Compiling
-`python test.py [inputfile] `
+`python compile.py [inputfile] [outputname]`
 
+This generates `llvm-[outputname].ll` and a matching `[outputname]` binary.
 
 ### Testing
 `python run_tests.py`
 
-NB: Om één of andere reden is na een enkele run van de tests `scope_1.txt` 
+NB: Om één of andere reden is na een enkele run van de tests soms `scope_1.txt` 
 en `char_casting.txt` volledig corrupt en dus niet meer leesbaar door ons programma. 
+Ondertussen kunnen we het niet meer reproduceren.
 
-###List of test files and contents
+### List of test files and contents
 
 
 | File  | Tests |
