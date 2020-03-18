@@ -1,2 +1,2 @@
 antlr4-python3-runtime
-graphviz
+graphviz==0.13.2

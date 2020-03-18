@@ -85,7 +85,7 @@ class SymbolTable:
                 return scope[key]
 
         raise UndeclaredVariable("[Error] Line {}, Position {}: method {}({}) is undeclared"
-                                 .format(error.line, error.column, method, args))
+                                 .format(error.line, error.column, method, ','.join(arg_types)))
 
     def get_current_scope(self):
         s = SymbolTable()
