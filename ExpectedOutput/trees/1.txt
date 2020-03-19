@@ -1,0 +1,147 @@
+digraph {
+	1 [label=C]
+	2 [label=line]
+	1 -> 2
+	3 [label=scope]
+	2 -> 3
+	4 [label=line]
+	3 -> 4
+	5 [label=definition]
+	4 -> 5
+	6 [label=int]
+	5 -> 6
+	7 [label=assignment2]
+	5 -> 7
+	8 [label=x]
+	7 -> 8
+	9 [label=bool1]
+	7 -> 9
+	10 [label=bool2]
+	9 -> 10
+	11 [label=plus]
+	10 -> 11
+	12 [label=vm]
+	11 -> 12
+	13 [label="%"]
+	12 -> 13
+	14 [label=vmsol]
+	13 -> 14
+	15 [label=value]
+	14 -> 15
+	16 [label=6]
+	15 -> 16
+	17 [label=line]
+	3 -> 17
+	18 [label=bool1]
+	17 -> 18
+	19 [label=bool2]
+	18 -> 19
+	20 [label=plus]
+	19 -> 20
+	21 [label=vm]
+	20 -> 21
+	22 [label="%"]
+	21 -> 22
+	23 [label=vmsol]
+	22 -> 23
+	24 [label=value]
+	23 -> 24
+	25 [label=increment]
+	24 -> 25
+	26 [label=Increment_var]
+	25 -> 26
+	28 [label=x]
+	26 -> 28
+	27 [label="--"]
+	26 -> 27
+	29 [label=line]
+	3 -> 29
+	30 [label=method_call]
+	29 -> 30
+	31 [label=printf]
+	30 -> 31
+	32 [label=args]
+	30 -> 32
+	33 [label=bool1]
+	32 -> 33
+	34 [label=bool2]
+	33 -> 34
+	35 [label=plus]
+	34 -> 35
+	36 [label=vm]
+	35 -> 36
+	37 [label="%"]
+	36 -> 37
+	38 [label=vmsol]
+	37 -> 38
+	39 [label=value]
+	38 -> 39
+	40 [label=increment]
+	39 -> 40
+	41 [label=Increment_var]
+	40 -> 41
+	43 [label=x]
+	41 -> 43
+	42 [label="--"]
+	41 -> 42
+	44 [label="empty arg"]
+	30 -> 44
+	45 [label=line]
+	3 -> 45
+	46 [label=method_call]
+	45 -> 46
+	47 [label=printf]
+	46 -> 47
+	48 [label=args]
+	46 -> 48
+	49 [label=bool1]
+	48 -> 49
+	50 [label=bool2]
+	49 -> 50
+	51 [label=plus]
+	50 -> 51
+	52 [label=vm]
+	51 -> 52
+	53 [label="%"]
+	52 -> 53
+	54 [label=vmsol]
+	53 -> 54
+	55 [label=value]
+	54 -> 55
+	56 [label=increment]
+	55 -> 56
+	57 [label=Increment_op]
+	56 -> 57
+	59 [label=x]
+	57 -> 59
+	58 [label="--"]
+	57 -> 58
+	60 [label="empty arg"]
+	46 -> 60
+	61 [label=line]
+	3 -> 61
+	62 [label=method_call]
+	61 -> 62
+	63 [label=printf]
+	62 -> 63
+	64 [label=args]
+	62 -> 64
+	65 [label=bool1]
+	64 -> 65
+	66 [label=bool2]
+	65 -> 66
+	67 [label=plus]
+	66 -> 67
+	68 [label=vm]
+	67 -> 68
+	69 [label="%"]
+	68 -> 69
+	70 [label=vmsol]
+	69 -> 70
+	71 [label=value]
+	70 -> 71
+	72 [label=x]
+	71 -> 72
+	73 [label="empty arg"]
+	62 -> 73
+}

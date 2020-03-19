@@ -9,7 +9,7 @@ Assignment 1
 - (optional) Binary operator %
 - (optional) Comparison operators >=, <=, and !=
 - (optional) Logical operators &&, ||, and !
-- (optional) Constant folding
+- (optional) Constant folding (no unary + or -)
 
 Assignment 2
 - Types: char, int, float, char*, int*, float*
@@ -36,6 +36,8 @@ Assignment 3
 ### Requirements
 Also make sure graphviz is installed on your system for AST dot output.
 
+`sudo apt-get install graphviz`
+
 `pip install -r requirements.txt`
 
 ### Building ANLTR Classes
@@ -49,12 +51,20 @@ This should create the ANTLR source files in `./ANTLR/LLVM`
 This generates `llvm-[outputname].ll` and a matching `[outputname]` binary.
 The AST Tree can be viewed in `./output/output-[outputname].png`
 
+It also compiles the `.ll` file using clang and runs the binary.
+(Files that contain errors are not compiled)
+
 ### Testing
 `python run_tests.py` or `test.sh`
 
 NB: Om één of andere reden is na een enkele run van de tests soms `scope_1.txt` 
 en `char_casting.txt` volledig corrupt en dus niet meer leesbaar door ons programma. 
 Ondertussen kunnen we het niet meer reproduceren.
+
+The AST trees of the test files can be viewed at `./tests/output`. 
+
+Also the `.ll` files are generated. They're compiled to binary using clang. And the binaries are executed. 
+(Files that contain errors are not compiled)
 
 ### List of test files and contents
 
