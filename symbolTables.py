@@ -1,4 +1,5 @@
 from CustomExceptions import UndeclaredVariable, UninitializedVariable, DuplicateDeclaration
+import re
 
 
 class MethodType:
@@ -74,6 +75,7 @@ class SymbolTable:
         return symbol
 
     def get_symbol(self, symbol, error):
+        symbol = re.sub(r'\*', '', symbol)
         for scope in self.table_stack:
             if symbol in scope:
                 scope[symbol].used = True

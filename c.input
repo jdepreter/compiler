@@ -1,3 +1,4 @@
-float x = 0.2;
-int a = 1;
-int v = !(a==2&&!(x==3||!(5>3)));
+int i = 5;
+int* j = &i;
+int** x = &j;
+**x = 3;

@@ -27,15 +27,14 @@ def to_llvm(filename, outputname ):
     walker.walk(printer, tree)
     # printer.ast.to_dot(open("temp.dot", 'w'))
     visitor = ASTVisitor(printer.ast)
+    graph = printer.ast.render_dot()
+    graph.save("1.txt", "output")
+    graph.render("1")
     visitor.startnode.symbol_table.warn_unused()
     visitor.clean_tree()
     visitor.fold_not()
     # TODO add simple clean to fold_not so it doesn't need to be rerun
     visitor.clean_tree()
-
-    graph = printer.ast.render_dot()
-    graph.save("1.txt", "output")
-    graph.render("1")
     visitor.maal()
     visitor.constant_folding()
     graph = printer.ast.render_dot()

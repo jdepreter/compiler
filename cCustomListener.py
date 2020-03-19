@@ -50,7 +50,7 @@ class CASTGenerator(cListener):
         self.currentNode = self.currentNode.parent
 
     def enterLvalue(self, ctx:cParser.LvalueContext):
-        string = "lvalue"
+        string = ""
         if ctx.IDENTIFIER():
             string = str(ctx.IDENTIFIER())
 
@@ -58,11 +58,18 @@ class CASTGenerator(cListener):
         self.currentNode.children.append(node)
         self.currentNode = node
         self.currentNode.symbol_table = self.symbol_table.get_current_scope()
-        self.currentNode.symbol_type = self.currentNode.symbol_table.get_symbol(string, ctx.start)
-
+        if string != "":
+            self.currentNode.symbol_type = self.currentNode.symbol_table.get_symbol(string, ctx.start)
 
     def exitLvalue(self, ctx:cParser.LvalueContext):
+        if self.currentNode.label == "":
+            self.currentNode.children[0].parent = self.currentNode.parent
+            index = self.currentNode.parent.children.index(self.currentNode)
+            self.currentNode.parent.children[index] = self.currentNode.children[0]
+
+        temp = self.currentNode
         self.currentNode = self.currentNode.parent
+        del temp
 
     def enterRvalue(self, ctx:cParser.RvalueContext):
         string = "nothing"
@@ -87,6 +94,24 @@ class CASTGenerator(cListener):
         self.currentNode.symbol_type = symbol_type
 
     def exitRvalue(self, ctx:cParser.RvalueContext):
+        self.currentNode = self.currentNode.parent
+
+    def enterDereference(self, ctx:cParser.DereferenceContext):
+        string = "lvalue"
+        if ctx.IDENTIFIER():
+            string = str(ctx.IDENTIFIER())
+
+        star_count = len(ctx.MAAL())
+        for i in range(star_count):
+            string = '*' + string
+
+        node = self.create_node(string, "lvalue", self.currentNode, ctx)
+        self.currentNode.children.append(node)
+        self.currentNode = node
+        self.currentNode.symbol_table = self.symbol_table.get_current_scope()
+        self.currentNode.symbol_type = self.currentNode.symbol_table.get_symbol(string, ctx.start)
+
+    def exitDereference(self, ctx:cParser.DereferenceContext):
         self.currentNode = self.currentNode.parent
 
     def enterAddress(self, ctx:cParser.AddressContext):

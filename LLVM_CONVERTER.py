@@ -154,10 +154,6 @@ define void @print_char(i8 %a){
 
         return '%r'+str(reg2), 'int'
 
-
-
-
-
     def solve_llvm_node(self, node, symbol_table):
         # TODO x++ & ++x staan nog ni ok in den boom && add char / double && maybe arrays && typeswitching + warnings
         if node.symbol_table is not None:

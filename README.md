@@ -32,6 +32,7 @@ Ondertussen kunnen we het niet meer reproduceren.
 | folding.txt                       | definition, assignment, folding ints and floats  |
 | incompatible_type_error.txt       | definition, pointers, pointer + pointer error |
 | modulo.txt                        | definition, assignment, modulo floats and ints, print |
+| not_testing.txt                   | definition, bool folding with not |
 | pointers.txt                      | definition pointer  |
 | scope_1.txt                       | single scope test  |
 | scope_empty.txt                   | empty scope test  |

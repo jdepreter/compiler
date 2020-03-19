@@ -2,6 +2,9 @@
 
 int main()
 {
-    float f = 1*(1+9)*(5*9/10 - 9.0/10*3);
-    printf("%i", f);
+    int i = 5;
+    int* j = &i;
+    int** x = &j;
+    **x = 3;
+    printf("%d", **x);
 }
