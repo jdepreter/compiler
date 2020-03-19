@@ -137,7 +137,7 @@ define void @print_char(i8 %a){
             register = self.assign_node(node.children[1], symbol_table)
         else:
             register = self.solve_math(node.children[1], symbol_table)
-        self.store_symbol(address, register[0], symbol.symbol_type, register[1])
+        self.store_symbol(address, register[0], symbol.symbol_type, register[1], node.children[0].label.count('*'))
         symbol.assigned = True
         return register
 
@@ -205,18 +205,28 @@ define void @print_char(i8 %a){
         self.file.write(string)
         return '%r' + str(reg)
 
-    def store_symbol(self, address, value, address_symbol_type, value_symbol_type):
+    def store_symbol(self, address, value, address_symbol_type, value_symbol_type, dereference=0):
         value_to_store = self.cast_value(value, value_symbol_type, address_symbol_type)
         address_sym_type, address_stars = get_type_and_stars(address_symbol_type)
+        current_register = self.dereference(address, address_stars, address_sym_type, dereference)[0]
+
         string = "store {}{} {}, {}*{} {}\n".format(
             self.format_dict[address_sym_type],
-            address_stars,
+            address_stars[dereference:],
             value_to_store,
             self.format_dict[address_sym_type],
-            address_stars,
-            address
+            address_stars[dereference:],
+            current_register
         )
         self.file.write(string)
+
+    def dereference(self, current_register, address_stars, address_sym_type, dereference):
+        for i in range(dereference):
+            reg = self.register
+            self.register += 1
+            current_register = self.load_instruction(reg, "*" * (len(address_stars) - i), address_sym_type,
+                                                     current_register)
+        return current_register, address_sym_type + (len(address_stars) - dereference) * '*'
 
     def store_float(self, _float):
         _float =float(_float)
@@ -230,8 +240,11 @@ define void @print_char(i8 %a){
         reg = self.register
         self.register += 1
         sym_type, stars = get_type_and_stars(symbol.symbol_type)
-        string = '%r{} = load {}{} ,{}{}* %a{} \n'.format(
-            str(reg), self.format_dict[sym_type],stars, self.format_dict[sym_type], stars, symbol.current_register
+        return self.load_instruction(reg, stars, sym_type, "%a" + str(symbol.current_register))
+
+    def load_instruction(self, reg, stars, sym_type, current_register):
+        string = '%r{} = load {}{} ,{}{}* {} \n'.format(
+            str(reg), self.format_dict[sym_type], stars, self.format_dict[sym_type], stars, current_register
         )
         self.file.write(string)
         return '%r' + str(reg)
@@ -256,10 +269,6 @@ define void @print_char(i8 %a){
                 child_1,
                 child_2
             )
-
-
-
-
             self.file.write(string)
             return '%r' + str(reg), symbol_type
 
@@ -309,7 +318,6 @@ define void @print_char(i8 %a){
             string2 = '%r{} = zext i1 %r{} to i32\n'.format(str(reg2), str(reg))
             self.file.write(string2)
 
-
             return '%r' + str(reg2), 'int'
 
         elif node.node_type == 'Increment_var':
@@ -353,7 +361,12 @@ define void @print_char(i8 %a){
 
         elif node.node_type == 'lvalue':
             sym = symbol_table.get_assigned_symbol(node.label, node.ctx.start)
-            return self.load_symbol(sym), sym.symbol_type
+            sym_type, stars = get_type_and_stars(sym.symbol_type)
+            address, symbol_type_stars = self.dereference('%a' + str(sym.current_register), stars, sym_type, node.label.count('*'))
+            reg = self.register
+            self.register += 1
+            sym_type, stars = get_type_and_stars(symbol_type_stars)
+            return self.load_instruction(reg, stars, sym_type, address), symbol_type_stars
 
         elif node.node_type == 'bool2' and node.children[0].label == '!':
 
@@ -384,7 +397,7 @@ define void @print_char(i8 %a){
             arg_reg.append(reg)
             arg_types.append(symbol_type)
 
-        method = node.symbol_table.get_method(method_name, arg_types, None)
+        method = node.symbol_table.get_method(method_name, arg_types, node.ctx.start)
         m = list(map(self.convert, method.arguments))
         for i in range(len(args)):
             args[i] = m[i] + ' ' + arg_reg[i]
