@@ -73,7 +73,8 @@ Ondertussen kunnen we het niet meer reproduceren.
 | incompatible_type_error.txt       | definition, pointers, pointer + pointer error |
 | modulo.txt                        | definition, assignment, modulo floats and ints, print |
 | not_testing.txt                   | definition, bool folding with not |
-| pointers.txt                      | definition pointer  |
+| pointers.txt                      | definition, pointer  |
+| pointer_dereference.txt           | definition, pointer, & * unary operators, print  |
 | scope_1.txt                       | single scope test  |
 | scope_empty.txt                   | empty scope test  |
 | scope_nested.txt                  | Int addition, print(int), scopes  |
