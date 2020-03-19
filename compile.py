@@ -35,6 +35,7 @@ def to_llvm(filename, outputname ):
     visitor.fold_not()
     # TODO add simple clean to fold_not so it doesn't need to be rerun
     visitor.clean_tree()
+    visitor.unary_fold()
     visitor.maal()
     visitor.constant_folding()
     graph = printer.ast.render_dot()

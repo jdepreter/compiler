@@ -9,7 +9,7 @@ Assignment 1
 - (optional) Binary operator %
 - (optional) Comparison operators >=, <=, and !=
 - (optional) Logical operators &&, ||, and !
-- (optional) Constant folding (no unary + or -)
+- (optional) Constant folding
 
 Assignment 2
 - Types: char, int, float, char*, int*, float*
@@ -26,6 +26,7 @@ Errors (Assignment 2 continued)
 - Operations or assignments of incompatible types (throws a IncompatibleType Exception)
 - Assignment to an rvalue (throws a CSyntaxError Exception)
 - Assignment to a const variable (throws a ConstAssignment Exception)
+- Division by zero (throws a ZeroDivisionError Exception)
 
 Each exception also contains the line and position of the error.
 
