@@ -28,6 +28,7 @@ class TestCase(unittest.TestCase):
 
     def test_pointers(self):
         to_llvm("pointers.txt", "pointers")
+        to_llvm("pointer_dereference.txt", "pointer_dereference")
 
     def test_not(self):
         to_llvm("not_testing.txt", "not_testing")
