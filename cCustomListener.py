@@ -494,6 +494,50 @@ class CASTGenerator(cListener):
     def exitUnary_plus(self, ctx:cParser.Unary_plusContext):
         self.currentNode = self.currentNode.parent
 
+    # LOOPS
+    def enterFor_loop(self, ctx:cParser.For_loopContext):
+        node = self.create_node("for", "for", self.currentNode, ctx)
+        self.currentNode.children.append(node)
+        self.currentNode = node
+        self.currentNode.symbol_table = self.symbol_table.get_current_scope()
 
+    def exitFor_loop(self, ctx:cParser.For_loopContext):
+        self.currentNode = self.currentNode.parent
 
+    def enterFor_initial(self, ctx:cParser.For_initialContext):
+        node = self.create_node("for initial", "for initial", self.currentNode, ctx)
+        self.currentNode.children.append(node)
+        self.currentNode = node
+        self.currentNode.symbol_table = self.symbol_table.get_current_scope()
 
+    def exitFor_initial(self, ctx:cParser.For_initialContext):
+        self.currentNode = self.currentNode.parent
+
+    def enterFor_condition(self, ctx:cParser.For_conditionContext):
+        node = self.create_node("for condition", "for condition", self.currentNode, ctx)
+        self.currentNode.children.append(node)
+        self.currentNode = node
+        self.currentNode.symbol_table = self.symbol_table.get_current_scope()
+
+    def exitFor_condition(self, ctx:cParser.For_conditionContext):
+        self.currentNode = self.currentNode.parent
+
+    def enterFor_update(self, ctx:cParser.For_updateContext):
+        node = self.create_node("for update", "for update", self.currentNode, ctx)
+        self.currentNode.children.append(node)
+        self.currentNode = node
+        self.currentNode.symbol_table = self.symbol_table.get_current_scope()
+
+    def exitFor_update(self, ctx:cParser.For_updateContext):
+        self.currentNode = self.currentNode.parent
+
+    def enterWhile_loop(self, ctx:cParser.While_loopContext):
+        node = self.create_node("for", "for", self.currentNode, ctx)
+        self.currentNode.children.append(node)
+        self.currentNode = node
+        self.currentNode.symbol_table = self.symbol_table.get_current_scope()
+
+    def exitWhile_loop(self, ctx:cParser.While_loopContext):
+        self.currentNode = self.currentNode.parent
+
+    # IF ELSE

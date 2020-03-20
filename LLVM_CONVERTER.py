@@ -178,6 +178,9 @@ define void @print_char(i8 %a){
         elif node.node_type == 'method_call':
             self.call_method(node, symbol_table)
 
+        elif node.node_type == 'for':
+            self.loop(node, symbol_table)
+
         else:
 
             sol = self.solve_math(node, symbol_table)[0]
@@ -231,7 +234,7 @@ define void @print_char(i8 %a){
     def store_float(self, _float):
         _float =float(_float)
         reg = self.register
-        self.register+=1
+        self.register += 1
         string = "%r{} = fptrunc double {} to float\n".format(str(reg), str(_float))
         self.file.write(string)
         return '%r'+str(reg)
@@ -261,7 +264,7 @@ define void @print_char(i8 %a){
             child_1 = self.cast_value(child1[0], child1[1], symbol_type)
             child_2 = self.cast_value(child2[0], child2[1], symbol_type)
             sym_type, stars = get_type_and_stars(symbol_type)
-            if symbol_type== 'float' and node.label == '%':
+            if symbol_type == 'float' and node.label == '%':
                 raise Exception("Error: incompatible type %: float")
 
             string = '%r{} = {} {}{} {}, {}\n'.format(
@@ -345,7 +348,7 @@ define void @print_char(i8 %a){
             reg = self.register
             self.register += 1
             string = "%r{} = {} {} {}, {}\n".format(
-                reg, self.optype[value[1]]['-'] ,self.format_dict[value[1]], self.null[value[1]], value[0]
+                reg, self.optype[value[1]]['-'], self.format_dict[value[1]], self.null[value[1]], value[0]
             )
             self.file.write(string)
             return '%r' + str(reg), value[1]
@@ -409,3 +412,21 @@ define void @print_char(i8 %a){
             ','.join(args)
         )
         self.file.write(string)
+
+    def go_to_label(self, label):
+        string = "br label %{}".format(label)
+        self.file.write(string)
+
+    def loop(self, node, symbol_table):
+        if node.children[0].node_type == 'for initial':
+            self.solve_llvm_node(node.children[0][0], symbol_table)
+
+        self.go_to_label("l{}".format(self.register))
+        self.register += 1
+        for child in node.children:
+            if child.node_type == "for condition":
+                ...
+            elif child.node_type == 'for update':
+                ...
+            else:
+                ...

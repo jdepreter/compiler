@@ -2,9 +2,7 @@
 
 int main()
 {
-    int i = 5;
-    int* j = &i;
-    int** x = &j;
-    **x = 3;
-    printf("%d", **x);
+    for (int x = 5; x < 10; x++){
+        printf("%d", x);
+    }
 }

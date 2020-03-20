@@ -19,6 +19,41 @@ class cVisitor(ParseTreeVisitor):
         return self.visitChildren(ctx)
 
 
+    # Visit a parse tree produced by cParser#scope.
+    def visitScope(self, ctx:cParser.ScopeContext):
+        return self.visitChildren(ctx)
+
+
+    # Visit a parse tree produced by cParser#ifelse.
+    def visitIfelse(self, ctx:cParser.IfelseContext):
+        return self.visitChildren(ctx)
+
+
+    # Visit a parse tree produced by cParser#for_loop.
+    def visitFor_loop(self, ctx:cParser.For_loopContext):
+        return self.visitChildren(ctx)
+
+
+    # Visit a parse tree produced by cParser#while_loop.
+    def visitWhile_loop(self, ctx:cParser.While_loopContext):
+        return self.visitChildren(ctx)
+
+
+    # Visit a parse tree produced by cParser#for_initial.
+    def visitFor_initial(self, ctx:cParser.For_initialContext):
+        return self.visitChildren(ctx)
+
+
+    # Visit a parse tree produced by cParser#for_condition.
+    def visitFor_condition(self, ctx:cParser.For_conditionContext):
+        return self.visitChildren(ctx)
+
+
+    # Visit a parse tree produced by cParser#for_update.
+    def visitFor_update(self, ctx:cParser.For_updateContext):
+        return self.visitChildren(ctx)
+
+
     # Visit a parse tree produced by cParser#method_call.
     def visitMethod_call(self, ctx:cParser.Method_callContext):
         return self.visitChildren(ctx)
@@ -26,11 +61,6 @@ class cVisitor(ParseTreeVisitor):
 
     # Visit a parse tree produced by cParser#args.
     def visitArgs(self, ctx:cParser.ArgsContext):
-        return self.visitChildren(ctx)
-
-
-    # Visit a parse tree produced by cParser#scope.
-    def visitScope(self, ctx:cParser.ScopeContext):
         return self.visitChildren(ctx)
 
 

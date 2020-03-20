@@ -2,13 +2,21 @@ grammar c;
 
 c: (line)* ;
 
-line: ((definition SEMICOLON)| (assignment SEMICOLON) | (bool1 SEMICOLON)| ifelse | scope);
+line: ((definition SEMICOLON)| (assignment SEMICOLON) | (bool1 SEMICOLON)| ifelse | for_loop | while_loop | scope);
 
 scope: LCURLYBRACE (line)* RCURLYBRACE;
 
-ifelse : IF LBRACKET bool1 RBRACKET (scope | (bool1 SEMICOLON)| (assignment SEMICOLON) |ifelse)
+ifelse : IF LBRACKET (bool1 | assignment) RBRACKET (scope | (bool1 SEMICOLON)| (assignment SEMICOLON) |ifelse)
 (ELSE (scope | (bool1 SEMICOLON)| (assignment SEMICOLON)|ifelse))?;
 
+for_loop : FOR LBRACKET for_initial SEMICOLON for_condition SEMICOLON for_update RBRACKET
+        (scope | (bool1 SEMICOLON)| (assignment SEMICOLON) | for_loop);
+
+while_loop : WHILE LBRACKET for_condition RBRACKET scope;
+
+for_initial : (definition | );
+for_condition : (bool1 | assignment | );
+for_update : (bool1 | assignment | );
 
 method_call: IDENTIFIER LBRACKET (args)? RBRACKET;
 
@@ -127,6 +135,8 @@ FLOAT:
 
 IF : 'if';
 ELSE : 'else';
+FOR : 'for';
+WHILE : 'while';
 AMPERSAND: '&';
 PLUSPLUS : '++';
 PLUS : '+';

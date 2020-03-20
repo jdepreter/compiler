@@ -26,6 +26,69 @@ class cListener(ParseTreeListener):
         pass
 
 
+    # Enter a parse tree produced by cParser#scope.
+    def enterScope(self, ctx:cParser.ScopeContext):
+        pass
+
+    # Exit a parse tree produced by cParser#scope.
+    def exitScope(self, ctx:cParser.ScopeContext):
+        pass
+
+
+    # Enter a parse tree produced by cParser#ifelse.
+    def enterIfelse(self, ctx:cParser.IfelseContext):
+        pass
+
+    # Exit a parse tree produced by cParser#ifelse.
+    def exitIfelse(self, ctx:cParser.IfelseContext):
+        pass
+
+
+    # Enter a parse tree produced by cParser#for_loop.
+    def enterFor_loop(self, ctx:cParser.For_loopContext):
+        pass
+
+    # Exit a parse tree produced by cParser#for_loop.
+    def exitFor_loop(self, ctx:cParser.For_loopContext):
+        pass
+
+
+    # Enter a parse tree produced by cParser#while_loop.
+    def enterWhile_loop(self, ctx:cParser.While_loopContext):
+        pass
+
+    # Exit a parse tree produced by cParser#while_loop.
+    def exitWhile_loop(self, ctx:cParser.While_loopContext):
+        pass
+
+
+    # Enter a parse tree produced by cParser#for_initial.
+    def enterFor_initial(self, ctx:cParser.For_initialContext):
+        pass
+
+    # Exit a parse tree produced by cParser#for_initial.
+    def exitFor_initial(self, ctx:cParser.For_initialContext):
+        pass
+
+
+    # Enter a parse tree produced by cParser#for_condition.
+    def enterFor_condition(self, ctx:cParser.For_conditionContext):
+        pass
+
+    # Exit a parse tree produced by cParser#for_condition.
+    def exitFor_condition(self, ctx:cParser.For_conditionContext):
+        pass
+
+
+    # Enter a parse tree produced by cParser#for_update.
+    def enterFor_update(self, ctx:cParser.For_updateContext):
+        pass
+
+    # Exit a parse tree produced by cParser#for_update.
+    def exitFor_update(self, ctx:cParser.For_updateContext):
+        pass
+
+
     # Enter a parse tree produced by cParser#method_call.
     def enterMethod_call(self, ctx:cParser.Method_callContext):
         pass
@@ -41,15 +104,6 @@ class cListener(ParseTreeListener):
 
     # Exit a parse tree produced by cParser#args.
     def exitArgs(self, ctx:cParser.ArgsContext):
-        pass
-
-
-    # Enter a parse tree produced by cParser#scope.
-    def enterScope(self, ctx:cParser.ScopeContext):
-        pass
-
-    # Exit a parse tree produced by cParser#scope.
-    def exitScope(self, ctx:cParser.ScopeContext):
         pass
 
 

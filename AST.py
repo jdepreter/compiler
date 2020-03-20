@@ -1,6 +1,7 @@
 from graphviz import Digraph
 from helperfuncs import get_return_type
 
+
 class Node:
     def __init__(self, node_id, node_type, label, parent, ctx):
         self.id = node_id
@@ -146,7 +147,7 @@ class ASTVisitor:
             queue = queue[1:]
             queue += current_node.children
 
-            if len(current_node.children) == 1 and current_node.parent is not None:
+            if len(current_node.children) == 1 and current_node.parent is not None and not 'for' in current_node.label:
                 index = current_node.parent.children.index(current_node)
                 current_node.parent.children.remove(current_node)
                 current_node.parent.children[index:index] = current_node.children
