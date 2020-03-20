@@ -2,14 +2,17 @@ grammar c;
 
 c: (line)* ;
 
-line: ((definition SEMICOLON)| (assignment SEMICOLON) | (bool1 SEMICOLON)| (method_call SEMICOLON) | scope);
+line: ((definition SEMICOLON)| (assignment SEMICOLON) | (bool1 SEMICOLON)| ifelse | scope);
+
+scope: LCURLYBRACE (line)* RCURLYBRACE;
+
+ifelse : IF LBRACKET bool1 RBRACKET (scope | (bool1 SEMICOLON)| (assignment SEMICOLON) |ifelse)
+(ELSE (scope | (bool1 SEMICOLON)| (assignment SEMICOLON)|ifelse))?;
 
 
 method_call: IDENTIFIER LBRACKET (args)? RBRACKET;
 
 args :  bool1 (',' bool1)*;
-
-scope: LCURLYBRACE (line)* RCURLYBRACE;
 
 //declaration: CONST? var_type IDENTIFIER EQUALS bool1;
 definition: CONST? var_type ((variable_identifier|assignment2)(','(variable_identifier|assignment2))*);
@@ -37,12 +40,7 @@ increment_var_first: IDENTIFIER(MINMIN|PLUSPLUS);
 
 increment_op_first: (MINMIN|PLUSPLUS)IDENTIFIER;
 
-EQUALS: '=';
-CONST : 'const';
-INT_TYPE: 'int';
-FLOAT_TYPE: 'float';
-CHAR_TYPE: 'char';
-IDENTIFIER: [a-zA-Z_][0-9a-zA-Z_]*;
+
 pointer_type: (INT_TYPE | FLOAT_TYPE | CHAR_TYPE)MAAL+;
 
 bool1
@@ -95,6 +93,7 @@ rvalue
     |FLOAT
     |CHAR
     |AMPERSAND IDENTIFIER
+    |method_call
     ;
 lvalue
     :IDENTIFIER
@@ -123,6 +122,8 @@ FLOAT:
     [1-9][0-9]*('.'[0-9]+) | '0.'[0-9]+
     ;
 
+IF : 'if';
+ELSE : 'else';
 AMPERSAND: '&';
 PLUSPLUS : '++';
 PLUS : '+';
@@ -151,6 +152,12 @@ INT
     ;
 
 CHAR: '\''[ -~]'\'';
+EQUALS: '=';
+CONST : 'const';
+INT_TYPE: 'int';
+FLOAT_TYPE: 'float';
+CHAR_TYPE: 'char';
+IDENTIFIER: [a-zA-Z_][0-9a-zA-Z_]*;
 
 // empty : '' ;
 
