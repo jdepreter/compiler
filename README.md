@@ -41,6 +41,22 @@ Also make sure graphviz is installed on your system for AST dot output.
 
 `pip install -r requirements.txt`
 
+### Project Structure
+`AST.py`: AST Structure and visitor class.
+
+`cCustomListener.py`: Generates the AST.
+
+`cErrorListener.py`: Listens to ANTLR errors and throws syntax errors.
+
+`compile.py`: Execution script.
+
+`LLVM_CONVERTER.py`: Traverses the AST and generates LLVM code.
+
+`symbolTables.py`: Data structure for symbol table.
+
+`/ANTLR/LLVM/c.g4`: ANTLR grammar.
+
+
 ### Building ANLTR Classes
 `build.sh`
 
