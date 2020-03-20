@@ -2,13 +2,17 @@ grammar c;
 
 c: (line)* ;
 
-line: ((definition SEMICOLON)| (assignment SEMICOLON) | (bool1 SEMICOLON)| ifelse | scope);
+line: ((definition SEMICOLON)| (assignment SEMICOLON) | (bool1 SEMICOLON)| ifelse | scope |switchcase);
 
 scope: LCURLYBRACE (line)* RCURLYBRACE;
 
 ifelse : IF LBRACKET bool1 RBRACKET (scope | (bool1 SEMICOLON)| (assignment SEMICOLON) |ifelse)
 (ELSE (scope | (bool1 SEMICOLON)| (assignment SEMICOLON)|ifelse))?;
 
+switchcase: SWITCH LBRACKET value RBRACKET LCURLYBRACE
+(CASE (INT|FLOAT|CHAR) ':' (scope | (bool1 SEMICOLON)| (assignment SEMICOLON) |ifelse)*(BREAK SEMICOLON)?)*
+DEFAULT ':'(scope | (bool1 SEMICOLON)| (assignment SEMICOLON) |ifelse)*(BREAK SEMICOLON)?
+RCURLYBRACE;
 
 method_call: IDENTIFIER LBRACKET (args)? RBRACKET;
 
@@ -127,6 +131,10 @@ FLOAT:
 
 IF : 'if';
 ELSE : 'else';
+SWITCH: 'switch';
+CASE: 'case';
+DEFAULT: 'default';
+BREAK: 'break';
 AMPERSAND: '&';
 PLUSPLUS : '++';
 PLUS : '+';

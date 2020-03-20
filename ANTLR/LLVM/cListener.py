@@ -3,7 +3,7 @@ from antlr4 import *
 if __name__ is not None and "." in __name__:
     from .cParser import cParser
 else:
-    from cParser import cParser
+    from ANTLR.LLVM.cParser import cParser
 
 # This class defines a complete listener for a parse tree produced by cParser.
 class cListener(ParseTreeListener):
@@ -26,6 +26,33 @@ class cListener(ParseTreeListener):
         pass
 
 
+    # Enter a parse tree produced by cParser#scope.
+    def enterScope(self, ctx:cParser.ScopeContext):
+        pass
+
+    # Exit a parse tree produced by cParser#scope.
+    def exitScope(self, ctx:cParser.ScopeContext):
+        pass
+
+
+    # Enter a parse tree produced by cParser#ifelse.
+    def enterIfelse(self, ctx:cParser.IfelseContext):
+        pass
+
+    # Exit a parse tree produced by cParser#ifelse.
+    def exitIfelse(self, ctx:cParser.IfelseContext):
+        pass
+
+
+    # Enter a parse tree produced by cParser#switchcase.
+    def enterSwitchcase(self, ctx:cParser.SwitchcaseContext):
+        pass
+
+    # Exit a parse tree produced by cParser#switchcase.
+    def exitSwitchcase(self, ctx:cParser.SwitchcaseContext):
+        pass
+
+
     # Enter a parse tree produced by cParser#method_call.
     def enterMethod_call(self, ctx:cParser.Method_callContext):
         pass
@@ -41,15 +68,6 @@ class cListener(ParseTreeListener):
 
     # Exit a parse tree produced by cParser#args.
     def exitArgs(self, ctx:cParser.ArgsContext):
-        pass
-
-
-    # Enter a parse tree produced by cParser#scope.
-    def enterScope(self, ctx:cParser.ScopeContext):
-        pass
-
-    # Exit a parse tree produced by cParser#scope.
-    def exitScope(self, ctx:cParser.ScopeContext):
         pass
 
 
