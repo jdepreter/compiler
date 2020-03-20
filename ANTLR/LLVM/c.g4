@@ -97,13 +97,16 @@ rvalue
     ;
 lvalue
     :IDENTIFIER
-    |MAAL IDENTIFIER
-    |MAAL LBRACKET address RBRACKET
+    |dereference
+    ;
+
+dereference
+    :MAAL+ IDENTIFIER
+    |MAAL+ LBRACKET address RBRACKET
     ;
 
 address
     :(INT(PLUS))*IDENTIFIER((PLUS|MIN)INT)*
-
     ;
 
 operator: MAAL | DEEL;

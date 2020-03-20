@@ -48,8 +48,8 @@ class Node:
 
         c0 = None
         c1 = None
-        c0_type =self.children[0].symbol_type
-        c1_type =self.children[1].symbol_type
+        c0_type = self.children[0].symbol_type
+        c1_type = self.children[1].symbol_type
         symbol_type = get_return_type(c0_type, c1_type)
         if '.' not in str(self.children[0].label):
             c0 = int(self.children[0].label)
@@ -152,6 +152,55 @@ class ASTVisitor:
                 current_node.parent.children[index:index] = current_node.children
                 current_node.children[0].parent = current_node.parent
                 del current_node
+
+    def unary_fold(self):
+        queue = [self.startnode]
+        visited = []
+        while len(queue) > 0:
+            current_node = queue[0]
+            queue = queue[1:]
+            if current_node.id in visited:
+                continue
+            visited.append(current_node.id)
+
+            if current_node.node_type in ['unary min', 'unary plus']:
+                unary_list = [current_node.children[1], current_node]
+                u_current_node = unary_list[0]
+                while len(u_current_node.children) > 0:
+                    u_current_node = unary_list[0]
+                    visited.append(u_current_node.id)
+                    if len(u_current_node.children) < 1:
+                        unary_list = unary_list[1:]
+                        break
+                    unary_list.insert(0, u_current_node.children[1])
+
+                for u_node in unary_list:
+                    if not u_node.children[1].is_literal():
+                        break
+                    if u_node.node_type == 'unary min':
+                        print('-', u_node)
+                        u_node.node_type = u_node.children[1].node_type
+                        if u_node.node_type == 'float':
+                            u_node.label = str(-float(u_node.children[1].label))
+                        else:
+                            u_node.label = str(-int(u_node.children[1].label))
+                        del u_node.children[1]
+                        del u_node.children[0]
+                        u_node.children = []
+                    elif u_node.node_type == 'unary plus':
+                        print('+', u_node)
+                        if not u_node.children[1].is_literal():
+                            break
+                        u_node.node_type = u_node.children[1].node_type
+                        u_node.label = u_node.children[1].label
+                        del u_node.children[1]
+                        del u_node.children[0]
+                        u_node.children = []
+                    else:
+                        raise Exception('wtf gast')
+            else:
+                queue += current_node.children
+
 
     def maal(self):
         queue = [self.startnode]

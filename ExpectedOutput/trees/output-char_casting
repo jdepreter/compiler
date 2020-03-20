@@ -1,0 +1,111 @@
+digraph {
+	1 [label=C]
+	3 [label=definition]
+	1 -> 3
+	4 [label=char]
+	3 -> 4
+	5 [label=assignment2]
+	3 -> 5
+	6 [label=c]
+	5 -> 6
+	14 [label=99]
+	5 -> 14
+	16 [label=definition]
+	1 -> 16
+	17 [label=char]
+	16 -> 17
+	18 [label=assignment2]
+	16 -> 18
+	19 [label=b]
+	18 -> 19
+	27 [label=98]
+	18 -> 27
+	29 [label=definition]
+	1 -> 29
+	30 [label=char]
+	29 -> 30
+	31 [label=assignment2]
+	29 -> 31
+	32 [label=a]
+	31 -> 32
+	41 [label="+"]
+	31 -> 41
+	40 [label=b]
+	41 -> 40
+	46 [label=c]
+	41 -> 46
+	48 [label=definition]
+	1 -> 48
+	49 [label=char]
+	48 -> 49
+	50 [label=assignment2]
+	48 -> 50
+	51 [label=d]
+	50 -> 51
+	60 [label="+"]
+	50 -> 60
+	59 [label=b]
+	60 -> 59
+	65 [label=2]
+	60 -> 65
+	67 [label=definition]
+	1 -> 67
+	68 [label=int]
+	67 -> 68
+	69 [label=assignment2]
+	67 -> 69
+	70 [label=x]
+	69 -> 70
+	79 [label="+"]
+	69 -> 79
+	78 [label=a]
+	79 -> 78
+	84 [label=1]
+	79 -> 84
+	86 [label=definition]
+	1 -> 86
+	87 [label=int]
+	86 -> 87
+	88 [label=assignment2]
+	86 -> 88
+	89 [label=y]
+	88 -> 89
+	98 [label="-"]
+	88 -> 98
+	97 [label=b]
+	98 -> 97
+	103 [label=1]
+	98 -> 103
+	105 [label=method_call]
+	1 -> 105
+	106 [label=printf]
+	105 -> 106
+	115 [label=b]
+	105 -> 115
+	116 [label="empty arg"]
+	105 -> 116
+	118 [label=method_call]
+	1 -> 118
+	119 [label=printf]
+	118 -> 119
+	128 [label=c]
+	118 -> 128
+	129 [label="empty arg"]
+	118 -> 129
+	131 [label=method_call]
+	1 -> 131
+	132 [label=printf]
+	131 -> 132
+	141 [label=d]
+	131 -> 141
+	142 [label="empty arg"]
+	131 -> 142
+	144 [label=method_call]
+	1 -> 144
+	145 [label=printf]
+	144 -> 145
+	154 [label=y]
+	144 -> 154
+	155 [label="empty arg"]
+	144 -> 155
+}
