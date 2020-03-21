@@ -545,3 +545,12 @@ class CASTGenerator(cListener):
 
     def exitCondition(self, ctx:cParser.ConditionContext):
         self.currentNode = self.currentNode.parent
+
+    def enterIfelse(self, ctx:cParser.IfelseContext):
+        node = self.create_node("ifelse", "ifelse", self.currentNode, ctx)
+        self.currentNode.children.append(node)
+        self.currentNode = node
+        self.currentNode.symbol_table = self.symbol_table.get_current_scope()
+
+    def exitIfelse(self, ctx:cParser.IfelseContext):
+        self.currentNode = self.currentNode.parent

@@ -62,7 +62,7 @@ def double_to_hex(f):
 
 def main(argv):
     # print(double_to_hex(12.99))
-    to_llvm(argv[1], argv[2])
+    print(to_llvm(argv[1], argv[2]))
 
 
 if __name__ == '__main__':

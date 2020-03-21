@@ -6,9 +6,10 @@ class LLVM_Converter:
         self.ast = ast
         self.stack = []
         self.register = 0
+        self.label = 0
         self.file = file
         self.null = {'int': '0', 'float': double_to_hex(0.0)}
-        self.format_dict = {'int': 'i32', 'float': 'float', 'char': 'i8', 'bool':'i1'}
+        self.format_dict = {'int': 'i32', 'float': 'float', 'char': 'i8', 'bool': 'i1'}
         self.optype = {'int':
             {
                 '+': 'add',
@@ -45,24 +46,24 @@ class LLVM_Converter:
             'char': {'int': 'zext', 'float': 'sitofp', 'bool': 'trunc'}
         }
         self.bool_dict = {'int':
-                              {
-                                  '==': 'icmp eq',
-                                  '!=': 'icmp ne',
-                                  '>': 'icmp sgt',
-                                  '<': 'icmp slt',
-                                  '>=': 'icmp sge',
-                                  '<=': 'icmp sle'
-                              },
-                          'float':
-                              {
-                                  '==': 'fcmp oeq',
-                                  '!=': 'fcmp ole',
-                                  '>': 'fcmp ogt',
-                                  '<': 'fcmp olt',
-                                  '>=': 'fcmp oge',
-                                  '<=': 'fcmp ole'
-                              }
-                          }
+            {
+                '==': 'icmp eq',
+                '!=': 'icmp ne',
+                '>': 'icmp sgt',
+                '<': 'icmp slt',
+                '>=': 'icmp sge',
+                '<=': 'icmp sle'
+            },
+            'float':
+                {
+                    '==': 'fcmp oeq',
+                    '!=': 'fcmp ole',
+                    '>': 'fcmp ogt',
+                    '<': 'fcmp olt',
+                    '>=': 'fcmp oge',
+                    '<=': 'fcmp ole'
+                }
+        }
         self.convert = lambda x: self.format_dict[get_type_and_stars(x)[0]]
 
     def to_llvm(self):
@@ -109,12 +110,12 @@ define void @print_char(i8 %a){
                         "}\n")
 
     # helpermethod to write used for declaration or definition
-    def allocate_node(self, node, symbol_table, type):
+    def allocate_node(self, node, symbol_table, symbol_type):
         variable = node.label
         if node.node_type == 'assignment2':
             variable = node.children[0].label
         reg_nr = symbol_table.get_symbol(variable, node.ctx.start).current_register
-        sym_type, stars = get_type_and_stars(type)
+        sym_type, stars = get_type_and_stars(symbol_type)
         string = "%a{} = alloca {}{} \n".format(
             reg_nr,
             self.format_dict[sym_type], stars
@@ -126,9 +127,9 @@ define void @print_char(i8 %a){
                 register = self.assign_node(node.children[1], symbol_table)
             else:
                 register = self.solve_math(node.children[1], symbol_table)
-            self.store_symbol("%a" + str(reg_nr), register[0], type, register[1])
+            self.store_symbol("%a" + str(reg_nr), register[0], symbol_type, register[1])
 
-        return "%a" + str(reg_nr)
+        return "%a" + str(reg_nr), symbol_type
 
     def assign_node(self, node, symbol_table):
         symbol = symbol_table.get_symbol(str(node.children[0].label), node.ctx.start)
@@ -139,7 +140,7 @@ define void @print_char(i8 %a){
             register = self.solve_math(node.children[1], symbol_table)
         self.store_symbol(address, register[0], symbol.symbol_type, register[1], node.children[0].label.count('*'))
         symbol.assigned = True
-        return register
+        return register, symbol.symbol_type
 
     def not_value(self, register, symbol_type):
         reg = self.register
@@ -152,7 +153,7 @@ define void @print_char(i8 %a){
         string2 = "%r{} = zext i1 %r{} to i32".format(reg2, reg)
         self.file.write(string2)
 
-        return '%r'+str(reg2), 'int'
+        return '%r' + str(reg2), 'int'
 
     def solve_llvm_node(self, node, symbol_table):
         # TODO x++ & ++x staan nog ni ok in den boom && add char / double && maybe arrays && typeswitching + warnings
@@ -166,27 +167,32 @@ define void @print_char(i8 %a){
                 typing = node.children[1]
                 varstart = 2
             for i in range(varstart, len(node.children)):
-                address = self.allocate_node(node.children[i], symbol_table, typing.label)
+                address, symbol_type = self.allocate_node(node.children[i], symbol_table, typing.label)
+            return address, symbol_type
 
         elif node.node_type == 'assignment':
             return self.assign_node(node, symbol_table)
 
         elif node.node_type == 'method_call':
-            self.call_method(node, symbol_table)
+            return self.call_method(node, symbol_table)
 
         elif node.node_type == 'for':
-            self.loop(node, symbol_table)
+            return self.loop(node, symbol_table)
+
+        elif node.node_type == 'ifelse':
+            return self.if_else(node, symbol_table)
 
         else:
 
-            sol = self.solve_math(node, symbol_table)[0]
+            sol = self.solve_math(node, symbol_table)
 
-            if sol is None:
+            if sol[0] is None:
                 for child in node.children:
                     if node.symbol_table is not None:
                         symbol_table = node.symbol_table
 
-                    self.solve_llvm_node(child, symbol_table)
+                    sol = self.solve_llvm_node(child, symbol_table)
+            return sol
 
     def cast_value(self, register, current_type, new_type):
 
@@ -228,12 +234,12 @@ define void @print_char(i8 %a){
         return current_register, address_sym_type + (len(address_stars) - dereference) * '*'
 
     def store_float(self, _float):
-        _float =float(_float)
+        _float = float(_float)
         reg = self.register
         self.register += 1
         string = "%r{} = fptrunc double {} to float\n".format(str(reg), str(_float))
         self.file.write(string)
-        return '%r'+str(reg)
+        return '%r' + str(reg)
 
     def load_symbol(self, symbol):
         reg = self.register
@@ -361,7 +367,8 @@ define void @print_char(i8 %a){
         elif node.node_type == 'lvalue':
             sym = symbol_table.get_assigned_symbol(node.label, node.ctx.start)
             sym_type, stars = get_type_and_stars(sym.symbol_type)
-            address, symbol_type_stars = self.dereference('%a' + str(sym.current_register), stars, sym_type, node.label.count('*'))
+            address, symbol_type_stars = self.dereference('%a' + str(sym.current_register), stars, sym_type,
+                                                          node.label.count('*'))
             reg = self.register
             self.register += 1
             sym_type, stars = get_type_and_stars(symbol_type_stars)
@@ -424,7 +431,7 @@ define void @print_char(i8 %a){
         self.file.write(string)
 
     def add_label(self, label):
-        string = "; <label>:{}:\n".format(label)
+        string = "; <label>:%{}:\n".format(label)
         self.file.write(string)
 
     def loop(self, node, symbol_table):
@@ -437,8 +444,8 @@ define void @print_char(i8 %a){
             "update": None,
             "next_block": None,
         }
-        self.go_to_label("l{}".format(self.register))
-        self.add_label("l{}".format(self.register))
+        self.go_to_label("{}".format(self.register))
+        self.add_label("{}".format(self.register))
         self.register += 1
         for child in node.children:
             if child.node_type == "condition":
@@ -450,3 +457,30 @@ define void @print_char(i8 %a){
             else:
                 self.solve_llvm_node(child, child.symbol_table)
                 self.go_to_label(labels["update"])
+
+    def if_else(self, node, symbol_table):
+        condition = node.children[0]
+        reg, value_type = self.solve_llvm_node(condition, symbol_table)
+        string = "%r{} = icmp ne {} {}, 0\n".format(
+            self.register, self.format_dict[value_type], reg
+        )
+        self.file.write(string)
+        self.go_to_conditional("%r" + str(self.register), self.label, self.label + 1)
+        self.register += 1
+        self.add_label(self.label)
+        self.label += 1
+        # schrijf if true gedeelte
+
+        self.solve_llvm_node(node.children[1], symbol_table)
+        self.go_to_label(self.label + len(node.children) - 2)
+
+        # schrijf if false gedeelte
+        if len(node.children) > 2:
+            self.add_label(self.label)
+            self.label += 1
+            self.solve_llvm_node(node.children[1], symbol_table)
+
+        # schrijf alle volgende instructies achter een label
+        self.add_label(self.label)
+        self.label += 1
+        return
