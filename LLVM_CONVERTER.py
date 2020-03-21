@@ -169,11 +169,7 @@ define void @print_char(i8 %a){
                 address = self.allocate_node(node.children[i], symbol_table, typing.label)
 
         elif node.node_type == 'assignment':
-            self.assign_node(node, symbol_table)
-            # symbol = symbol_table.get_symbol(str(node.children[0].label), None)
-            # address = '%a' + str(symbol.current_register)
-            # register = self.solve_math(node.children[1], symbol_table, symbol.symbol_type)
-            # self.store_symbol(address, register, symbol.symbol_type)
+            return self.assign_node(node, symbol_table)
 
         elif node.node_type == 'method_call':
             self.call_method(node, symbol_table)
@@ -445,9 +441,12 @@ define void @print_char(i8 %a){
         self.add_label("l{}".format(self.register))
         self.register += 1
         for child in node.children:
-            if child.node_type == "for condition":
-                ...
+            if child.node_type == "condition":
+                self.solve_llvm_node(child, child.symbol_table)
+
             elif child.node_type == 'for update':
-                ...
+                self.solve_llvm_node(child, child.symbol_table)
+                self.go_to_label(labels["comparison"])
             else:
-                ...
+                self.solve_llvm_node(child, child.symbol_table)
+                self.go_to_label(labels["update"])

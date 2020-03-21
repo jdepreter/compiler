@@ -513,15 +513,6 @@ class CASTGenerator(cListener):
     def exitFor_initial(self, ctx:cParser.For_initialContext):
         self.currentNode = self.currentNode.parent
 
-    def enterFor_condition(self, ctx:cParser.For_conditionContext):
-        node = self.create_node("for condition", "for condition", self.currentNode, ctx)
-        self.currentNode.children.append(node)
-        self.currentNode = node
-        self.currentNode.symbol_table = self.symbol_table.get_current_scope()
-
-    def exitFor_condition(self, ctx:cParser.For_conditionContext):
-        self.currentNode = self.currentNode.parent
-
     def enterFor_update(self, ctx:cParser.For_updateContext):
         node = self.create_node("for update", "for update", self.currentNode, ctx)
         self.currentNode.children.append(node)
@@ -541,3 +532,16 @@ class CASTGenerator(cListener):
         self.currentNode = self.currentNode.parent
 
     # IF ELSE
+    def enterCondition(self, ctx:cParser.ConditionContext):
+        """
+        Ook gebruikt voor loops
+        :param ctx:
+        :return: nothing
+        """
+        node = self.create_node("condition", "condition", self.currentNode, ctx)
+        self.currentNode.children.append(node)
+        self.currentNode = node
+        self.currentNode.symbol_table = self.symbol_table.get_current_scope()
+
+    def exitCondition(self, ctx:cParser.ConditionContext):
+        self.currentNode = self.currentNode.parent

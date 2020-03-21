@@ -2,25 +2,25 @@ grammar c;
 
 c: (line)* ;
 
-line: ((definition SEMICOLON)| (assignment SEMICOLON) | (bool1 SEMICOLON)| ifelse | for_loop | while_loop | scope |switchcase);
+line: ((definition SEMICOLON)| (assignment_line SEMICOLON) | (bool1 SEMICOLON)| ifelse | for_loop | while_loop | scope |switchcase);
 
 scope: LCURLYBRACE (line)* RCURLYBRACE;
 
-ifelse : IF LBRACKET (bool1 | assignment) RBRACKET (scope | (bool1 SEMICOLON)| (assignment SEMICOLON) |ifelse)
-(ELSE (scope | (bool1 SEMICOLON)| (assignment SEMICOLON)|ifelse))?;
+ifelse : IF LBRACKET condition RBRACKET (scope | (bool1 SEMICOLON)| (assignment_line SEMICOLON) |ifelse)
+(ELSE (scope | (bool1 SEMICOLON)| (assignment_line SEMICOLON)|ifelse))?;
 
-for_loop : FOR LBRACKET for_initial SEMICOLON for_condition SEMICOLON for_update RBRACKET
-        (scope | (bool1 SEMICOLON)| (assignment SEMICOLON) | for_loop);
+for_loop : FOR LBRACKET for_initial SEMICOLON condition SEMICOLON for_update RBRACKET
+        (scope | (bool1 SEMICOLON)| (assignment_line SEMICOLON) | for_loop);
 
-while_loop : WHILE LBRACKET for_condition RBRACKET scope;
+while_loop : WHILE LBRACKET condition RBRACKET scope;
 
 for_initial : (definition | );
-for_condition : (bool1 | assignment | );
-for_update : (bool1 | assignment | );
+condition : (bool1 | assignment_line | );
+for_update : (bool1 | assignment_line | );
 
 switchcase: SWITCH LBRACKET value RBRACKET LCURLYBRACE
-(CASE (INT|FLOAT|CHAR) ':' (scope | (bool1 SEMICOLON)| (assignment SEMICOLON) |ifelse)*(BREAK SEMICOLON)?)*
-DEFAULT ':'(scope | (bool1 SEMICOLON)| (assignment SEMICOLON) |ifelse)*(BREAK SEMICOLON)?
+(CASE (INT|FLOAT|CHAR) ':' (scope | (bool1 SEMICOLON)| (assignment_line SEMICOLON) |ifelse)*(BREAK SEMICOLON)?)*
+DEFAULT ':'(scope | (bool1 SEMICOLON)| (assignment_line SEMICOLON) |ifelse)*(BREAK SEMICOLON)?
 RCURLYBRACE;
 
 method_call: IDENTIFIER LBRACKET (args)? RBRACKET;
@@ -31,6 +31,10 @@ args :  bool1 (',' bool1)*;
 definition: CONST? var_type ((variable_identifier|assignment2)(','(variable_identifier|assignment2))*);
 
 variable_identifier : IDENTIFIER;
+
+assignment_line
+    : assignment(COMMA assignment)?
+    ;
 
 assignment
     :lvalue EQUALS assignment
@@ -168,6 +172,7 @@ GE:'>=';
 LE:'<=';
 LCURLYBRACE:'{';
 RCURLYBRACE: '}';
+COMMA: ',';
 INT
     : '0'
     | [1-9][0-9]*

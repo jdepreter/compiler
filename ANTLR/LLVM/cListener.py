@@ -71,12 +71,12 @@ class cListener(ParseTreeListener):
         pass
 
 
-    # Enter a parse tree produced by cParser#for_condition.
-    def enterFor_condition(self, ctx:cParser.For_conditionContext):
+    # Enter a parse tree produced by cParser#condition.
+    def enterCondition(self, ctx:cParser.ConditionContext):
         pass
 
-    # Exit a parse tree produced by cParser#for_condition.
-    def exitFor_condition(self, ctx:cParser.For_conditionContext):
+    # Exit a parse tree produced by cParser#condition.
+    def exitCondition(self, ctx:cParser.ConditionContext):
         pass
 
 
@@ -131,6 +131,15 @@ class cListener(ParseTreeListener):
 
     # Exit a parse tree produced by cParser#variable_identifier.
     def exitVariable_identifier(self, ctx:cParser.Variable_identifierContext):
+        pass
+
+
+    # Enter a parse tree produced by cParser#assignment_line.
+    def enterAssignment_line(self, ctx:cParser.Assignment_lineContext):
+        pass
+
+    # Exit a parse tree produced by cParser#assignment_line.
+    def exitAssignment_line(self, ctx:cParser.Assignment_lineContext):
         pass
 
 

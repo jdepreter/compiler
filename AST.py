@@ -22,6 +22,7 @@ class Node:
     """
     Only Support Integers atm
     """
+
     def is_literal(self):
         try:
             float(self.label)
@@ -32,6 +33,7 @@ class Node:
     """
     TODO: Moet iteratief gemaakt worden
     """
+
     def only_literal_children(self):
         if not self.children:
             return self.is_literal()
@@ -96,8 +98,6 @@ class Node:
         elif self.label == '||':
             self.label = dic[c0 or c1]
 
-
-
         # INTEGER OPERATION
         if '.' not in str(self.children[0].label) and '.' not in str(self.children[1].label):
             self.label = int(self.label)
@@ -147,7 +147,8 @@ class ASTVisitor:
             queue = queue[1:]
             queue += current_node.children
 
-            if len(current_node.children) == 1 and current_node.parent is not None and not 'for' in current_node.label:
+            if len(current_node.children) == 1 and current_node.parent is not None and not 'for' in current_node.label \
+                    and not 'condition' in current_node.label:
                 index = current_node.parent.children.index(current_node)
                 current_node.parent.children.remove(current_node)
                 current_node.parent.children[index:index] = current_node.children
@@ -202,7 +203,6 @@ class ASTVisitor:
             else:
                 queue += current_node.children
 
-
     def maal(self):
         queue = [self.startnode]
         visited = []
@@ -232,11 +232,11 @@ class ASTVisitor:
                                 raise Exception("very suspicious " + child.node_type)
                         try:
                             index = current_node.children.index(child)
-                            current_node.children[index-1].parent = child
-                            current_node.children[index+1].parent = child
-                            child.children = [current_node.children[index-1], current_node.children[index+1]]
-                            current_node.children.remove(current_node.children[index+1])
-                            current_node.children.remove(current_node.children[index-1])
+                            current_node.children[index - 1].parent = child
+                            current_node.children[index + 1].parent = child
+                            child.children = [current_node.children[index - 1], current_node.children[index + 1]]
+                            current_node.children.remove(current_node.children[index + 1])
+                            current_node.children.remove(current_node.children[index - 1])
                         except:
                             print("halp")
                     else:
@@ -251,7 +251,7 @@ class ASTVisitor:
         queue = [self.startnode]
         visited = []
         while len(queue) > 0:
-            current_node = queue[len(queue)-1]
+            current_node = queue[len(queue) - 1]
             queue = queue[:-1]
             if current_node.id in visited:
                 continue
@@ -285,7 +285,8 @@ class ASTVisitor:
             current_node = nodes[0]
             nodes = nodes[1:]
 
-            if current_node.node_type in ["+", "-", "*", "/", "==", "!=", '>', '<', '>=', '<=', '&&', '||', 'boolop', 'bool2']:
+            if current_node.node_type in ["+", "-", "*", "/", "==", "!=", '>', '<', '>=', '<=', '&&', '||', 'boolop',
+                                          'bool2']:
                 current_node.only_literal_children()
             else:
                 nodes += current_node.children

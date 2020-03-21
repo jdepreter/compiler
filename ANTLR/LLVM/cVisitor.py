@@ -44,8 +44,8 @@ class cVisitor(ParseTreeVisitor):
         return self.visitChildren(ctx)
 
 
-    # Visit a parse tree produced by cParser#for_condition.
-    def visitFor_condition(self, ctx:cParser.For_conditionContext):
+    # Visit a parse tree produced by cParser#condition.
+    def visitCondition(self, ctx:cParser.ConditionContext):
         return self.visitChildren(ctx)
 
 
@@ -76,6 +76,11 @@ class cVisitor(ParseTreeVisitor):
 
     # Visit a parse tree produced by cParser#variable_identifier.
     def visitVariable_identifier(self, ctx:cParser.Variable_identifierContext):
+        return self.visitChildren(ctx)
+
+
+    # Visit a parse tree produced by cParser#assignment_line.
+    def visitAssignment_line(self, ctx:cParser.Assignment_lineContext):
         return self.visitChildren(ctx)
 
 

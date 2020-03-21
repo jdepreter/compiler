@@ -1,7 +1,4 @@
-for (int x = 1; x < 10; x++) {
-    printf(x);
-}
-
-while (x < 4) {
+int x = 8;
+if (x == 8) {
     printf(x);
 }
