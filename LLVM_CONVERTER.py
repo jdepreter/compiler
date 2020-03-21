@@ -414,14 +414,35 @@ define void @print_char(i8 %a){
         self.file.write(string)
 
     def go_to_label(self, label):
-        string = "br label %{}".format(label)
+        string = "br label %{}\n\n".format(label)
+        self.file.write(string)
+
+    def go_to_conditional(self, condition, label_true, label_false):
+        """
+        :param condition: register with value of condition, should be i1
+        :param label_true:
+        :param label_false:
+        :return: nothing
+        """
+        string = "br i1 {}, label %{}, label %{}\n\n".format(condition, label_true, label_false)
+        self.file.write(string)
+
+    def add_label(self, label):
+        string = "; <label>:{}:\n".format(label)
         self.file.write(string)
 
     def loop(self, node, symbol_table):
         if node.children[0].node_type == 'for initial':
-            self.solve_llvm_node(node.children[0][0], symbol_table)
+            self.solve_llvm_node(node.children[0].children[0], symbol_table)
 
+        labels = {
+            "code_block": None,
+            "comparison": None,
+            "update": None,
+            "next_block": None,
+        }
         self.go_to_label("l{}".format(self.register))
+        self.add_label("l{}".format(self.register))
         self.register += 1
         for child in node.children:
             if child.node_type == "for condition":
