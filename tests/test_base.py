@@ -5,38 +5,38 @@ from CustomExceptions import *
 
 class TestCase(unittest.TestCase):
     def test_basic_files(self):
-        to_llvm("basic_declaration.txt", "basic_declaration")
-        to_llvm("basic_definition.txt", "basic_definition")
+        self.assertEqual(to_llvm("basic_declaration.txt", "basic_declaration"), "")
+        self.assertEqual(to_llvm("basic_definition.txt", "basic_definition"), "")
 
     def test_scope(self):
-        to_llvm("scope_1.txt", "scope_1")
-        to_llvm("scope_empty.txt", "scope_empty")
-        to_llvm("scope_nested.txt", "scope_nested")
+        self.assertEqual(to_llvm("scope_1.txt", "scope_1"), "")
+        self.assertEqual(to_llvm("scope_empty.txt", "scope_empty"), "")
+        self.assertEqual(to_llvm("scope_nested.txt", "scope_nested"), "2\n3\n")
 
     def test_folding(self):
-        to_llvm("folding.txt", "folding")
+        self.assertEqual(to_llvm("folding.txt", "folding"), "40.000000\n13.000000\n")
 
     def test_bool_folding(self):
-        to_llvm("bool_testing.txt", "bool_testing")
+        self.assertEqual(to_llvm("bool_testing.txt", "bool_testing"), "6\n")
 
     def test_modulo(self):
-        to_llvm("modulo.txt", "modulo")
+        self.assertEqual(to_llvm("modulo.txt", "modulo"), "1\n")
 
     def test_char(self):
-        to_llvm("char_casting.txt", "char_casting")
-        to_llvm("char_folding.txt", "char_folding")
+        self.assertEqual(to_llvm("char_casting.txt", "char_casting"), "b\nc\nd\n97\n")
+        self.assertEqual(to_llvm("char_folding.txt", "char_folding"), "d\n")
 
     def test_pointers(self):
-        to_llvm("pointers.txt", "pointers")
-        to_llvm("pointer_dereference.txt", "pointer_dereference")
+        self.assertEqual(to_llvm("pointers.txt", "pointers"), "")
+        self.assertEqual(to_llvm("pointer_dereference.txt", "pointer_dereference"), "3\n")
 
     def test_not(self):
-        to_llvm("not_testing.txt", "not_testing")
+        self.assertEqual(to_llvm("not_testing.txt", "not_testing"), "1\n")
 
     def test_unary(self):
-        to_llvm("unary_magic.txt", "unary_magic")
-        to_llvm("unary_++.txt", "unary_++")
-        to_llvm("unary_--.txt", "unary_--")
+        self.assertEqual(to_llvm("unary_magic.txt", "unary_magic"), "3\n")
+        self.assertEqual(to_llvm("unary_++.txt", "unary_++"), "7\n9\n9\n")
+        self.assertEqual(to_llvm("unary_--.txt", "unary_--"), "5\n3\n3\n")
 
     def test_errors(self):
         with self.assertRaises(CSyntaxError):

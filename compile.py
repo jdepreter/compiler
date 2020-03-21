@@ -9,7 +9,8 @@ from LLVM_CONVERTER import LLVM_Converter
 
 from cErrorListener import CErrorListener
 
-import os, platform, subprocess
+import os, platform
+from subprocess import check_output
 
 
 def to_llvm(filename, outputname ):
@@ -47,9 +48,9 @@ def to_llvm(filename, outputname ):
     f.close()
 
     if platform.system() == 'Linux':
-        result = subprocess.call("clang llvm-{}.ll -o {} && ./{}".format(outputname, outputname, outputname), shell=True)
-        if result != 0:
-            raise Exception("Runtime Fail")
+        result = check_output("clang llvm-{}.ll -o {} && ./{}".format(outputname, outputname, outputname), shell=True)\
+            .decode("utf-8")
+        return result
 
 
 def double_to_hex(f):
