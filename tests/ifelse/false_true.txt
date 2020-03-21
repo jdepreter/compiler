@@ -1,5 +1,5 @@
-int y = 0;
-int x = 7;
+int y = 1;
+int x = 1;
 if (x == 8) {
     printf(x);
 }

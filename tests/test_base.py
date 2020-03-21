@@ -63,6 +63,12 @@ class TestCase(unittest.TestCase):
         with self.assertRaises(IncompatibleType):
             to_llvm("incompatible_type_error.txt", "incompatible_type")
 
+    def test_if_else(self):
+        self.assertEqual(to_llvm("./ifelse/true_true.txt", "true_true"), "8\n9\n")
+        self.assertEqual(to_llvm("./ifelse/true_false.txt", "true_false"), "8\n9\n")
+        self.assertEqual(to_llvm("./ifelse/false.txt", "false"), "f\nf\n2\n")
+        self.assertEqual(to_llvm("./ifelse/false_true.txt", "false"), "t\nf\n2\n")
+
 
 if __name__ == '__main__':
     unittest.main()

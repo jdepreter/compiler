@@ -417,7 +417,7 @@ define void @print_char(i8 %a){
         self.file.write(string)
 
     def go_to_label(self, label):
-        string = "br label %{}\n\n".format(label)
+        string = "br label %label{}\n\n".format(label)
         self.file.write(string)
 
     def go_to_conditional(self, condition, label_true, label_false):
@@ -427,11 +427,11 @@ define void @print_char(i8 %a){
         :param label_false:
         :return: nothing
         """
-        string = "br i1 {}, label %{}, label %{}\n\n".format(condition, label_true, label_false)
+        string = "br i1 {}, label %label{}, label %label{}\n\n".format(condition, label_true, label_false)
         self.file.write(string)
 
     def add_label(self, label):
-        string = "; <label>:%{}:\n".format(label)
+        string = "label{}:\n".format(label)
         self.file.write(string)
 
     def loop(self, node, symbol_table):
@@ -464,23 +464,23 @@ define void @print_char(i8 %a){
         string = "%r{} = icmp ne {} {}, 0\n".format(
             self.register, self.format_dict[value_type], reg
         )
+        label = self.label
+        self.label += len(node.children)
         self.file.write(string)
-        self.go_to_conditional("%r" + str(self.register), self.label, self.label + 1)
+        self.go_to_conditional("%r" + str(self.register), label, label + 1)
         self.register += 1
-        self.add_label(self.label)
-        self.label += 1
+        self.add_label(label)
         # schrijf if true gedeelte
 
         self.solve_llvm_node(node.children[1], symbol_table)
-        self.go_to_label(self.label + len(node.children) - 2)
+        self.go_to_label(label + len(node.children) - 1)
 
         # schrijf if false gedeelte
         if len(node.children) > 2:
-            self.add_label(self.label)
-            self.label += 1
-            self.solve_llvm_node(node.children[1], symbol_table)
+            self.add_label(label + 1)
+            self.solve_llvm_node(node.children[2], symbol_table)
+            self.go_to_label(label + 2)
 
         # schrijf alle volgende instructies achter een label
-        self.add_label(self.label)
-        self.label += 1
+        self.add_label(label + len(node.children) - 1)
         return
