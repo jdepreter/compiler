@@ -6,13 +6,14 @@ line: ((definition SEMICOLON)| (assignment_line SEMICOLON) | (bool1 SEMICOLON)| 
 
 scope: LCURLYBRACE (line)* RCURLYBRACE;
 
-ifelse : IF LBRACKET condition RBRACKET (scope | (bool1 SEMICOLON)| (assignment_line SEMICOLON) |ifelse)
-(ELSE (scope | (bool1 SEMICOLON)| (assignment_line SEMICOLON)|ifelse))?;
+ifelse : IF LBRACKET condition RBRACKET ((assignment_line SEMICOLON) | (bool1 SEMICOLON)| ifelse | for_loop | while_loop | scope |switchcase)
+(ELSE ((assignment_line SEMICOLON) | (bool1 SEMICOLON)| ifelse | for_loop | while_loop | scope |switchcase))?;
 
 for_loop : FOR LBRACKET for_initial SEMICOLON condition SEMICOLON for_update RBRACKET
         (scope | (bool1 SEMICOLON)| (assignment_line SEMICOLON) | for_loop);
 
-while_loop : WHILE LBRACKET condition RBRACKET scope;
+while_loop : (WHILE LBRACKET condition RBRACKET ((assignment_line SEMICOLON) | (bool1 SEMICOLON)| ifelse | for_loop | while_loop | scope |switchcase))
+            | (DO ((assignment_line SEMICOLON) | (bool1 SEMICOLON)| ifelse | for_loop | while_loop | scope |switchcase) WHILE LBRACKET condition RBRACKET SEMICOLON);
 
 for_initial : (definition | );
 condition : (bool1 | assignment_line | );
@@ -33,7 +34,7 @@ definition: CONST? var_type ((variable_identifier|assignment2)(','(variable_iden
 variable_identifier : IDENTIFIER;
 
 assignment_line
-    : assignment(COMMA assignment)?
+    : assignment(COMMA assignment)*
     ;
 
 assignment
@@ -146,6 +147,7 @@ IF : 'if';
 ELSE : 'else';
 FOR : 'for';
 WHILE : 'while';
+DO: 'do';
 SWITCH: 'switch';
 CASE: 'case';
 DEFAULT: 'default';
