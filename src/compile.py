@@ -3,17 +3,20 @@ import sys
 from antlr4 import *
 from ANTLR.LLVM.cLexer import cLexer
 from ANTLR.LLVM.cParser import cParser
-from cCustomListener import CASTGenerator
-from AST import ASTVisitor
-from LLVM_CONVERTER import LLVM_Converter
+from src.cCustomListener import CASTGenerator
+from src.AST import ASTVisitor
+from src.LLVM_CONVERTER import LLVM_Converter
 
-from cErrorListener import CErrorListener
+from src.cErrorListener import CErrorListener
 
-import os, platform
+import platform
 from subprocess import check_output
+from pathlib import Path
+
 
 
 def to_llvm(filename, outputname ):
+    Path("llvm").mkdir(parents=True, exist_ok=True)
     input_stream = FileStream(filename)
     lexer = cLexer(input_stream)
     lexer.removeErrorListeners()
@@ -29,8 +32,8 @@ def to_llvm(filename, outputname ):
     # printer.ast.to_dot(open("temp.dot", 'w'))
     visitor = ASTVisitor(printer.ast)
     graph = printer.ast.render_dot()
-    graph.save("1.txt", "output")
-    graph.render("1")
+    graph.save("{}-before".format(outputname), "trees")
+    graph.render("{}-before".format(outputname))
     visitor.startnode.symbol_table.warn_unused()
     visitor.clean_tree()
     visitor.fold_not()
@@ -40,16 +43,16 @@ def to_llvm(filename, outputname ):
     visitor.maal()
     visitor.constant_folding()
     graph = printer.ast.render_dot()
-    graph.save("output-{}".format(outputname), "output")
-    graph.render("output-{}".format(outputname))
-    f = open('llvm-{}.ll'.format(outputname), 'w')
+    graph.save("{}".format(outputname), "trees")
+    graph.render("{}".format(outputname))
+    f = open('./llvm/{}.ll'.format(outputname), 'w')
     converter = LLVM_Converter(visitor, f)
     converter.to_llvm()
     f.close()
 
     if platform.system() == 'Linux':
-        result = check_output("clang llvm-{}.ll -o {} && ./{}".format(outputname, outputname, outputname), shell=True)\
-            .decode("utf-8")
+        result = check_output("clang ./llvm/{}.ll -o ./llvm/{} && ./llvm/{}".format(outputname, outputname, outputname),
+                              shell=True).decode("utf-8")
         return result
 
 

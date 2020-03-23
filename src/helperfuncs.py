@@ -1,5 +1,5 @@
 import struct
-from CustomExceptions import *
+from src.CustomExceptions import *
 
 
 def get_return_type(type1, type2):

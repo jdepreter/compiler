@@ -1,4 +1,4 @@
-from helperfuncs import *
+from src.helperfuncs import *
 
 
 class LLVM_Converter:

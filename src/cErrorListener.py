@@ -1,5 +1,5 @@
 from antlr4.error.ErrorListener import ErrorListener
-from CustomExceptions import CSyntaxError
+from src.CustomExceptions import CSyntaxError
 
 
 class CErrorListener(ErrorListener):

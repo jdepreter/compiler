@@ -1,5 +1,5 @@
 from graphviz import Digraph
-from helperfuncs import get_return_type
+from src.helperfuncs import get_return_type
 
 
 class Node:

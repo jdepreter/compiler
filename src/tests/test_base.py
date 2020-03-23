@@ -1,6 +1,6 @@
 import unittest
 from compile import to_llvm
-from CustomExceptions import *
+import src
 
 
 class TestCase(unittest.TestCase):
@@ -39,35 +39,35 @@ class TestCase(unittest.TestCase):
         self.assertEqual(to_llvm("unary_--.txt", "unary_--"), "5\n3\n3\n")
 
     def test_errors(self):
-        with self.assertRaises(CSyntaxError):
+        with self.assertRaises(src.CustomExceptions.CSyntaxError):
             to_llvm("syntax_error.txt", "syntax_error")
 
-        with self.assertRaises(CSyntaxError):
+        with self.assertRaises(src.CustomExceptions.CSyntaxError):
             to_llvm("syntax_error_1.txt", "syntax_error_1")
 
-        with self.assertRaises(CSyntaxError):
+        with self.assertRaises(src.CustomExceptions.CSyntaxError):
             to_llvm("assignment_to_r_value.txt", "assignment_to_r_value")
 
-        with self.assertRaises(UninitializedVariable):
+        with self.assertRaises(src.CustomExceptions.UninitializedVariable):
             to_llvm("uninitialised_var_error.txt", "uninit_var_error")
 
-        with self.assertRaises(UndeclaredVariable):
+        with self.assertRaises(src.CustomExceptions.UndeclaredVariable):
             to_llvm("undeclared_var_error.txt", "undeclared_var_error")
 
-        with self.assertRaises(ConstAssignment):
+        with self.assertRaises(src.CustomExceptions.ConstAssignment):
             to_llvm("const_assignment_error.txt", "const_assignment")
 
-        with self.assertRaises(DuplicateDeclaration):
+        with self.assertRaises(src.CustomExceptions.DuplicateDeclaration):
             to_llvm("duplicate_declaration_error.txt", "duplicate_declaration")
 
-        with self.assertRaises(IncompatibleType):
+        with self.assertRaises(src.CustomExceptions.IncompatibleType):
             to_llvm("incompatible_type_error.txt", "incompatible_type")
 
     def test_if_else(self):
-        self.assertEqual(to_llvm("./ifelse/true_true.txt", "true_true"), "8\n9\n")
-        self.assertEqual(to_llvm("./ifelse/true_false.txt", "true_false"), "8\n9\n")
-        self.assertEqual(to_llvm("./ifelse/false.txt", "false"), "f\nf\n2\n")
-        self.assertEqual(to_llvm("./ifelse/false_true.txt", "false"), "t\nf\n2\n")
+        self.assertEqual(to_llvm("ifelse/true_true.txt", "true_true"), "8\n9\n")
+        self.assertEqual(to_llvm("ifelse/true_false.txt", "true_false"), "8\n9\n")
+        self.assertEqual(to_llvm("ifelse/false.txt", "false"), "f\nf\n2\n")
+        self.assertEqual(to_llvm("ifelse/false_true.txt", "false"), "t\nf\n2\n")
 
 
 if __name__ == '__main__':

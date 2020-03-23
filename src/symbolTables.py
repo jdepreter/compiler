@@ -1,4 +1,4 @@
-from CustomExceptions import UndeclaredVariable, UninitializedVariable, DuplicateDeclaration
+from src.CustomExceptions import UndeclaredVariable, UninitializedVariable, DuplicateDeclaration
 import re
 
 

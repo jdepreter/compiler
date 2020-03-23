@@ -1,8 +1,8 @@
 from ANTLR.LLVM.cListener import cListener
 from ANTLR.LLVM.cParser import cParser
-from symbolTables import SymbolTable
-from AST import Node
-from CustomExceptions import ConstAssignment
+from src.symbolTables import SymbolTable
+from src.AST import Node
+from src.CustomExceptions import ConstAssignment
 
 
 # Depth first
