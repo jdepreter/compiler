@@ -54,11 +54,6 @@ class cVisitor(ParseTreeVisitor):
         return self.visitChildren(ctx)
 
 
-    # Visit a parse tree produced by cParser#for_block.
-    def visitFor_block(self, ctx:cParser.For_blockContext):
-        return self.visitChildren(ctx)
-
-
     # Visit a parse tree produced by cParser#break_line.
     def visitBreak_line(self, ctx:cParser.Break_lineContext):
         return self.visitChildren(ctx)

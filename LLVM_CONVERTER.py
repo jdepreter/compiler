@@ -7,7 +7,7 @@ class LLVM_Converter:
         self.stack = []
         self.register = 0
         self.label = 0
-        self.break_label = 0
+        self.break_stack = []
         self.file = file
         self.null = {'int': '0', 'float': double_to_hex(0.0)}
         self.format_dict = {'int': 'i32', 'float': 'float', 'char': 'i8', 'bool': 'i1'}
@@ -181,8 +181,13 @@ define void @print_char(i8 %a){
             return self.loop(node, symbol_table)
 
         elif node.node_type == 'for break':
-            self.go_to_label(self.break_label)
-            return None, None
+            if len(self.break_stack) > 0:
+                self.go_to_label(self.break_stack[0])
+                return None, None
+            else:
+                raise BreakError("[Error] Line {} Position {} break statement not within loop or switch".format(
+                    node.ctx.start.line, node.ctx.start.column
+                ))
 
         elif node.node_type == 'ifelse':
             return self.if_else(node, symbol_table)
@@ -451,15 +456,15 @@ define void @print_char(i8 %a){
             "update": self.label + 2,
             "next_block": self.label + total_labels,
         }
-        self.break_label = labels["next_block"]
+        self.break_stack.insert(0, labels["next_block"])
+        self.label += 4
         # Go to conditional
-        self.go_to_label(self.label)
+        self.go_to_label(labels["condition"])
         self.register += 1
-        labels["condition"] = self.label
         update = False
         for child in node.children:
             if child.node_type == "condition":
-                self.add_label(self.label)
+                self.add_label(labels["condition"])
                 reg, value_type = self.solve_llvm_node(child, child.symbol_table)
                 string = "%r{} = icmp ne {} {}, 0\n".format(
                     self.register, self.format_dict[value_type], reg
@@ -482,7 +487,7 @@ define void @print_char(i8 %a){
                 else:
                     self.go_to_label(labels["condition"])
 
-        self.label += 4
+        self.break_stack.pop()
         self.add_label(labels["next_block"])
 
     def if_else(self, node, symbol_table):

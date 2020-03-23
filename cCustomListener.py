@@ -524,17 +524,6 @@ class CASTGenerator(cListener):
     def exitFor_update(self, ctx:cParser.For_updateContext):
         self.currentNode = self.currentNode.parent
 
-    def enterFor_block(self, ctx:cParser.For_blockContext):
-        node = self.create_node("for block", "for block", self.currentNode, ctx)
-        self.currentNode.children.append(node)
-        self.currentNode = node
-        self.symbol_table.open_scope()
-        self.currentNode.symbol_table = self.symbol_table.get_current_scope()
-
-    def exitFor_block(self, ctx:cParser.For_blockContext):
-        self.currentNode = self.currentNode.parent
-        self.symbol_table.close_scope()
-
     def enterBreak_line(self, ctx:cParser.Break_lineContext):
         node = self.create_node("for break", "for break", self.currentNode, ctx)
         self.currentNode.children.append(node)

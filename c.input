@@ -1,6 +1,8 @@
 for (int x = 1; x < 10; x++) {
     printf(x);
-    break;
+    if (x == 4) {
+        break;
+    }
 }
 
 int x = 1;

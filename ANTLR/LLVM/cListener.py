@@ -89,15 +89,6 @@ class cListener(ParseTreeListener):
         pass
 
 
-    # Enter a parse tree produced by cParser#for_block.
-    def enterFor_block(self, ctx:cParser.For_blockContext):
-        pass
-
-    # Exit a parse tree produced by cParser#for_block.
-    def exitFor_block(self, ctx:cParser.For_blockContext):
-        pass
-
-
     # Enter a parse tree produced by cParser#break_line.
     def enterBreak_line(self, ctx:cParser.Break_lineContext):
         pass

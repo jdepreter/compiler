@@ -22,3 +22,7 @@ class IncompatibleType(Exception):
 
 class ConstAssignment(Exception):
     pass
+
+
+class BreakError(Exception):
+    pass
