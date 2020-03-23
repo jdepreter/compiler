@@ -1,15 +1,4 @@
-int y = 0;
-int x = 7;
-if (x == 8) {
+
+for (int x = 5; x < 10;x++){
     printf(x);
 }
-else {
-    if (y) {
-        printf('t');
-    }
-    else {
-        printf('f');
-    }
-    printf('f');
-}
-printf(x+1);

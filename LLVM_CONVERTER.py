@@ -435,28 +435,41 @@ define void @print_char(i8 %a){
         self.file.write(string)
 
     def loop(self, node, symbol_table):
+        # Write initial assignment
         if node.children[0].node_type == 'for initial':
             self.solve_llvm_node(node.children[0].children[0], symbol_table)
 
         labels = {
-            "code_block": None,
-            "comparison": None,
-            "update": None,
-            "next_block": None,
+            "condition": self.label,
+            "code_block": self.label + 1,
+            "update": self.label + 2,
+            "next_block": self.label + 3,
         }
-        self.go_to_label("{}".format(self.register))
-        self.add_label("{}".format(self.register))
+        # Go to conditional
+        self.go_to_label(self.label)
         self.register += 1
+        labels["condition"] = self.label
         for child in node.children:
             if child.node_type == "condition":
-                self.solve_llvm_node(child, child.symbol_table)
+                self.add_label(self.label)
+                reg, value_type = self.solve_llvm_node(child, child.symbol_table)
+                string = "%r{} = icmp ne {} {}, 0\n".format(
+                    self.register, self.format_dict[value_type], reg
+                )
+                self.file.write(string)
+                self.go_to_conditional("%r" + str(self.register), labels["code_block"], labels["next_block"])
+                self.register += 1
 
             elif child.node_type == 'for update':
+                self.add_label(labels["update"])
                 self.solve_llvm_node(child, child.symbol_table)
-                self.go_to_label(labels["comparison"])
-            else:
+                self.go_to_label(labels["condition"])
+            elif child.node_type != 'for initial':
+                self.add_label(labels["code_block"])
                 self.solve_llvm_node(child, child.symbol_table)
                 self.go_to_label(labels["update"])
+        self.label += 4
+        self.add_label(labels["next_block"])
 
     def if_else(self, node, symbol_table):
         condition = node.children[0]
