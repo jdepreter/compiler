@@ -440,20 +440,23 @@ define void @print_char(i8 %a){
 
     def loop(self, node, symbol_table):
         # Write initial assignment
+        total_labels = len(node.children)
         if node.children[0].node_type == 'for initial':
             self.solve_llvm_node(node.children[0].children[0], symbol_table)
+            total_labels -= 1
 
         labels = {
             "condition": self.label,
             "code_block": self.label + 1,
             "update": self.label + 2,
-            "next_block": self.label + 3,
+            "next_block": self.label + total_labels,
         }
         self.break_label = labels["next_block"]
         # Go to conditional
         self.go_to_label(self.label)
         self.register += 1
         labels["condition"] = self.label
+        update = False
         for child in node.children:
             if child.node_type == "condition":
                 self.add_label(self.label)
@@ -469,11 +472,15 @@ define void @print_char(i8 %a){
                 self.add_label(labels["update"])
                 self.solve_llvm_node(child, child.symbol_table)
                 self.go_to_label(labels["condition"])
+                update = True
 
-            elif child.node_type == 'for block':
+            elif child.node_type != 'for initial':
                 self.add_label(labels["code_block"])
                 self.solve_llvm_node(child, child.symbol_table)
-                self.go_to_label(labels["update"])
+                if update:
+                    self.go_to_label(labels["update"])
+                else:
+                    self.go_to_label(labels["condition"])
 
         self.label += 4
         self.add_label(labels["next_block"])
