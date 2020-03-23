@@ -542,6 +542,15 @@ class CASTGenerator(cListener):
     def exitWhile_loop(self, ctx:cParser.While_loopContext):
         self.currentNode = self.currentNode.parent
 
+    def enterDo_block(self, ctx:cParser.Do_blockContext):
+        node = self.create_node("for do", "for do", self.currentNode, ctx)
+        self.currentNode.children.append(node)
+        self.currentNode = node
+        self.currentNode.symbol_table = self.symbol_table.get_current_scope()
+
+    def exitDo_block(self, ctx:cParser.Do_blockContext):
+        self.currentNode = self.currentNode.parent
+
     # IF ELSE
     def enterCondition(self, ctx:cParser.ConditionContext):
         """

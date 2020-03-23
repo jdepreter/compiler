@@ -59,6 +59,11 @@ class cVisitor(ParseTreeVisitor):
         return self.visitChildren(ctx)
 
 
+    # Visit a parse tree produced by cParser#do_block.
+    def visitDo_block(self, ctx:cParser.Do_blockContext):
+        return self.visitChildren(ctx)
+
+
     # Visit a parse tree produced by cParser#switchcase.
     def visitSwitchcase(self, ctx:cParser.SwitchcaseContext):
         return self.visitChildren(ctx)

@@ -13,12 +13,13 @@ for_loop : FOR LBRACKET for_initial SEMICOLON condition SEMICOLON for_update RBR
         (scope | (assignment_line SEMICOLON) | (bool1 SEMICOLON)| ifelse | for_loop | while_loop | switchcase);
 
 while_loop : (WHILE LBRACKET condition RBRACKET ((assignment_line SEMICOLON) | (bool1 SEMICOLON)| ifelse | for_loop | while_loop | scope |switchcase))
-            | (DO ((assignment_line SEMICOLON) | (bool1 SEMICOLON)| ifelse | for_loop | while_loop | scope | switchcase) WHILE LBRACKET condition RBRACKET SEMICOLON);
+            | do_block WHILE LBRACKET condition RBRACKET SEMICOLON;
 
 for_initial : (definition | );
 condition : (bool1 | assignment_line | );
 for_update : (bool1 | assignment_line | );
 break_line : BREAK SEMICOLON;
+do_block : DO ((assignment_line SEMICOLON) | (bool1 SEMICOLON)| ifelse | for_loop | while_loop | scope | switchcase);
 
 switchcase: SWITCH LBRACKET value RBRACKET LCURLYBRACE
 (CASE (INT|FLOAT|CHAR) ':' (scope | (bool1 SEMICOLON)| (assignment_line SEMICOLON) |ifelse)*(BREAK SEMICOLON)?)*

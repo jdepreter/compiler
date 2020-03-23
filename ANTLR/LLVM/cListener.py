@@ -98,6 +98,15 @@ class cListener(ParseTreeListener):
         pass
 
 
+    # Enter a parse tree produced by cParser#do_block.
+    def enterDo_block(self, ctx:cParser.Do_blockContext):
+        pass
+
+    # Exit a parse tree produced by cParser#do_block.
+    def exitDo_block(self, ctx:cParser.Do_blockContext):
+        pass
+
+
     # Enter a parse tree produced by cParser#switchcase.
     def enterSwitchcase(self, ctx:cParser.SwitchcaseContext):
         pass

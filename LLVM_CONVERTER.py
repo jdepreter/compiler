@@ -446,9 +446,13 @@ define void @print_char(i8 %a){
     def loop(self, node, symbol_table):
         # Write initial assignment
         total_labels = len(node.children)
+        skip_condition = False
         if node.children[0].node_type == 'for initial':
             self.solve_llvm_node(node.children[0].children[0], symbol_table)
             total_labels -= 1
+
+        elif node.children[0].node_type == 'for do':
+            skip_condition = True
 
         labels = {
             "condition": self.label,
@@ -458,8 +462,12 @@ define void @print_char(i8 %a){
         }
         self.break_stack.insert(0, labels["next_block"])
         self.label += 4
-        # Go to conditional
-        self.go_to_label(labels["condition"])
+        if skip_condition:
+            # Do While
+            self.go_to_label(labels["code_block"])
+        else:
+            # Go to conditional
+            self.go_to_label(labels["condition"])
         self.register += 1
         update = False
         for child in node.children:
