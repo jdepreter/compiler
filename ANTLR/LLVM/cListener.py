@@ -3,7 +3,7 @@ from antlr4 import *
 if __name__ is not None and "." in __name__:
     from .cParser import cParser
 else:
-    from ANTLR.LLVM.cParser import cParser
+    from cParser import cParser
 
 # This class defines a complete listener for a parse tree produced by cParser.
 class cListener(ParseTreeListener):
@@ -86,6 +86,24 @@ class cListener(ParseTreeListener):
 
     # Exit a parse tree produced by cParser#for_update.
     def exitFor_update(self, ctx:cParser.For_updateContext):
+        pass
+
+
+    # Enter a parse tree produced by cParser#for_block.
+    def enterFor_block(self, ctx:cParser.For_blockContext):
+        pass
+
+    # Exit a parse tree produced by cParser#for_block.
+    def exitFor_block(self, ctx:cParser.For_blockContext):
+        pass
+
+
+    # Enter a parse tree produced by cParser#break_line.
+    def enterBreak_line(self, ctx:cParser.Break_lineContext):
+        pass
+
+    # Exit a parse tree produced by cParser#break_line.
+    def exitBreak_line(self, ctx:cParser.Break_lineContext):
         pass
 
 

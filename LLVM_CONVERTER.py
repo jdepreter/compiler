@@ -7,6 +7,7 @@ class LLVM_Converter:
         self.stack = []
         self.register = 0
         self.label = 0
+        self.break_label = 0
         self.file = file
         self.null = {'int': '0', 'float': double_to_hex(0.0)}
         self.format_dict = {'int': 'i32', 'float': 'float', 'char': 'i8', 'bool': 'i1'}
@@ -179,11 +180,14 @@ define void @print_char(i8 %a){
         elif node.node_type == 'for':
             return self.loop(node, symbol_table)
 
+        elif node.node_type == 'for break':
+            self.go_to_label(self.break_label)
+            return None, None
+
         elif node.node_type == 'ifelse':
             return self.if_else(node, symbol_table)
 
         else:
-
             sol = self.solve_math(node, symbol_table)
 
             if sol[0] is None:
@@ -417,7 +421,7 @@ define void @print_char(i8 %a){
         self.file.write(string)
 
     def go_to_label(self, label):
-        string = "br label %label{}\n\n".format(label)
+        string = "br label %label{}\n".format(label)
         self.file.write(string)
 
     def go_to_conditional(self, condition, label_true, label_false):
@@ -427,11 +431,11 @@ define void @print_char(i8 %a){
         :param label_false:
         :return: nothing
         """
-        string = "br i1 {}, label %label{}, label %label{}\n\n".format(condition, label_true, label_false)
+        string = "br i1 {}, label %label{}, label %label{}\n".format(condition, label_true, label_false)
         self.file.write(string)
 
     def add_label(self, label):
-        string = "label{}:\n".format(label)
+        string = "\nlabel{}:\n".format(label)
         self.file.write(string)
 
     def loop(self, node, symbol_table):
@@ -445,6 +449,7 @@ define void @print_char(i8 %a){
             "update": self.label + 2,
             "next_block": self.label + 3,
         }
+        self.break_label = labels["next_block"]
         # Go to conditional
         self.go_to_label(self.label)
         self.register += 1
@@ -464,10 +469,12 @@ define void @print_char(i8 %a){
                 self.add_label(labels["update"])
                 self.solve_llvm_node(child, child.symbol_table)
                 self.go_to_label(labels["condition"])
-            elif child.node_type != 'for initial':
+
+            elif child.node_type == 'for block':
                 self.add_label(labels["code_block"])
                 self.solve_llvm_node(child, child.symbol_table)
                 self.go_to_label(labels["update"])
+
         self.label += 4
         self.add_label(labels["next_block"])
 

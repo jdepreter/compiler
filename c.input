@@ -1,4 +1,6 @@
 
 for (int x = 5; x < 10;x++){
     printf(x);
+    break;
+    printf(x);
 }
