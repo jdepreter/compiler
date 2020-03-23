@@ -2,28 +2,30 @@ grammar c;
 
 c: (line)* ;
 
-line: ((definition SEMICOLON)| (assignment_line SEMICOLON) | (bool1 SEMICOLON)| ifelse | for_loop | while_loop | scope |switchcase | break_line);
+line: ((definition SEMICOLON)| line_no_def);
+
+line_no_def: (assignment_line SEMICOLON) | (bool1 SEMICOLON)| ifelse | for_loop | while_loop | scope |switchcase | break_line;
 
 scope: LCURLYBRACE (line)* RCURLYBRACE;
 
-ifelse : IF LBRACKET condition RBRACKET ((assignment_line SEMICOLON) | (bool1 SEMICOLON)| ifelse | for_loop | while_loop | scope |switchcase)
-(ELSE ((assignment_line SEMICOLON) | (bool1 SEMICOLON)| ifelse | for_loop | while_loop | scope |switchcase))?;
+ifelse : IF LBRACKET condition RBRACKET line_no_def
+(ELSE line_no_def)?;
 
 for_loop : FOR LBRACKET for_initial SEMICOLON condition SEMICOLON for_update RBRACKET
-        (scope | (assignment_line SEMICOLON) | (bool1 SEMICOLON)| ifelse | for_loop | while_loop | switchcase);
+        line_no_def;
 
-while_loop : (WHILE LBRACKET condition RBRACKET ((assignment_line SEMICOLON) | (bool1 SEMICOLON)| ifelse | for_loop | while_loop | scope |switchcase))
+while_loop : (WHILE LBRACKET condition RBRACKET line_no_def)
             | do_block WHILE LBRACKET condition RBRACKET SEMICOLON;
 
 for_initial : (definition | );
 condition : (bool1 | assignment_line | );
 for_update : (bool1 | assignment_line | );
 break_line : BREAK SEMICOLON;
-do_block : DO ((assignment_line SEMICOLON) | (bool1 SEMICOLON)| ifelse | for_loop | while_loop | scope | switchcase);
+do_block : DO line_no_def;
 
 switchcase: SWITCH LBRACKET value RBRACKET LCURLYBRACE
-(CASE (INT|FLOAT|CHAR) ':' (scope | (bool1 SEMICOLON)| (assignment_line SEMICOLON) |ifelse)*(BREAK SEMICOLON)?)*
-DEFAULT ':'(scope | (bool1 SEMICOLON)| (assignment_line SEMICOLON) |ifelse)*(BREAK SEMICOLON)?
+(CASE (INT|FLOAT|CHAR) ':' line_no_def*)*
+DEFAULT ':'line_no_def*
 RCURLYBRACE;
 
 method_call: IDENTIFIER LBRACKET (args)? RBRACKET;
