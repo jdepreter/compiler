@@ -19,25 +19,25 @@ class CASTGenerator(cListener):
         return node
 
     def enterC(self, ctx:cParser.CContext):
-        print("enter c")
+        # print("enter c")
         self.ast = self.create_node("C", "C", self.currentNode, ctx)
         self.currentNode = self.ast
         self.symbol_table.open_scope()
         self.currentNode.symbol_table = self.symbol_table.get_current_scope()
 
     def enterLine(self, ctx:cParser.LineContext):
-        print("enter line")
+        # print("enter line")
         node = self.create_node("line", "line", self.currentNode, ctx)
         self.currentNode.children.append(node)
         self.currentNode = node
         self.currentNode.symbol_table = self.symbol_table.get_current_scope()
 
     def exitLine(self, ctx:cParser.LineContext):
-        print("exit line")
+        # print("exit line")
         self.currentNode = self.currentNode.parent
 
     def enterScope(self, ctx:cParser.ScopeContext):
-        print("enter scope")
+        # print("enter scope")
         node = self.create_node("scope", "scope", self.currentNode, ctx)
         self.currentNode.children.append(node)
         self.currentNode = node
@@ -45,7 +45,7 @@ class CASTGenerator(cListener):
         self.currentNode.symbol_table = self.symbol_table.get_current_scope()
 
     def exitScope(self, ctx:cParser.ScopeContext):
-        print("exit scope")
+        # print("exit scope")
         self.symbol_table.close_scope()
         self.currentNode = self.currentNode.parent
 

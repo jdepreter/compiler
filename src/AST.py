@@ -180,7 +180,7 @@ class ASTVisitor:
                     if not u_node.children[1].is_literal():
                         break
                     if u_node.node_type == 'unary min':
-                        print('-', u_node)
+                        # print('-', u_node)
                         u_node.node_type = u_node.children[1].node_type
                         if u_node.node_type == 'float':
                             u_node.label = str(-float(u_node.children[1].label))
@@ -190,7 +190,7 @@ class ASTVisitor:
                         del u_node.children[0]
                         u_node.children = []
                     elif u_node.node_type == 'unary plus':
-                        print('+', u_node)
+                        # print('+', u_node)
                         if not u_node.children[1].is_literal():
                             break
                         u_node.node_type = u_node.children[1].node_type
