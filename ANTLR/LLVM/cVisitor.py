@@ -19,6 +19,11 @@ class cVisitor(ParseTreeVisitor):
         return self.visitChildren(ctx)
 
 
+    # Visit a parse tree produced by cParser#line_no_def.
+    def visitLine_no_def(self, ctx:cParser.Line_no_defContext):
+        return self.visitChildren(ctx)
+
+
     # Visit a parse tree produced by cParser#scope.
     def visitScope(self, ctx:cParser.ScopeContext):
         return self.visitChildren(ctx)

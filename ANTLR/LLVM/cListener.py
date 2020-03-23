@@ -26,6 +26,15 @@ class cListener(ParseTreeListener):
         pass
 
 
+    # Enter a parse tree produced by cParser#line_no_def.
+    def enterLine_no_def(self, ctx:cParser.Line_no_defContext):
+        pass
+
+    # Exit a parse tree produced by cParser#line_no_def.
+    def exitLine_no_def(self, ctx:cParser.Line_no_defContext):
+        pass
+
+
     # Enter a parse tree produced by cParser#scope.
     def enterScope(self, ctx:cParser.ScopeContext):
         pass
