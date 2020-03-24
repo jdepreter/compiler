@@ -74,6 +74,16 @@ class cVisitor(ParseTreeVisitor):
         return self.visitChildren(ctx)
 
 
+    # Visit a parse tree produced by cParser#case.
+    def visitCase(self, ctx:cParser.CaseContext):
+        return self.visitChildren(ctx)
+
+
+    # Visit a parse tree produced by cParser#default.
+    def visitDefault(self, ctx:cParser.DefaultContext):
+        return self.visitChildren(ctx)
+
+
     # Visit a parse tree produced by cParser#method_call.
     def visitMethod_call(self, ctx:cParser.Method_callContext):
         return self.visitChildren(ctx)

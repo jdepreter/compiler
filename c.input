@@ -1,12 +1,13 @@
-for (int x = 1; x < 10; x++) {
-    printf(x);
-    if (x == 4)
-        break;
-}
+int x = 3;
+int y = 0;
+switch(x+1){
+case 2:
+    y = 2;
+case 4:
+    y=y+ 6;
+    break;
+default:
+    y = 9;
 
-int x = 1;
-do {
-    printf(x);
-    x++;
 }
-while (x < 1);
+printf(y);

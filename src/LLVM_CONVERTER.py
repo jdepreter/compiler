@@ -189,6 +189,9 @@ define void @print_char(i8 %a){
                     node.ctx.start.line, node.ctx.start.column
                 ))
 
+        elif node.node_type == "switch":
+            return self.switch(node, symbol_table)
+
         elif node.node_type == 'ifelse':
             return self.if_else(node, symbol_table)
 
@@ -524,3 +527,42 @@ define void @print_char(i8 %a){
         # schrijf alle volgende instructies achter een label
         self.add_label(label + len(node.children) - 1)
         return
+
+    def switch(self, node, symbol_table):
+        switchval, switchtype = self.solve_math(node.children[0], symbol_table)
+        branchval = self.cast_value(switchval,switchtype, "int")
+
+
+        current_label = self.label
+        default_label = current_label + len(node.children)-1
+
+        self.break_stack.insert(0, default_label)
+        self.label += len(node.children)
+        string = ""
+
+        default = False
+        for i in range(1, len(node.children)):
+            curr = node.children[i]
+            if curr.label == "default":
+                if default:
+                    raise Exception("[Error] line {} position {} Secondary definition of default".format(node.ctx.start.line, node.ctx.start.column))
+
+                default = True
+                default_label = current_label+i-1
+
+            else:
+                string += "i32 {}, label %label{}\n".format(str(int(curr.label)), str(current_label+i-1))
+
+
+        operation = "switch i32 {}, label %label{} [{}]\n".format(branchval,default_label, string)
+
+        self.file.write(operation)
+        for i in range(1, len(node.children)):
+            self.go_to_label(current_label+i-1)
+            self.add_label(current_label+i-1)
+            self.solve_llvm_node(node.children[i], symbol_table)
+
+        self.go_to_label(current_label + len(node.children) - 1)
+        self.add_label(current_label + len(node.children) - 1)
+
+        self.break_stack.pop()
