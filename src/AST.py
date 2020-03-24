@@ -147,8 +147,8 @@ class ASTVisitor:
             queue = queue[1:]
             queue += current_node.children
 
-            if len(current_node.children) == 1 and current_node.parent is not None and not 'for' in current_node.label \
-                    and not 'condition' in current_node.label:
+            if len(current_node.children) == 1 and current_node.parent is not None and not 'for' in current_node.node_type \
+                    and not 'condition' in current_node.node_type and not "case" in current_node.node_type:
                 index = current_node.parent.children.index(current_node)
                 current_node.parent.children.remove(current_node)
                 current_node.parent.children[index:index] = current_node.children

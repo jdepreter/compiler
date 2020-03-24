@@ -574,3 +574,43 @@ class CASTGenerator(cListener):
 
     def exitIfelse(self, ctx:cParser.IfelseContext):
         self.currentNode = self.currentNode.parent
+
+
+    def enterSwitchcase(self, ctx:cParser.SwitchcaseContext):
+        node = self.create_node("switch", "switch", self.currentNode, ctx)
+        self.currentNode.children.append(node)
+        self.currentNode = node
+        self.symbol_table.open_scope()
+        self.currentNode.symbol_table = self.symbol_table.get_current_scope()
+
+
+    def exitSwitchcase(self, ctx:cParser.SwitchcaseContext):
+        self.currentNode = self.currentNode.parent
+        self.symbol_table.close_scope()
+
+    def enterCase(self, ctx:cParser.CaseContext):
+        string = ""
+        if ctx.CHAR():
+            string = str(ctx.CHAR())
+            symbol_type = "char"
+
+        if ctx.INT():
+            string = str(ctx.INT())
+            symbol_type = "int"
+        node = self.create_node(string, "case", self.currentNode, ctx)
+        self.currentNode.children.append(node)
+        self.currentNode = node
+        self.currentNode.symbol_table = self.symbol_table.get_current_scope()
+        self.currentNode.symbol_type = symbol_type
+
+    def exitCase(self, ctx:cParser.CaseContext):
+        self.currentNode = self.currentNode.parent
+
+    def enterDefault(self, ctx:cParser.DefaultContext):
+        node = self.create_node("default", "default case", self.currentNode, ctx)
+        self.currentNode.children.append(node)
+        self.currentNode = node
+        self.currentNode.symbol_table = self.symbol_table.get_current_scope()
+
+    def exitDefault(self, ctx:cParser.DefaultContext):
+        self.currentNode = self.currentNode.parent

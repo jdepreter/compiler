@@ -23,10 +23,13 @@ for_update : (bool1 | assignment_line | );
 break_line : BREAK SEMICOLON;
 do_block : DO line_no_def;
 
-switchcase: SWITCH LBRACKET value RBRACKET LCURLYBRACE
-(CASE (INT|FLOAT|CHAR) ':' line_no_def*)*
-DEFAULT ':'line_no_def*
+switchcase: SWITCH LBRACKET bool1 RBRACKET LCURLYBRACE
+(case|default)*
 RCURLYBRACE;
+
+case:(CASE (INT|CHAR) ':' line*) ;
+default : DEFAULT ':'line*;
+
 
 method_call: IDENTIFIER LBRACKET (args)? RBRACKET;
 

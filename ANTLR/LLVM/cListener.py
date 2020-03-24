@@ -125,6 +125,24 @@ class cListener(ParseTreeListener):
         pass
 
 
+    # Enter a parse tree produced by cParser#case.
+    def enterCase(self, ctx:cParser.CaseContext):
+        pass
+
+    # Exit a parse tree produced by cParser#case.
+    def exitCase(self, ctx:cParser.CaseContext):
+        pass
+
+
+    # Enter a parse tree produced by cParser#default.
+    def enterDefault(self, ctx:cParser.DefaultContext):
+        pass
+
+    # Exit a parse tree produced by cParser#default.
+    def exitDefault(self, ctx:cParser.DefaultContext):
+        pass
+
+
     # Enter a parse tree produced by cParser#method_call.
     def enterMethod_call(self, ctx:cParser.Method_callContext):
         pass
