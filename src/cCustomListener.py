@@ -533,6 +533,15 @@ class CASTGenerator(cListener):
     def exitBreak_line(self, ctx:cParser.Break_lineContext):
         self.currentNode = self.currentNode.parent
 
+    def enterContinue_line(self, ctx:cParser.Continue_lineContext):
+        node = self.create_node("for continue", "for continue", self.currentNode, ctx)
+        self.currentNode.children.append(node)
+        self.currentNode = node
+        self.currentNode.symbol_table = self.symbol_table.get_current_scope()
+
+    def exitContinue_line(self, ctx:cParser.Continue_lineContext):
+        self.currentNode = self.currentNode.parent
+
     def enterWhile_loop(self, ctx:cParser.While_loopContext):
         node = self.create_node("for", "for", self.currentNode, ctx)
         self.currentNode.children.append(node)

@@ -64,6 +64,11 @@ class cVisitor(ParseTreeVisitor):
         return self.visitChildren(ctx)
 
 
+    # Visit a parse tree produced by cParser#continue_line.
+    def visitContinue_line(self, ctx:cParser.Continue_lineContext):
+        return self.visitChildren(ctx)
+
+
     # Visit a parse tree produced by cParser#do_block.
     def visitDo_block(self, ctx:cParser.Do_blockContext):
         return self.visitChildren(ctx)

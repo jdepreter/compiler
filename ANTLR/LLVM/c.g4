@@ -4,7 +4,7 @@ c: (line)* ;
 
 line: ((definition SEMICOLON)| line_no_def);
 
-line_no_def: (assignment_line SEMICOLON) | (bool1 SEMICOLON)| ifelse | for_loop | while_loop | scope |switchcase | break_line;
+line_no_def: (assignment_line SEMICOLON) | (bool1 SEMICOLON)| ifelse | for_loop | while_loop | scope |switchcase | break_line | continue_line;
 
 scope: LCURLYBRACE (line)* RCURLYBRACE;
 
@@ -21,6 +21,7 @@ for_initial : (definition | );
 condition : (bool1 | assignment_line | );
 for_update : (bool1 | assignment_line | );
 break_line : BREAK SEMICOLON;
+continue_line : CONTINUE SEMICOLON;
 do_block : DO line_no_def;
 
 switchcase: SWITCH LBRACKET bool1 RBRACKET LCURLYBRACE
@@ -159,6 +160,7 @@ SWITCH: 'switch';
 CASE: 'case';
 DEFAULT: 'default';
 BREAK: 'break';
+CONTINUE: 'continue';
 AMPERSAND: '&';
 PLUSPLUS : '++';
 PLUS : '+';

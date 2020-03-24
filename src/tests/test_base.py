@@ -89,6 +89,9 @@ class Loops(unittest.TestCase):
         self.assertEqual(clear_newlines(to_llvm("loops/loop.txt", "loop")), "123412")
         self.assertEqual(clear_newlines(to_llvm("loops/nested_break.txt", "nested_break")), "112123123123123123123")
 
+    def test_for_continue(self):
+        self.assertEqual(clear_newlines(to_llvm("loops/for_continue.txt", "for_continue")), "23456789")
+
     def test_break_error(self):
         with self.assertRaises(src.CustomExceptions.BreakError):
             to_llvm("loops/break_error.txt", "break_error")

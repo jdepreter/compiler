@@ -8,6 +8,7 @@ class LLVM_Converter:
         self.register = 0
         self.label = 0
         self.break_stack = []
+        self.continue_stack = []
         self.file = file
         self.null = {'int': '0', 'float': double_to_hex(0.0)}
         self.format_dict = {'int': 'i32', 'float': 'float', 'char': 'i8', 'bool': 'i1'}
@@ -186,6 +187,15 @@ define void @print_char(i8 %a){
                 return None, None
             else:
                 raise BreakError("[Error] Line {} Position {} break statement not within loop or switch".format(
+                    node.ctx.start.line, node.ctx.start.column
+                ))
+
+        elif node.node_type == 'for continue':
+            if len(self.continue_stack) > 0:
+                self.go_to_label(self.continue_stack[0])
+                return None, None
+            else:
+                raise BreakError("[Error] Line {} Position {} continue statement not within loop".format(
                     node.ctx.start.line, node.ctx.start.column
                 ))
 
@@ -464,6 +474,7 @@ define void @print_char(i8 %a){
             "next_block": self.label + total_labels,
         }
         self.break_stack.insert(0, labels["next_block"])
+        self.continue_stack.insert(0, labels["condition"])
         self.label += 4
         if skip_condition:
             # Do While
@@ -485,6 +496,7 @@ define void @print_char(i8 %a){
                 self.register += 1
 
             elif child.node_type == 'for update':
+                self.continue_stack[0] = labels["update"]
                 self.add_label(labels["update"])
                 self.solve_llvm_node(child, child.symbol_table)
                 self.go_to_label(labels["condition"])
@@ -499,6 +511,7 @@ define void @print_char(i8 %a){
                     self.go_to_label(labels["condition"])
 
         self.break_stack.pop()
+        self.continue_stack.pop()
         self.add_label(labels["next_block"])
 
     def if_else(self, node, symbol_table):
@@ -531,7 +544,6 @@ define void @print_char(i8 %a){
     def switch(self, node, symbol_table):
         switchval, switchtype = self.solve_math(node.children[0], symbol_table)
         branchval = self.cast_value(switchval,switchtype, "int")
-
 
         current_label = self.label
         default_label = current_label + len(node.children)-1

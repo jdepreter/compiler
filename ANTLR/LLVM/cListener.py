@@ -107,6 +107,15 @@ class cListener(ParseTreeListener):
         pass
 
 
+    # Enter a parse tree produced by cParser#continue_line.
+    def enterContinue_line(self, ctx:cParser.Continue_lineContext):
+        pass
+
+    # Exit a parse tree produced by cParser#continue_line.
+    def exitContinue_line(self, ctx:cParser.Continue_lineContext):
+        pass
+
+
     # Enter a parse tree produced by cParser#do_block.
     def enterDo_block(self, ctx:cParser.Do_blockContext):
         pass
