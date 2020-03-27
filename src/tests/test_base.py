@@ -1,9 +1,14 @@
 import unittest
-from compile import to_llvm
+from src.compile import to_llvm
 import src
+import re
 
 
-class TestCase(unittest.TestCase):
+def clear_newlines(string: str) -> str:
+    return re.sub("\n", "", string)
+
+
+class Assignment1(unittest.TestCase):
     def test_basic_files(self):
         self.assertEqual(to_llvm("basic_declaration.txt", "basic_declaration"), "")
         self.assertEqual(to_llvm("basic_definition.txt", "basic_definition"), "")
@@ -63,11 +68,30 @@ class TestCase(unittest.TestCase):
         with self.assertRaises(src.CustomExceptions.IncompatibleType):
             to_llvm("incompatible_type_error.txt", "incompatible_type")
 
+
     def test_if_else(self):
         self.assertEqual(to_llvm("ifelse/true_true.txt", "true_true"), "8\n9\n")
         self.assertEqual(to_llvm("ifelse/true_false.txt", "true_false"), "8\n9\n")
         self.assertEqual(to_llvm("ifelse/false.txt", "false"), "f\nf\n2\n")
         self.assertEqual(to_llvm("ifelse/false_true.txt", "false"), "t\nf\n2\n")
+
+
+class IfElse(unittest.TestCase):
+    def test_if_else(self):
+        self.assertEqual(to_llvm("ifelse/true_true.txt", "true_true"), "8\n9\n")
+        self.assertEqual(to_llvm("ifelse/true_false.txt", "true_false"), "8\n9\n")
+        self.assertEqual(to_llvm("ifelse/false.txt", "false"), "f\nf\n2\n")
+        self.assertEqual(to_llvm("ifelse/false_true.txt", "false"), "t\nf\n2\n")
+
+
+class Loops(unittest.TestCase):
+    def test_for_loop(self):
+        self.assertEqual(clear_newlines(to_llvm("loops/loop.txt", "loop")), "123412")
+        self.assertEqual(clear_newlines(to_llvm("loops/nested_break.txt", "nested_break")), "112123123123123123123")
+
+    def test_break_error(self):
+        with self.assertRaises(src.CustomExceptions.BreakError):
+            to_llvm("loops/break_error.txt", "break_error")
 
 
 if __name__ == '__main__':

@@ -1,2 +1,2 @@
-cd src
-python3 run_tests.py
+export PYTHONPATH="$PWD"
+python3 ./src/run_tests.py
