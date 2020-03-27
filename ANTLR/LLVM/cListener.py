@@ -116,6 +116,15 @@ class cListener(ParseTreeListener):
         pass
 
 
+    # Enter a parse tree produced by cParser#return_line.
+    def enterReturn_line(self, ctx:cParser.Return_lineContext):
+        pass
+
+    # Exit a parse tree produced by cParser#return_line.
+    def exitReturn_line(self, ctx:cParser.Return_lineContext):
+        pass
+
+
     # Enter a parse tree produced by cParser#switchcase.
     def enterSwitchcase(self, ctx:cParser.SwitchcaseContext):
         pass
@@ -140,6 +149,33 @@ class cListener(ParseTreeListener):
 
     # Exit a parse tree produced by cParser#default.
     def exitDefault(self, ctx:cParser.DefaultContext):
+        pass
+
+
+    # Enter a parse tree produced by cParser#method_declaration.
+    def enterMethod_declaration(self, ctx:cParser.Method_declarationContext):
+        pass
+
+    # Exit a parse tree produced by cParser#method_declaration.
+    def exitMethod_declaration(self, ctx:cParser.Method_declarationContext):
+        pass
+
+
+    # Enter a parse tree produced by cParser#method_definition.
+    def enterMethod_definition(self, ctx:cParser.Method_definitionContext):
+        pass
+
+    # Exit a parse tree produced by cParser#method_definition.
+    def exitMethod_definition(self, ctx:cParser.Method_definitionContext):
+        pass
+
+
+    # Enter a parse tree produced by cParser#def_args.
+    def enterDef_args(self, ctx:cParser.Def_argsContext):
+        pass
+
+    # Exit a parse tree produced by cParser#def_args.
+    def exitDef_args(self, ctx:cParser.Def_argsContext):
         pass
 
 

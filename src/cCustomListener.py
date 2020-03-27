@@ -414,6 +414,51 @@ class CASTGenerator(cListener):
         self.currentNode.children.append(self.create_node("empty arg", "arg", self.currentNode, ctx))
         self.currentNode = self.currentNode.parent
 
+    def enterMethod_definition(self, ctx:cParser.Method_definitionContext):
+        node = self.create_node("method_definition", "method_definition", self.currentNode, ctx)
+        self.currentNode.children.append(node)
+        self.currentNode = node
+        id = self.create_node(str(ctx.IDENTIFIER()), "method_call_id", self.currentNode, ctx)
+        self.currentNode.children.append(id)
+        self.symbol_table.open_scope()
+        self.currentNode.symbol_table = self.symbol_table.get_current_scope()
+
+    def exitMethod_definition(self, ctx:cParser.Method_definitionContext):
+        self.symbol_table.close_scope()
+        self.currentNode = self.currentNode.parent
+
+    def enterDef_args(self, ctx:cParser.Def_argsContext):
+        node = self.create_node("def_args", "def_args", self.currentNode, ctx)
+        self.currentNode.children.append(node)
+        self.currentNode = node
+        self.currentNode.symbol_table = self.symbol_table.get_current_scope()
+
+    def exitDef_args(self, ctx:cParser.Def_argsContext):
+        self.currentNode = self.currentNode.parent
+
+    def enterMethod_declaration(self, ctx:cParser.Method_declarationContext):
+        node = self.create_node("method_definition", "method_definition", self.currentNode, ctx)
+        self.currentNode.children.append(node)
+        self.currentNode = node
+        id = self.create_node(str(ctx.IDENTIFIER()), "method_call_id", self.currentNode, ctx)
+        self.currentNode.children.append(id)
+        self.symbol_table.open_scope()
+        self.currentNode.symbol_table = self.symbol_table.get_current_scope()
+
+    def exitMethod_declaration(self, ctx:cParser.Method_declarationContext):
+        self.symbol_table.close_scope()
+        self.currentNode = self.currentNode.parent
+
+    def enterReturn_line(self, ctx:cParser.Return_lineContext):
+        node = self.create_node("return", "return", self.currentNode, ctx)
+        self.currentNode.children.append(node)
+        self.currentNode = node
+        self.currentNode.symbol_table = self.symbol_table.get_current_scope()
+
+    def exitReturn_line(self, ctx:cParser.Return_lineContext):
+        self.currentNode = self.currentNode.parent
+
+
     def enterArgs(self, ctx:cParser.ArgsContext):
         node = self.create_node("args", "args", self.currentNode, ctx)
         self.currentNode.children.append(node)

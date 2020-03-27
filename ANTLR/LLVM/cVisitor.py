@@ -69,6 +69,11 @@ class cVisitor(ParseTreeVisitor):
         return self.visitChildren(ctx)
 
 
+    # Visit a parse tree produced by cParser#return_line.
+    def visitReturn_line(self, ctx:cParser.Return_lineContext):
+        return self.visitChildren(ctx)
+
+
     # Visit a parse tree produced by cParser#switchcase.
     def visitSwitchcase(self, ctx:cParser.SwitchcaseContext):
         return self.visitChildren(ctx)
@@ -81,6 +86,21 @@ class cVisitor(ParseTreeVisitor):
 
     # Visit a parse tree produced by cParser#default.
     def visitDefault(self, ctx:cParser.DefaultContext):
+        return self.visitChildren(ctx)
+
+
+    # Visit a parse tree produced by cParser#method_declaration.
+    def visitMethod_declaration(self, ctx:cParser.Method_declarationContext):
+        return self.visitChildren(ctx)
+
+
+    # Visit a parse tree produced by cParser#method_definition.
+    def visitMethod_definition(self, ctx:cParser.Method_definitionContext):
+        return self.visitChildren(ctx)
+
+
+    # Visit a parse tree produced by cParser#def_args.
+    def visitDef_args(self, ctx:cParser.Def_argsContext):
         return self.visitChildren(ctx)
 
 

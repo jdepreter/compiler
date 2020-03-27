@@ -2,9 +2,9 @@ grammar c;
 
 c: (line)* ;
 
-line: ((definition SEMICOLON)| line_no_def);
+line: ((definition SEMICOLON)|(method_declaration SEMICOLON)| method_definition| line_no_def);
 
-line_no_def: (assignment_line SEMICOLON) | (bool1 SEMICOLON)| ifelse | for_loop | while_loop | scope |switchcase | break_line;
+line_no_def: (assignment_line SEMICOLON) | (bool1 SEMICOLON)| ifelse | for_loop | while_loop | scope |switchcase | break_line | return_line;
 
 scope: LCURLYBRACE (line)* RCURLYBRACE;
 
@@ -22,6 +22,7 @@ condition : (bool1 | assignment_line | );
 for_update : (bool1 | assignment_line | );
 break_line : BREAK SEMICOLON;
 do_block : DO line_no_def;
+return_line :RETURN (bool1)? SEMICOLON;
 
 switchcase: SWITCH LBRACKET bool1 RBRACKET LCURLYBRACE
 (case|default)*
@@ -30,10 +31,15 @@ RCURLYBRACE;
 case:(CASE (INT|CHAR) ':' line*) ;
 default : DEFAULT ':'line*;
 
+method_declaration:((CONST? var_type)|VOID)IDENTIFIER LBRACKET (def_args)? RBRACKET ;
+
+method_definition: ((CONST? var_type)|VOID)IDENTIFIER LBRACKET (def_args)? RBRACKET scope;
+
+def_args: CONST? var_type IDENTIFIER (EQUALS bool1)? (',' CONST? var_type IDENTIFIER (EQUALS bool1)?)*;
 
 method_call: IDENTIFIER LBRACKET (args)? RBRACKET;
 
-args :  bool1 (',' bool1)*;
+args :  (bool1 | assignment_line) (',' (bool1 | assignment_line))*;
 
 //declaration: CONST? var_type IDENTIFIER EQUALS bool1;
 definition: CONST? var_type ((variable_identifier|assignment2)(','(variable_identifier|assignment2))*);
@@ -150,6 +156,8 @@ FLOAT:
     [1-9][0-9]*('.'[0-9]+) | '0.'[0-9]+
     ;
 
+VOID: 'void';
+RETURN:'return';
 IF : 'if';
 ELSE : 'else';
 FOR : 'for';
