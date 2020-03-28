@@ -111,14 +111,13 @@ class SymbolTable:
             key += '_' + arg_type
         return key
 
-    def add_method(self, method, method_type, error,  args):
+    def add_method(self, method, method_type, error,  args, defined=True):
 
-
-        if method in self.method_stack[0]:
+        if method in self.method_stack[0] and self.method_stack[0][method].defined and not defined:
             raise DuplicateDeclaration("[Error] Line {}, Position {}: Duplicate declaration of method {} "
                                        .format(error.line, error.column, method))
 
-        self.method_stack[0][method] = MethodType(method_type, args, False, method, self.method_register)
+        self.method_stack[0][method] = MethodType(method_type, args, False, method, self.method_register, defined)
         self.method_register += 1
 
     def get_method(self, method, arg_types, error):

@@ -437,6 +437,7 @@ define void @print_char(i8 %a){
             ','.join(args)
         )
         self.file.write(string)
+        return
 
     def go_to_label(self, label):
         string = "br label %label{}\n".format(label)
