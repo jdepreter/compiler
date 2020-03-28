@@ -1,4 +1,8 @@
-for (int x = 0; x < 10; x++) {
-    if (x<2) continue;
-    printf(x);
+int x(int i){
+    if (1==i){
+        return 1;
+    }
+    else{
+        return i*x(i-1);
+    }
 }

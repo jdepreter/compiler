@@ -3,13 +3,14 @@ import re
 
 
 class MethodType:
-    def __init__(self, symbol_type, arguments, const, name, internal_name, current_register):
+    def __init__(self, symbol_type, arguments, const, name, current_register, defined=True):
         self.symbol_type = symbol_type
         self.arguments = arguments
         self.const = const
         self.name = name
-        self.internal_name = internal_name
+        self.internal_name = name + '_' + str(current_register)
         self.current_register = current_register
+        self.defined = defined
 
 
 class SymbolType:
@@ -30,12 +31,33 @@ class SymbolTable:
         self.table_list = []
         self.current_register = 0
 
-        self.method_register = 3
+        self.method_register = 4
 
         outer_method_scope = dict()
-        outer_method_scope['printf_int'] = MethodType('void', ['int'], False, 'printf', 'print_int', 0)
-        outer_method_scope['printf_char'] = MethodType('void', ['char'], False, 'printf', 'print_char', 1)
-        outer_method_scope['printf_float'] = MethodType('void', ['float'], False, 'printf', 'print_float', 2)
+        # printf_int = MethodType('void', ['int'], False, 'printf', 0)
+        # printf_int.internal_name = 'print_int'
+        #
+        # printf_char = MethodType('void', ['char'], False, 'printf', 1)
+        # printf_char.internal_name = 'print_char'
+        #
+        # printf_float = MethodType('void', ['float'], False, 'printf', 2)
+        # printf_float.internal_name = 'printf_float'
+        #
+        # main = MethodType('int', [], False, 'main', 3)
+        # main.internal_name = 'main'
+
+        outer_method_scope['printf_int'] = MethodType('void', ['int'], False, 'printf', 0)
+        outer_method_scope['printf_int'].internal_name = 'print_int'
+        outer_method_scope['printf_char'] = MethodType('void', ['char'], False, 'printf', 1)
+        outer_method_scope['printf_char'].internal_name = 'print_char'
+        outer_method_scope['printf_float'] = MethodType('void', ['float'], False, 'printf', 2)
+        outer_method_scope['printf_float'].internal_name = 'print_float'
+        #
+        outer_method_scope['main'] = MethodType('int', [], False, 'main', 3)
+        outer_method_scope['main'].internal_name = 'main'
+        # outer_method_scope['printf'] = [printf_int, printf_char, printf_float]
+        # outer_method_scope['main'] = [main]
+
         self.method_stack = [outer_method_scope]
         self.method_list = [outer_method_scope]
 
@@ -45,7 +67,6 @@ class SymbolTable:
                 if not table[key].used:
                     warn = "Warning: {} is unused".format(key)
                     print(warn)
-
 
     def open_scope(self):
         newdict = dict()
@@ -91,18 +112,27 @@ class SymbolTable:
         return key
 
     def add_method(self, method, method_type, error,  args):
-        key = self.generate_key(method, args)
-        if key in self.method_stack:
+
+
+        if method in self.method_stack[0]:
             raise DuplicateDeclaration("[Error] Line {}, Position {}: Duplicate declaration of method {} "
                                        .format(error.line, error.column, method))
-        self.table_stack[0][key] = MethodType(method_type, args, False, method, self.method_register)
+
+        self.method_stack[0][method] = MethodType(method_type, args, False, method, self.method_register)
         self.method_register += 1
 
     def get_method(self, method, arg_types, error):
-        key = self.generate_key(method, arg_types)
+        # key = self.generate_key(method, arg_types)
+        if method == 'printf':
+            try:
+                return self.method_stack[-1]["printf_{}".format(arg_types[0])]
+            except:
+                raise UndeclaredVariable("[Error] Line {}, Position {}: method {}({}) is undeclared"
+                                         .format(error.line, error.column, method, ','.join(arg_types)))
+
         for scope in self.method_stack:
-            if key in scope:
-                return scope[key]
+            if method in scope:
+                return scope[method]
 
         raise UndeclaredVariable("[Error] Line {}, Position {}: method {}({}) is undeclared"
                                  .format(error.line, error.column, method, ','.join(arg_types)))
@@ -112,31 +142,8 @@ class SymbolTable:
         s.table_stack = list(self.table_stack)
         s.method_stack = list(self.method_stack)
         s.table_list = self.table_list
+        s.method_list = self.method_list
         return s
-# class SymbolTableCreator:
-#     def __init__(self, ast):
-#         self.ast = ast
-#         self.symbol_table = SymbolTable()
-#
-#
-#     def create(self):
-#         queue = [self.ast.startnode]
-#         visited = []
-#         while len(queue) > 0:
-#             current_node = queue[0]
-#             queue = queue[1:]
-#             if current_node.id in visited:
-#                 continue
-#             visited.append(current_node.id)
-#             queue = current_node.children + queue
-#
-#             if current_node.label in ['dec', 'def']:
-#                 self.symbol_table.add_symbol(current_node.children[1], current_node.children[0])
-#
-#             elif current_node.label == 'open_scope':
-#
-#
-#
 
 
 
