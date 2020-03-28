@@ -430,10 +430,10 @@ class CASTGenerator(cListener):
         args = []
         if len(self.currentNode.children) == 4:
 
-            for arg in self.currentNode.children[3].children:
+            for arg in self.currentNode.children[2].children:
                 args.append(arg.children[0].label)
 
-        self.symbol_table.add_method(str(ctx.IDENTIFIER()), self.currentNode.children[0], ctx, args, True)
+        self.symbol_table.add_method(str(ctx.IDENTIFIER()), self.currentNode.children[0].label, ctx, args, True)
 
         self.currentNode = self.currentNode.parent
 
@@ -461,7 +461,7 @@ class CASTGenerator(cListener):
         if ctx.CONST():
             const = True
 
-        self.symbol_table.add_symbol(indentifier, self.currentNode.children[0].label, ctx, False, const)
+        self.symbol_table.add_symbol(indentifier, self.currentNode.children[0].label, ctx, True, const)
 
         self.currentNode = self.currentNode.parent
 

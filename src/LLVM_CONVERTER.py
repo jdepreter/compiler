@@ -9,6 +9,7 @@ class LLVM_Converter:
         self.label = 0
         self.break_stack = []
         self.continue_stack = []
+        self.function_stack = []
         self.file = file
         self.null = {'int': '0', 'float': double_to_hex(0.0)}
         self.format_dict = {'int': 'i32', 'float': 'float', 'char': 'i8', 'bool': 'i1'}
@@ -103,19 +104,22 @@ define void @print_char(i8 %a){
   ret void
 }\n""")
         # self.stack.insert(0, self.ast.startnode)
-        self.file.write("define i32 @main() {\n"
-                        "start:\n")
+        # self.file.write("define i32 @main() {\n"
+        #                 "start:\n")
         current_symbol_table = self.ast.startnode.symbol_table
         self.solve_llvm_node(self.ast.startnode, current_symbol_table)
 
-        self.file.write("ret i32 0\n"
-                        "}\n")
+        # self.file.write("ret i32 0\n"
+        #                 "}\n")
 
     # helpermethod to write used for declaration or definition
     def allocate_node(self, node, symbol_table, symbol_type):
         variable = node.label
         if node.node_type == 'assignment2':
             variable = node.children[0].label
+
+        if node.node_type == 'Arg_definition':
+            variable = node.children[1].label
         reg_nr = symbol_table.get_symbol(variable, node.ctx.start).current_register
         sym_type, stars = get_type_and_stars(symbol_type)
         string = "%a{} = alloca {}{} \n".format(
@@ -175,9 +179,6 @@ define void @print_char(i8 %a){
         elif node.node_type == 'assignment':
             return self.assign_node(node, symbol_table)
 
-        elif node.node_type == 'method_call':
-            return self.call_method(node, symbol_table)
-
         elif node.node_type == 'for':
             return self.loop(node, symbol_table)
 
@@ -205,6 +206,11 @@ define void @print_char(i8 %a){
         elif node.node_type == 'ifelse':
             return self.if_else(node, symbol_table)
 
+        elif node.node_type == 'method_definition':
+            return self.generate_method(node, symbol_table)
+
+        elif node.node_type == 'return':
+            return self.return_node(node, symbol_table)
         else:
             sol = self.solve_math(node, symbol_table)
 
@@ -377,6 +383,9 @@ define void @print_char(i8 %a){
             self.file.write(string)
             return '%r' + str(reg), value[1]
 
+        elif node.node_type == 'method_call':
+            return self.call_method(node, symbol_table)
+
         elif node.node_type == 'rvalue':
             value = str(node.label)
 
@@ -417,7 +426,7 @@ define void @print_char(i8 %a){
 
     def call_method(self, node, symbol_table):
         method_name = node.children[0].label
-        args = [node.children[1]]
+        args = node.children[1].children[:]
         arg_types = []
         arg_reg = []
         for arg in args:
@@ -429,15 +438,25 @@ define void @print_char(i8 %a){
         m = list(map(self.convert, method.arguments))
         for i in range(len(args)):
             args[i] = m[i] + ' ' + arg_reg[i]
-
-        string = "call {} ({}) @{}({})\n".format(
-            method.symbol_type,
-            ','.join(m),
-            method.internal_name,
-            ','.join(args)
-        )
-        self.file.write(string)
-        return
+        string = ""
+        if method.symbol_type != "void":
+            newreg = self.register
+            self.register+=1
+            string= "%r{} = call {} ({}) @{}({})\n".format(str(newreg), self.format_dict[method.symbol_type],
+                ','.join(m),
+                method.internal_name,
+                ','.join(args))
+            self.file.write(string)
+            return '%r'+str(newreg), method.symbol_type
+        else:
+            string = "call {} ({}) @{}({})\n".format(
+                method.symbol_type,
+                ','.join(m),
+                method.internal_name,
+                ','.join(args)
+            )
+            self.file.write(string)
+            return None, None
 
     def go_to_label(self, label):
         string = "br label %label{}\n".format(label)
@@ -579,3 +598,50 @@ define void @print_char(i8 %a){
         self.add_label(current_label + len(node.children) - 1)
 
         self.break_stack.pop()
+
+    def generate_method(self, method_node, symbol_table):
+        args = []
+        if method_node.children[2].node_type == 'def_args':
+            for arg in method_node.children[2].children:
+                args.append(arg.children[0].label)
+        func = symbol_table.get_method(method_node.children[1].label, args, method_node.ctx.start)
+        self.function_stack.insert(0, func)
+
+        if not func.defined:
+            raise Exception("temp")
+
+        if (len(args)!= len(func.arguments)):
+            raise Exception("temp")
+
+        m = list(map(self.convert, args))
+        startstring = "define {} @{}({}) {}\n".format(self.format_dict[func.symbol_type], func.internal_name, ','.join(m), '{')
+        self.file.write(startstring)
+        method_llvm = LLVM_Converter(method_node, self.file)
+        method_llvm.function_stack = self.function_stack
+        for i in range(len(args)):
+
+            new_val, val_type = method_llvm.allocate_node(method_node.children[2].children[i],
+                                                 method_node.children[2].children[i].symbol_table,
+                                                 method_node.children[2].children[i].children[0].label)
+            store_str = "store {} %{}, {}* {}\n".format(self.format_dict[val_type], str(i), self.format_dict[val_type], new_val)
+            # TODO CAST VALUES
+            method_llvm.file.write(store_str)
+
+        method_llvm.solve_llvm_node(method_node.children[-1], symbol_table)
+
+        endstring = "}\n"
+        self.file.write(endstring)
+        self.function_stack.pop(0)
+        return
+
+    def return_node(self, node, symbol_table):
+        returnreg, return_type = self.solve_llvm_node(node.children[0], symbol_table)
+        newtype = self.function_stack[0].symbol_type
+        castedreg = self.cast_value(returnreg, return_type, newtype)
+
+        string = "ret {} {}\n".format(self.format_dict[newtype], castedreg)
+        self.file.write(string)
+        return
+
+
+

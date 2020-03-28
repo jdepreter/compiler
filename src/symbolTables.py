@@ -27,6 +27,7 @@ class SymbolType:
 
 class SymbolTable:
     def __init__(self):
+        self.main_defined = False
         self.table_stack = []
         self.table_list = []
         self.current_register = 0
@@ -112,6 +113,11 @@ class SymbolTable:
         return key
 
     def add_method(self, method, method_type, error,  args, defined=True):
+        if method == "main":
+            if self.main_defined:
+                raise Exception("multiple definitions of main")
+            self.main_defined = True
+            return
 
         if method in self.method_stack[0] and self.method_stack[0][method].defined and not defined:
             raise DuplicateDeclaration("[Error] Line {}, Position {}: Duplicate declaration of method {} "
