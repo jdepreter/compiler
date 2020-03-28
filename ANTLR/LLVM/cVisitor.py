@@ -109,6 +109,11 @@ class cVisitor(ParseTreeVisitor):
         return self.visitChildren(ctx)
 
 
+    # Visit a parse tree produced by cParser#arg_definition.
+    def visitArg_definition(self, ctx:cParser.Arg_definitionContext):
+        return self.visitChildren(ctx)
+
+
     # Visit a parse tree produced by cParser#method_call.
     def visitMethod_call(self, ctx:cParser.Method_callContext):
         return self.visitChildren(ctx)

@@ -188,6 +188,15 @@ class cListener(ParseTreeListener):
         pass
 
 
+    # Enter a parse tree produced by cParser#arg_definition.
+    def enterArg_definition(self, ctx:cParser.Arg_definitionContext):
+        pass
+
+    # Exit a parse tree produced by cParser#arg_definition.
+    def exitArg_definition(self, ctx:cParser.Arg_definitionContext):
+        pass
+
+
     # Enter a parse tree produced by cParser#method_call.
     def enterMethod_call(self, ctx:cParser.Method_callContext):
         pass

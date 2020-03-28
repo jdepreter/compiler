@@ -36,7 +36,9 @@ method_declaration:((CONST? var_type)|VOID)IDENTIFIER LBRACKET (def_args)? RBRAC
 
 method_definition: ((CONST? var_type)|VOID)IDENTIFIER LBRACKET (def_args)? RBRACKET scope;
 
-def_args: CONST? var_type IDENTIFIER (EQUALS bool1)? (',' CONST? var_type IDENTIFIER (EQUALS bool1)?)*;
+def_args: arg_definition (',' arg_definition)*;
+
+arg_definition : CONST? var_type IDENTIFIER;
 
 method_call: IDENTIFIER LBRACKET (args)? RBRACKET;
 

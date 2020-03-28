@@ -397,8 +397,6 @@ class CASTGenerator(cListener):
         self.currentNode = node
         self.currentNode.symbol_table = self.symbol_table.get_current_scope()
 
-
-
     def exitVariable_identifier(self, ctx:cParser.Variable_identifierContext):
         self.currentNode = self.currentNode.parent
 
@@ -425,6 +423,18 @@ class CASTGenerator(cListener):
 
     def exitMethod_definition(self, ctx:cParser.Method_definitionContext):
         self.symbol_table.close_scope()
+        # const = False
+        # if ctx.CONST():
+        #     const = True
+
+        args = []
+        if len(self.currentNode.children) == 4:
+
+            for arg in self.currentNode.children[3].children:
+                args.append(arg.children[0].label)
+
+        self.symbol_table.add_method(str(ctx.IDENTIFIER()), self.currentNode.children[0], ctx, args, True)
+
         self.currentNode = self.currentNode.parent
 
     def enterDef_args(self, ctx:cParser.Def_argsContext):
@@ -436,8 +446,27 @@ class CASTGenerator(cListener):
     def exitDef_args(self, ctx:cParser.Def_argsContext):
         self.currentNode = self.currentNode.parent
 
+    def enterArg_definition(self, ctx:cParser.Arg_definitionContext):
+        node = self.create_node("Arg_definition", "Arg_definition", self.currentNode, ctx)
+        self.currentNode.children.append(node)
+        self.currentNode = node
+
+        id = self.create_node(str(ctx.IDENTIFIER()), "Arg_definition_id", self.currentNode, ctx)
+        self.currentNode.children.append(id)
+        self.currentNode.symbol_table = self.symbol_table.get_current_scope()
+
+    def exitArg_definition(self, ctx:cParser.Arg_definitionContext):
+        indentifier = str(ctx.IDENTIFIER())
+        const = False
+        if ctx.CONST():
+            const = True
+
+        self.symbol_table.add_symbol(indentifier, self.currentNode.children[0].label, ctx, False, const)
+
+        self.currentNode = self.currentNode.parent
+
     def enterMethod_declaration(self, ctx:cParser.Method_declarationContext):
-        node = self.create_node("method_definition", "method_definition", self.currentNode, ctx)
+        node = self.create_node("method_declaration", "method_declaration", self.currentNode, ctx)
         self.currentNode.children.append(node)
         self.currentNode = node
         id = self.create_node(str(ctx.IDENTIFIER()), "method_call_id", self.currentNode, ctx)
@@ -447,6 +476,17 @@ class CASTGenerator(cListener):
 
     def exitMethod_declaration(self, ctx:cParser.Method_declarationContext):
         self.symbol_table.close_scope()
+        const = False
+        if ctx.CONST():
+            const = True
+
+        args = []
+        if len(self.currentNode.children) == 4:
+
+            for arg in self.currentNode.children[3]:
+                args.append(arg.children[0].label)
+
+        self.symbol_table.add_method(str(ctx.IDENTIFIER()), self.currentNode.children[0], ctx, args, False)
         self.currentNode = self.currentNode.parent
 
     def enterReturn_line(self, ctx:cParser.Return_lineContext):
@@ -457,7 +497,6 @@ class CASTGenerator(cListener):
 
     def exitReturn_line(self, ctx:cParser.Return_lineContext):
         self.currentNode = self.currentNode.parent
-
 
     def enterArgs(self, ctx:cParser.ArgsContext):
         node = self.create_node("args", "args", self.currentNode, ctx)
