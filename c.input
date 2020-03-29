@@ -11,16 +11,7 @@ int x(int i, float y, char c){
 }
 
 int main(){
-    int x = 6;
-
-
-    x++;
-
-    printf(x++);
-    printf(x);
-    printf(++x);
-    printf(x);
-
-    printf(x);
+    int y = x(3, 3.0, 'c');
+    printf(y);
     return 0;
 }
