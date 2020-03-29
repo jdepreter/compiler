@@ -500,6 +500,7 @@ define void @print_char(i8 %a){
         }
         self.break_stack.insert(0, labels["next_block"])
         self.continue_stack.insert(0, labels["condition"])
+        write = self.write
         self.label += 4
         if skip_condition:
             # Do While
@@ -511,6 +512,7 @@ define void @print_char(i8 %a){
         update = False
         for child in node.children:
             if child.node_type == "condition":
+                self.write = write
                 self.add_label(labels["condition"])
                 reg, value_type = self.solve_llvm_node(child, child.symbol_table)
                 string = "%r{} = icmp ne {} {}, 0\n".format(
@@ -521,6 +523,7 @@ define void @print_char(i8 %a){
                 self.register += 1
 
             elif child.node_type == 'for update':
+                self.write = write
                 self.continue_stack[0] = labels["update"]
                 self.add_label(labels["update"])
                 self.solve_llvm_node(child, child.symbol_table)
@@ -528,6 +531,7 @@ define void @print_char(i8 %a){
                 update = True
 
             elif child.node_type != 'for initial':
+                self.write = write
                 self.add_label(labels["code_block"])
                 self.solve_llvm_node(child, child.symbol_table)
                 if update:
@@ -537,6 +541,7 @@ define void @print_char(i8 %a){
 
         self.break_stack.pop()
         self.continue_stack.pop()
+        self.write = write
         self.add_label(labels["next_block"])
 
     def if_else(self, node, symbol_table):
@@ -645,7 +650,10 @@ define void @print_char(i8 %a){
 
         method_llvm.solve_llvm_node(method_node.children[-1], symbol_table)
 
-        self.write= True
+        return_string = "ret {} {}\n".format(self.format_dict[func.symbol_type], self.null[func.symbol_type])
+        self.write_to_file(return_string)
+
+        self.write = True
 
         endstring = "}\n"
         self.write_to_file(endstring)

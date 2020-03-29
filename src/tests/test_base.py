@@ -92,9 +92,17 @@ class Loops(unittest.TestCase):
     def test_for_continue(self):
         self.assertEqual(clear_newlines(to_llvm("loops/for_continue.txt", "for_continue")), "23456789")
 
+    def test_forreturn(self):
+        self.assertEqual(clear_newlines(to_llvm("loops/loop_return.txt", "loop_return")), "12341")
+
     def test_break_error(self):
         with self.assertRaises(src.CustomExceptions.BreakError):
             to_llvm("loops/break_error.txt", "break_error")
+
+
+class Function(unittest.TestCase):
+    def test_faculty(self):
+        self.assertEqual(clear_newlines(to_llvm("functions/faculty.txt", "faculty")), "6")
 
 
 if __name__ == '__main__':
