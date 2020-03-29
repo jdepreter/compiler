@@ -1,3 +1,4 @@
+int main(){
 char c = 'c';
 char b = 'b';
 char a = b+c;
@@ -8,3 +9,5 @@ printf(b);
 printf(c);
 printf(d);
 printf(y);
+return 0;
+}

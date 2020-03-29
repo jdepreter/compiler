@@ -7,11 +7,20 @@ int x(int i, float y, char c){
     else{
         return i*x(i-1, y , c);
     }
-    return 3;
+
 }
 
 int main(){
-    int y = x(3, 3.0, 'c');
-    printf(y);
+    int x = 6;
+
+
+    x++;
+
+    printf(x++);
+    printf(x);
+    printf(++x);
+    printf(x);
+
+    printf(x);
     return 0;
 }
