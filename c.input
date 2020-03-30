@@ -1,17 +1,11 @@
+int main(){
 
-int x(int i, float y, char c){
-
-    if (1==i){
-        return 1;
-    }
-    else{
-        return i*x(i-1, y , c);
-    }
-
+for (int x = 0; x < 10; x++) {
+    if (x<2) continue;
+    printf(x);
 }
 
-int main(){
-    int y = x(3, 3.0, 'c');
-    printf(y);
-    return 0;
+
+return 0;
+
 }
