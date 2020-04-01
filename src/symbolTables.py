@@ -112,17 +112,21 @@ class SymbolTable:
             key += '_' + arg_type
         return key
 
-    def add_method(self, method, method_type, error,  args, defined=True):
+    def add_method(self, method, method_type, error, args, defined=True):
         if method == "main":
             if self.main_defined:
                 raise Exception("multiple definitions of main")
             self.main_defined = True
             return
 
-        if method in self.method_stack[0] and self.method_stack[0][method].defined and not defined:
-            raise DuplicateDeclaration("[Error] Line {}, Position {}: Duplicate declaration of method {} "
-                                       .format(error.line, error.column, method))
-
+        if method in self.method_stack[0]:
+            if self.method_stack[0][method].defined:
+                raise DuplicateDeclaration("[Error] Line {}, Position {}: Duplicate declaration of method {} "
+                                           .format(error.line, error.column, method))
+            else:
+                if args != self.method_stack[0][method].arguments:
+                    raise Exception("[Error] Line {}: Conflicting types for {} "
+                                    .format(error.line, method))
         self.method_stack[0][method] = MethodType(method_type, args, False, method, self.method_register, defined)
         self.method_register += 1
 
@@ -149,6 +153,3 @@ class SymbolTable:
         s.table_list = self.table_list
         s.method_list = self.method_list
         return s
-
-
-

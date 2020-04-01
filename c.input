@@ -1,5 +1,20 @@
+void f(float x);
+
 int main() {
-    int x = -5;
-    printf(x);
+    for (int x = 1; x < 5; ++x) {
+        f(x);
+    }
+}
+
+void f(int x) {
+    int y = 2;
+    if (y == 2) {
+        if (x > 1) {
+            return;
+        }
+        else {
+            return;
+        }
+    }
 }
 

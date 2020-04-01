@@ -1,6 +1,6 @@
 #include <stdio.h>
 
-void f();
+void f(int x);
 
 int main(){
     f();
@@ -8,6 +8,6 @@ int main(){
 
 int x;
 
-void f() {
+void f(float x) {
     printf("%d", x);
 }

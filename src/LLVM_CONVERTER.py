@@ -241,11 +241,16 @@ define void @print_char(i8 %a){
         self.register += 1
 
         string = "%r{} = {} {}{} {} to {}{}\n".format(
-            str(reg), self.cast_dict[current_sym_type][new_sym_type], self.format_dict[current_sym_type], current_stars,
+            str(reg), self.cast_type(current_sym_type, new_sym_type), self.format_dict[current_sym_type], current_stars,
             register, self.format_dict[new_sym_type], new_stars
         )
         self.write_to_file(string)
         return '%r' + str(reg)
+
+    def cast_type(self, current_sym_type, new_sym_type):
+        if current_sym_type == 'void':
+            raise Exception("Can't cast void")
+        return self.cast_dict[current_sym_type][new_sym_type]
 
     def store_symbol(self, address, value, address_symbol_type, value_symbol_type, dereference=0):
         value_to_store = self.cast_value(value, value_symbol_type, address_symbol_type)
