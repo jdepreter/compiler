@@ -13,7 +13,7 @@ class LLVM_Converter:
         self.continue_stack = []
         self.function_stack = []
         self.file = file
-        self.null = {'int': '0', 'float': double_to_hex(0.0)}
+        self.null = {'int': '0', 'float': double_to_hex(0.0), 'char': '0'}
         self.format_dict = {'int': 'i32', 'float': 'float', 'char': 'i8', 'bool': 'i1'}
         self.optype = {'int':
             {
@@ -552,8 +552,6 @@ define void @print_char(i8 %a){
         self.breaks = breaks
 
     def if_else(self, node, symbol_table):
-        if not self.write:
-            return
         condition = node.children[0]
         reg, value_type = self.solve_llvm_node(condition, symbol_table)
         string = "%r{} = icmp ne {} {}, 0\n".format(
@@ -655,7 +653,7 @@ define void @print_char(i8 %a){
         if not func.defined:
             raise Exception("temp")
 
-        if (len(args)!= len(func.arguments)):
+        if len(args) != len(func.arguments):
             raise Exception("temp")
 
         m = list(map(self.convert, args))
@@ -663,6 +661,7 @@ define void @print_char(i8 %a){
         self.write_to_file(startstring)
         method_llvm = LLVM_Converter(method_node, self.file)
         method_llvm.function_stack = self.function_stack
+        method_llvm.write = self.write
         for i in range(len(args)):
 
             new_val, val_type = method_llvm.allocate_node(method_node.children[2].children[i],
@@ -673,8 +672,11 @@ define void @print_char(i8 %a){
             method_llvm.write_to_file(store_str)
 
         method_llvm.solve_llvm_node(method_node.children[-1], symbol_table)
+        if func.symbol_type == 'void':
+            return_string = "ret void\n"
+        else:
 
-        return_string = "ret {} {}\n".format(self.format_dict[func.symbol_type], self.null[func.symbol_type])
+            return_string = "ret {} {}\n".format(self.format_dict[func.symbol_type], self.null[func.symbol_type])
         self.write_to_file(return_string)
 
         self.write = True
