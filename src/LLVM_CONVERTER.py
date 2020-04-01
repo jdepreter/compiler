@@ -126,8 +126,22 @@ define void @print_char(i8 %a){
 
         if node.node_type == 'Arg_definition':
             variable = node.children[1].label
-        reg_nr = symbol_table.get_symbol(variable, node.ctx.start).current_register
+        symbol = symbol_table.get_symbol(variable, node.ctx.start)
         sym_type, stars = get_type_and_stars(symbol_type)
+
+        if symbol.is_global:
+            # Do funny xD llvm global stuff
+            value = 0
+            if node.node_type == 'assignment2':
+                if node.children[1].node_type == 'rvalue':
+                    value = node.children[1].label
+                else:
+                    raise Exception("Initializer element is not constant")
+
+            self.write_to_file("@{} = common global {} {}\n".format(variable, self.format_dict[sym_type], value))
+            return None, None
+
+        reg_nr = symbol.current_register
         string = "%a{} = alloca {}{} \n".format(
             reg_nr,
             self.format_dict[sym_type], stars

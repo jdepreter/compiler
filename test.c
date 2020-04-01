@@ -1,13 +1,13 @@
 #include <stdio.h>
 
-void f(int x);
+int y;
 
 int main(){
-    f();
+    return y;
 }
 
-int x;
+int x = y + 2;
 
-void f(float x) {
-    printf("%d", x);
+void f() {
+
 }

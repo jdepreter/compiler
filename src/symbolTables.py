@@ -14,12 +14,13 @@ class MethodType:
 
 
 class SymbolType:
-    def __init__(self, symbol_type, assigned, const, current_register):
+    def __init__(self, symbol_type, assigned, const, current_register, _global=False):
         self.symbol_type = symbol_type
         self.assigned = assigned
         self.const = const
         self.current_register = current_register
         self.used = False
+        self.is_global = _global
 
     def set_reg(self, current_register):
         self.current_register = current_register
@@ -85,7 +86,9 @@ class SymbolTable:
         if symbol in self.table_stack[0]:
             raise DuplicateDeclaration("[Error] Line {}, Position {}: Duplicate declaration of variable {} "
                                        .format(error.line, error.column, symbol))
-        self.table_stack[0][symbol] = SymbolType(symbol_type, assinged, const, self.current_register)
+        _global = len(self.table_stack) == 1
+        assinged = assinged or _global
+        self.table_stack[0][symbol] = SymbolType(symbol_type, assinged, const, self.current_register, _global)
         self.current_register += 1
 
     def get_assigned_symbol(self, symbol_name, error):
