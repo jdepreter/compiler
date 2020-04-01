@@ -138,7 +138,7 @@ define void @print_char(i8 %a){
                 else:
                     raise Exception("Initializer element is not constant")
 
-            self.write_to_file("@{} = common global {} {}\n".format(variable, self.format_dict[sym_type], value))
+            self.write_to_file("{} = common global {} {}\n".format(symbol.current_register, self.format_dict[sym_type], value))
             return None, None
 
         reg_nr = symbol.current_register
