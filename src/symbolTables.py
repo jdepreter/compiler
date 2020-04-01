@@ -20,11 +20,12 @@ class SymbolType:
         self.const = const
         self.reg = current_register
         if (_global):
-            self.current_register = '@x_'+ str(current_register)
+            self.current_register = '@x_' + str(current_register)
         else:
-            self.current_register = '%a'+str(current_register)
+            self.current_register = '%a' + str(current_register)
         self.used = False
         self.is_global = _global
+        self.written = False
 
     def set_reg(self, current_register):
         self.current_register = current_register
@@ -97,11 +98,21 @@ class SymbolTable:
 
     def get_assigned_symbol(self, symbol_name, error):
         symbol = self.get_symbol(symbol_name, error)
-        if not symbol.assigned:
+        if not symbol.assigned and symbol.written:
             raise UninitializedVariable("[Error] Line {}, Position {}: variable {} is not initialised"
                                         .format(error.line, error.column, symbol_name))
 
         return symbol
+
+    def get_written_symbol(self, symbol_name, error):
+        symbol_name = re.sub(r'\*', '', symbol_name)
+        for scope in self.table_stack:
+            if symbol_name in scope and scope[symbol_name].written:
+                scope[symbol_name].used = True
+                return scope[symbol_name]
+
+        raise UndeclaredVariable("[Error] Line {}, Position {}: variable {} is undeclared"
+                                 .format(error.line, error.column, symbol_name))
 
     def get_symbol(self, symbol, error):
         symbol = re.sub(r'\*', '', symbol)

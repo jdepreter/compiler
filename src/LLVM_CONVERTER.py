@@ -140,6 +140,7 @@ define void @print_char(i8 %a){
                     raise Exception("Initializer element is not constant")
 
             self.write_to_file("{} = global {} {}\n".format(symbol.current_register, self.format_dict[sym_type], value))
+            symbol.written = True
             return None, None
 
         reg_nr = symbol.current_register
@@ -148,6 +149,7 @@ define void @print_char(i8 %a){
             self.format_dict[sym_type], stars
         )
         self.write_to_file(string)
+        symbol.written = True
         if node.node_type == 'assignment2':
             register = None
             if node.children[1].node_type == 'assignment':
@@ -159,7 +161,7 @@ define void @print_char(i8 %a){
         return reg_nr, symbol_type
 
     def assign_node(self, node, symbol_table):
-        symbol = symbol_table.get_symbol(str(node.children[0].label), node.ctx.start)
+        symbol = symbol_table.get_written_symbol(str(node.children[0].label), node.ctx.start)
         address = symbol.current_register
         if node.children[1].node_type == 'assignment':
             register = self.assign_node(node.children[1], symbol_table)
