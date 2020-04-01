@@ -1,6 +1,11 @@
 int y;
-int x = 6;
+int x = 3;
+void f(int* x){
+    *x =6;
+}
 
 int main() {
+    int v = 3;
+    f(&v);
     printf(x);
 }

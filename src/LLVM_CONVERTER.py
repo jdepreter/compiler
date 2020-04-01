@@ -70,6 +70,7 @@ class LLVM_Converter:
                 }
         }
         self.convert = lambda x: self.format_dict[get_type_and_stars(x)[0]]
+        self.convert2 = lambda x: self.format_dict[get_type_and_stars(x)[0]]+get_type_and_stars(x)[1]
 
     def write_to_file(self, string):
         if self.write:
@@ -463,7 +464,7 @@ define void @print_char(i8 %a){
             arg_types.append(symbol_type)
 
         method = node.symbol_table.get_method(method_name, arg_types, node.ctx.start)
-        m = list(map(self.convert, method.arguments))
+        m = list(map(self.convert2, method.arguments))
         for i in range(len(args)):
             args[i] = m[i] + ' ' + arg_reg[i]
         string = ""
@@ -677,7 +678,7 @@ define void @print_char(i8 %a){
         if len(args) != len(func.arguments):
             raise Exception("temp")
 
-        m = list(map(self.convert, args))
+        m = list(map(self.convert2, args))
         startstring = "define {} @{}({}) {}\n".format(self.format_dict[func.symbol_type], func.internal_name,
                                                       ','.join(m), '{')
         self.write_to_file(startstring)
@@ -688,7 +689,8 @@ define void @print_char(i8 %a){
             new_val, val_type = method_llvm.allocate_node(method_node.children[2].children[i],
                                                           method_node.children[2].children[i].symbol_table,
                                                           method_node.children[2].children[i].children[0].label)
-            store_str = "store {} %{}, {}* {}\n".format(self.format_dict[val_type], str(i), self.format_dict[val_type],
+            val_type = get_type_and_stars(val_type)
+            store_str = "store {} %{}, {}* {}\n".format(self.format_dict[val_type[0]]+val_type[1], str(i), self.format_dict[val_type[0]]+val_type[1],
                                                         new_val)
             # TODO CAST VALUES
             method_llvm.write_to_file(store_str)
