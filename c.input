@@ -1,18 +1,5 @@
-void f(int x) {
-    int y = 2;
-    if (y == 2) {
-        if (x > 1) {
-            return;
-        }
-        else {
-            return;
-        }
-    }
-}
-
 int main() {
-    int x = 6;
-    f(8);
-    return 0;
+    int x = -5;
+    printf(x);
 }
 

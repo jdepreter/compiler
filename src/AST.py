@@ -167,7 +167,7 @@ class ASTVisitor:
             visited.append(current_node.id)
 
             if current_node.node_type in ['unary min', 'unary plus']:
-                unary_list = [current_node.children[1], current_node]
+                unary_list = [current_node]
                 u_current_node = unary_list[0]
                 while len(u_current_node.children) > 0:
                     u_current_node = unary_list[0]
@@ -183,6 +183,7 @@ class ASTVisitor:
                     if u_node.node_type == 'unary min':
                         # print('-', u_node)
                         u_node.node_type = u_node.children[1].node_type
+                        u_node.symbol_type = u_node.children[1].symbol_type
                         if u_node.node_type == 'float':
                             u_node.label = str(-float(u_node.children[1].label))
                         else:
@@ -195,6 +196,7 @@ class ASTVisitor:
                         if not u_node.children[1].is_literal():
                             break
                         u_node.node_type = u_node.children[1].node_type
+                        u_node.symbol_type = u_node.children[1].symbol_type
                         u_node.label = u_node.children[1].label
                         del u_node.children[1]
                         del u_node.children[0]
