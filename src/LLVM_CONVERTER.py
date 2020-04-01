@@ -142,7 +142,7 @@ define void @print_char(i8 %a){
             return None, None
 
         reg_nr = symbol.current_register
-        string = "%a{} = alloca {}{} \n".format(
+        string = "{} = alloca {}{} \n".format(
             reg_nr,
             self.format_dict[sym_type], stars
         )
@@ -153,13 +153,13 @@ define void @print_char(i8 %a){
                 register = self.assign_node(node.children[1], symbol_table)
             else:
                 register = self.solve_math(node.children[1], symbol_table)
-            self.store_symbol("%a" + str(reg_nr), register[0], symbol_type, register[1])
+            self.store_symbol(reg_nr, register[0], symbol_type, register[1])
 
-        return "%a" + str(reg_nr), symbol_type
+        return reg_nr, symbol_type
 
     def assign_node(self, node, symbol_table):
         symbol = symbol_table.get_symbol(str(node.children[0].label), node.ctx.start)
-        address = '%a' + str(symbol.current_register)
+        address = symbol.current_register
         if node.children[1].node_type == 'assignment':
             register = self.assign_node(node.children[1], symbol_table)
         else:
@@ -301,7 +301,7 @@ define void @print_char(i8 %a){
         reg = self.register
         self.register += 1
         sym_type, stars = get_type_and_stars(symbol.symbol_type)
-        return self.load_instruction(reg, stars, sym_type, "%a" + str(symbol.current_register))
+        return self.load_instruction(reg, stars, sym_type, symbol.current_register)
 
     def load_instruction(self, reg, stars, sym_type, current_register):
         string = '%r{} = load {}{} ,{}{}* {} \n'.format(
@@ -420,13 +420,13 @@ define void @print_char(i8 %a){
             if str(node.symbol_type) == "float":
                 value = self.store_float(float(node.label))
             if str(node.symbol_type)[0] == '&':
-                value = '%a' + str(symbol_table.get_assigned_symbol(value, node.ctx.start).current_register)
+                value = symbol_table.get_assigned_symbol(value, node.ctx.start).current_register
             return value, str(node.symbol_type)
 
         elif node.node_type == 'lvalue':
             sym = symbol_table.get_assigned_symbol(node.label, node.ctx.start)
             sym_type, stars = get_type_and_stars(sym.symbol_type)
-            address, symbol_type_stars = self.dereference('%a' + str(sym.current_register), stars, sym_type,
+            address, symbol_type_stars = self.dereference(sym.current_register, stars, sym_type,
                                                           node.label.count('*'))
             reg = self.register
             self.register += 1
@@ -449,7 +449,7 @@ define void @print_char(i8 %a){
             new_sym
         )
         self.write_to_file(string)
-        self.store_symbol('%a' + str(symbol.current_register), '%r' + str(reg), symbol_type, symbol_type)
+        self.store_symbol(symbol.current_register, '%r' + str(reg), symbol_type, symbol_type)
         return reg
 
     def call_method(self, node, symbol_table):

@@ -18,7 +18,11 @@ class SymbolType:
         self.symbol_type = symbol_type
         self.assigned = assigned
         self.const = const
-        self.current_register = current_register
+        self.reg = current_register
+        if (_global):
+            self.current_register = '@x_'+ str(current_register)
+        else:
+            self.current_register = '%a'+str(current_register)
         self.used = False
         self.is_global = _global
 
