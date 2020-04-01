@@ -14,7 +14,7 @@ class LLVM_Converter:
         self.function_stack = []
         self.file = file
         self.null = {'int': '0', 'float': double_to_hex(0.0), 'char': '0'}
-        self.format_dict = {'int': 'i32', 'float': 'float', 'char': 'i8', 'bool': 'i1'}
+        self.format_dict = {'int': 'i32', 'float': 'float', 'char': 'i8', 'bool': 'i1', 'void': 'void'}
         self.optype = {'int':
             {
                 '+': 'add',
@@ -450,13 +450,13 @@ define void @print_char(i8 %a){
         string = ""
         if method.symbol_type != "void":
             newreg = self.register
-            self.register+=1
-            string= "%r{} = call {} ({}) @{}({})\n".format(str(newreg), self.format_dict[method.symbol_type],
-                ','.join(m),
-                method.internal_name,
-                ','.join(args))
+            self.register += 1
+            string = "%r{} = call {} ({}) @{}({})\n".format(str(newreg), self.format_dict[method.symbol_type],
+                                                            ','.join(m),
+                                                            method.internal_name,
+                                                            ','.join(args))
             self.write_to_file(string)
-            return '%r'+str(newreg), method.symbol_type
+            return '%r' + str(newreg), method.symbol_type
         else:
             string = "call {} ({}) @{}({})\n".format(
                 method.symbol_type,
@@ -496,7 +496,7 @@ define void @print_char(i8 %a){
         elif node.children[0].node_type == 'for do':
             skip_condition = True
 
-        breaks =  self.breaks
+        breaks = self.breaks
 
         labels = {
             "condition": self.label,
@@ -552,6 +552,8 @@ define void @print_char(i8 %a){
         self.breaks = breaks
 
     def if_else(self, node, symbol_table):
+        if not self.write:
+            return
         condition = node.children[0]
         reg, value_type = self.solve_llvm_node(condition, symbol_table)
         string = "%r{} = icmp ne {} {}, 0\n".format(
@@ -584,14 +586,13 @@ define void @print_char(i8 %a){
         # schrijf alle volgende instructies achter een label
         self.add_label(label + len(node.children) - 1)
 
-
         return
 
     def switch(self, node, symbol_table):
         if not self.write:
             return
         switchval, switchtype = self.solve_math(node.children[0], symbol_table)
-        branchval = self.cast_value(switchval,switchtype, "int")
+        branchval = self.cast_value(switchval, switchtype, "int")
 
         write = self.write
         breaks = self.breaks
@@ -600,7 +601,7 @@ define void @print_char(i8 %a){
         continue_writing = False
 
         current_label = self.label
-        default_label = current_label + len(node.children)-1
+        default_label = current_label + len(node.children) - 1
 
         self.break_stack.insert(0, default_label)
         self.label += len(node.children)
@@ -611,24 +612,25 @@ define void @print_char(i8 %a){
             curr = node.children[i]
             if curr.label == "default":
                 if default:
-                    raise Exception("[Error] line {} position {} Secondary definition of default".format(node.ctx.start.line, node.ctx.start.column))
+                    raise Exception(
+                        "[Error] line {} position {} Secondary definition of default".format(node.ctx.start.line,
+                                                                                             node.ctx.start.column))
 
                 default = True
-                default_label = current_label+i-1
+                default_label = current_label + i - 1
 
             else:
-                string += "i32 {}, label %label{}\n".format(str(int(curr.label)), str(current_label+i-1))
+                string += "i32 {}, label %label{}\n".format(str(int(curr.label)), str(current_label + i - 1))
 
-
-        operation = "switch i32 {}, label %label{} [{}]\n".format(branchval,default_label, string)
+        operation = "switch i32 {}, label %label{} [{}]\n".format(branchval, default_label, string)
 
         self.write_to_file(operation)
         for i in range(1, len(node.children)):
             continue_writing = continue_writing or self.write or self.breaks
             self.write = write
             self.breaks = False
-            self.go_to_label(current_label+i-1)
-            self.add_label(current_label+i-1)
+            self.go_to_label(current_label + i - 1)
+            self.add_label(current_label + i - 1)
             self.solve_llvm_node(node.children[i], symbol_table)
 
         if default:
@@ -657,17 +659,18 @@ define void @print_char(i8 %a){
             raise Exception("temp")
 
         m = list(map(self.convert, args))
-        startstring = "define {} @{}({}) {}\n".format(self.format_dict[func.symbol_type], func.internal_name, ','.join(m), '{')
+        startstring = "define {} @{}({}) {}\n".format(self.format_dict[func.symbol_type], func.internal_name,
+                                                      ','.join(m), '{')
         self.write_to_file(startstring)
         method_llvm = LLVM_Converter(method_node, self.file)
         method_llvm.function_stack = self.function_stack
         method_llvm.write = self.write
         for i in range(len(args)):
-
             new_val, val_type = method_llvm.allocate_node(method_node.children[2].children[i],
-                                                 method_node.children[2].children[i].symbol_table,
-                                                 method_node.children[2].children[i].children[0].label)
-            store_str = "store {} %{}, {}* {}\n".format(self.format_dict[val_type], str(i), self.format_dict[val_type], new_val)
+                                                          method_node.children[2].children[i].symbol_table,
+                                                          method_node.children[2].children[i].children[0].label)
+            store_str = "store {} %{}, {}* {}\n".format(self.format_dict[val_type], str(i), self.format_dict[val_type],
+                                                        new_val)
             # TODO CAST VALUES
             method_llvm.write_to_file(store_str)
 
@@ -687,13 +690,25 @@ define void @print_char(i8 %a){
         return
 
     def return_node(self, node, symbol_table):
+        if len(node.children) == 0:
+            # return void
+            if self.function_stack[0].symbol_type == 'void':
+                string = "ret void\n"
+                self.file.write(string)
+                self.write = False
+                return
+            else:
+                raise Exception('niet void verdomme')
+
+        if self.function_stack[0].symbol_type == 'void':
+            raise Exception('functie is void verdomme ')
         returnreg, return_type = self.solve_llvm_node(node.children[0], symbol_table)
         newtype = self.function_stack[0].symbol_type
         castedreg = self.cast_value(returnreg, return_type, newtype)
 
         string = "ret {} {}\n".format(self.format_dict[newtype], castedreg)
         self.write_to_file(string)
-        self.write= False
+        self.write = False
         return
 
 

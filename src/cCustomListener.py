@@ -426,6 +426,9 @@ class CASTGenerator(cListener):
         # const = False
         # if ctx.CONST():
         #     const = True
+        if ctx.VOID():
+            node = self.create_node('void', 'var_type', self.currentNode, ctx)
+            self.currentNode.children.insert(0, node)
 
         args = []
         if len(self.currentNode.children) == 4:
