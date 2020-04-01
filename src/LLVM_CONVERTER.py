@@ -8,6 +8,7 @@ class LLVM_Converter:
         self.register = 0
         self.label = 0
         self.write = True
+        self.breaks = False
         self.break_stack = []
         self.continue_stack = []
         self.function_stack = []
@@ -190,6 +191,8 @@ define void @print_char(i8 %a){
         elif node.node_type == 'for break':
             if len(self.break_stack) > 0:
                 self.go_to_label(self.break_stack[0])
+                self.write = False
+                self.breaks = True
                 return None, None
             else:
                 raise BreakError("[Error] Line {} Position {} break statement not within loop or switch".format(
@@ -199,6 +202,7 @@ define void @print_char(i8 %a){
         elif node.node_type == 'for continue':
             if len(self.continue_stack) > 0:
                 self.go_to_label(self.continue_stack[0])
+                self.write = False
                 return None, None
             else:
                 raise BreakError("[Error] Line {} Position {} continue statement not within loop".format(
@@ -492,6 +496,8 @@ define void @print_char(i8 %a){
         elif node.children[0].node_type == 'for do':
             skip_condition = True
 
+        breaks =  self.breaks
+
         labels = {
             "condition": self.label,
             "code_block": self.label + 1,
@@ -543,8 +549,11 @@ define void @print_char(i8 %a){
         self.continue_stack.pop()
         self.write = write
         self.add_label(labels["next_block"])
+        self.breaks = breaks
 
     def if_else(self, node, symbol_table):
+        if not self.write:
+            return
         condition = node.children[0]
         reg, value_type = self.solve_llvm_node(condition, symbol_table)
         string = "%r{} = icmp ne {} {}, 0\n".format(
@@ -556,29 +565,39 @@ define void @print_char(i8 %a){
         self.go_to_conditional("%r" + str(self.register), label, label + 1)
         self.register += 1
         self.add_label(label)
+        write = self.write
         # schrijf if true gedeelte
 
         self.solve_llvm_node(node.children[1], symbol_table)
         self.go_to_label(label + len(node.children) - 1)
         if_write = self.write
+        else_write = write
 
         # schrijf if false gedeelte
         if len(node.children) > 2:
-            self.write = True
+            self.write = write
 
             self.add_label(label + 1)
             self.solve_llvm_node(node.children[2], symbol_table)
             self.go_to_label(label + 2)
+            else_write = self.write
 
+        self.write = else_write or if_write
         # schrijf alle volgende instructies achter een label
         self.add_label(label + len(node.children) - 1)
 
-        self.write = self.write or if_write
+
         return
 
     def switch(self, node, symbol_table):
+        if not self.write:
+            return
         switchval, switchtype = self.solve_math(node.children[0], symbol_table)
         branchval = self.cast_value(switchval,switchtype, "int")
+
+        write = self.write
+        breaks = self.breaks
+        self.breaks = False
 
         continue_writing = False
 
@@ -607,18 +626,23 @@ define void @print_char(i8 %a){
 
         self.write_to_file(operation)
         for i in range(1, len(node.children)):
-            continue_writing = continue_writing or self.write
-            self.write = True
+            continue_writing = continue_writing or self.write or self.breaks
+            self.write = write
+            self.breaks = False
             self.go_to_label(current_label+i-1)
             self.add_label(current_label+i-1)
             self.solve_llvm_node(node.children[i], symbol_table)
 
-        self.write = continue_writing
+        if default:
+            self.write = continue_writing
+        else:
+            self.write = write
 
         self.go_to_label(current_label + len(node.children) - 1)
         self.add_label(current_label + len(node.children) - 1)
 
         self.break_stack.pop()
+        self.breaks = breaks
 
     def generate_method(self, method_node, symbol_table):
         args = []
