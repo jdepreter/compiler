@@ -11,6 +11,7 @@ class MethodType:
         self.internal_name = name + '_' + str(current_register)
         self.current_register = current_register
         self.defined = defined
+        self.written = False
 
 
 class SymbolType:
@@ -138,15 +139,18 @@ class SymbolTable:
             return
 
         if method in self.method_stack[0]:
-            if self.method_stack[0][method].defined:
+            if self.method_stack[0][method].defined and defined:
                 raise DuplicateDeclaration("[Error] Line {}, Position {}: Duplicate declaration of method {} "
                                            .format(error.line, error.column, method))
             else:
                 if args != self.method_stack[0][method].arguments:
                     raise Exception("[Error] Line {}: Conflicting types for {} "
                                     .format(error.line, method))
-        self.method_stack[0][method] = MethodType(method_type, args, False, method, self.method_register, defined)
-        self.method_register += 1
+                self.method_stack[0][method].defined = self.method_stack[0][method].defined or defined
+
+        else:
+            self.method_stack[0][method] = MethodType(method_type, args, False, method, self.method_register, defined)
+            self.method_register += 1
 
     def get_method(self, method, arg_types, error):
         # key = self.generate_key(method, arg_types)
@@ -160,6 +164,26 @@ class SymbolTable:
         for scope in self.method_stack:
             if method in scope:
                 return scope[method]
+
+        raise UndeclaredVariable("[Error] Line {}, Position {}: method {}({}) is undeclared"
+                                 .format(error.line, error.column, method, ','.join(arg_types)))
+
+    def get_written_method(self, method, arg_types, error):
+        # key = self.generate_key(method, arg_types)
+        if method == 'printf':
+            try:
+                return self.method_stack[-1]["printf_{}".format(arg_types[0])]
+            except:
+                raise UndeclaredVariable("[Error] Line {}, Position {}: method {}({}) is undeclared"
+                                         .format(error.line, error.column, method, ','.join(arg_types)))
+
+        for scope in self.method_stack:
+            if method in scope:
+                if scope[method].written:
+                    return scope[method]
+                else:
+                    raise UndeclaredVariable("[Error] Line {}, Position {}: method {}({}) is undeclared"
+                                             .format(error.line, error.column, method, ','.join(arg_types)))
 
         raise UndeclaredVariable("[Error] Line {}, Position {}: method {}({}) is undeclared"
                                  .format(error.line, error.column, method, ','.join(arg_types)))

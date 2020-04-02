@@ -1,14 +1,18 @@
 #include <stdio.h>
 
 int y = 2;
-void f(int* x) {
-    x = 1;
-}
+
 
 int main(){
-    float a = 2.0;
-    float* b = &a;
-    f(b);
+    int x = 2;
+    int a = 1;
+    if (x = 1, a = 0) {
+        printf("test");
+    }
 }
 
+int f(int x) {
+    return x;
+}
+int f(int x);
 int x = 4;

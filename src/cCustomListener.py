@@ -488,12 +488,12 @@ class CASTGenerator(cListener):
             self.currentNode.children.insert(0, node)
 
         args = []
-        if len(self.currentNode.children) == 4:
+        if len(self.currentNode.children) == 3:
 
-            for arg in self.currentNode.children[3]:
+            for arg in self.currentNode.children[2].children:
                 args.append(arg.children[0].label)
 
-        self.symbol_table.add_method(str(ctx.IDENTIFIER()), self.currentNode.children[0], ctx.start, args, False)
+        self.symbol_table.add_method(str(ctx.IDENTIFIER()), self.currentNode.children[0].label, ctx.start, args, False)
         self.currentNode = self.currentNode.parent
 
     def enterReturn_line(self, ctx:cParser.Return_lineContext):

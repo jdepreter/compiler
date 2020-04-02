@@ -232,6 +232,9 @@ define void @print_char(i8 %a){
         elif node.node_type == 'ifelse':
             return self.if_else(node, symbol_table)
 
+        elif node.node_type == 'method_declaration':
+            return self.declare_method(node, symbol_table)
+
         elif node.node_type == 'method_definition':
             return self.generate_method(node, symbol_table)
 
@@ -367,7 +370,6 @@ define void @print_char(i8 %a){
             return '%r' + str(reg), "int"
 
         elif node.label in ['==', '!=', '<', '>', '<=', '>=']:
-
             reg = self.register
             self.register += 1
             child1 = self.solve_math(node.children[0], symbol_table)
@@ -470,7 +472,7 @@ define void @print_char(i8 %a){
             arg_reg.append(reg)
             arg_types.append(symbol_type)
 
-        method = node.symbol_table.get_method(method_name, arg_types, node.ctx.start)
+        method = node.symbol_table.get_written_method(method_name, arg_types, node.ctx.start)
         if len(method.arguments) < len(arg_types):
             error = args[len(method.arguments)].ctx.start
             raise Exception("[Error] Line {}, Position {}: Too many arguments for calling {}".format(
@@ -699,6 +701,15 @@ define void @print_char(i8 %a){
         self.break_stack.pop()
         self.breaks = breaks
 
+    def declare_method(self, method_node, symbol_table):
+        args = []
+        if method_node.children[2].node_type == 'def_args':
+            for arg in method_node.children[2].children:
+                args.append(arg.children[0].label)
+        func = symbol_table.get_method(method_node.children[1].label, args, method_node.ctx.start)
+        func.written = True
+        return None, None
+
     def generate_method(self, method_node, symbol_table):
         args = []
         if method_node.children[2].node_type == 'def_args':
@@ -744,6 +755,7 @@ define void @print_char(i8 %a){
         endstring = "}\n"
         self.write_to_file(endstring)
         self.function_stack.pop(0)
+        func.written = True
         return
 
     def return_node(self, node, symbol_table):
