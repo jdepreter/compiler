@@ -83,6 +83,10 @@ class IfElse(unittest.TestCase):
         self.assertEqual(to_llvm("ifelse/false.c", "false"), "f\nf\n2\n")
         self.assertEqual(to_llvm("ifelse/false_true.c", "false"), "t\nf\n2\n")
 
+    def test_if_else_assignment(self):
+        self.assertEqual(to_llvm("ifelse/fancy_if_false.c", "fancy_if_false"), "")
+        self.assertEqual(to_llvm("ifelse/fancy_if_true.c", "fancy_if_true"), "2\n")
+
 
 class Loops(unittest.TestCase):
     def test_for_loop(self):
@@ -92,7 +96,7 @@ class Loops(unittest.TestCase):
     def test_for_continue(self):
         self.assertEqual(clear_newlines(to_llvm("loops/for_continue.c", "for_continue")), "23456789")
 
-    def test_forreturn(self):
+    def test_for_return(self):
         self.assertEqual(clear_newlines(to_llvm("loops/loop_return.c", "loop_return")), "12341")
 
     def test_break_error(self):
@@ -103,6 +107,21 @@ class Loops(unittest.TestCase):
 class Function(unittest.TestCase):
     def test_faculty(self):
         self.assertEqual(clear_newlines(to_llvm("functions/faculty.c", "faculty")), "6")
+
+    def test_declaration(self):
+        self.assertEqual(to_llvm("functions/declaration_1.c", "declaration_1"), "2\n")
+        self.assertEqual(to_llvm("functions/declaration_2.c", "declaration_2"), "2\n")
+        self.assertEqual(to_llvm("functions/declaration_multi.c", "declaration_multi"), "2\n")
+
+    def test_definition_only(self):
+        self.assertEqual(to_llvm("functions/definition_only.c", "definition_only"), "2\n")
+
+    def test_forward_declaration(self):
+        self.assertEqual(to_llvm("functions/definition_after.c", "definition_after"), "2\n")
+
+    def test_duplicate_definition(self):
+        with self.assertRaises(Exception):
+            to_llvm("functions/multi_definition.c", "multi_definition")
 
 
 if __name__ == '__main__':

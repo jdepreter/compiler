@@ -164,10 +164,10 @@ define void @print_char(i8 %a){
         symbol = symbol_table.get_written_symbol(str(node.children[0].label), node.ctx.start)
         address = symbol.current_register
         if node.children[1].node_type == 'assignment':
-            register = self.assign_node(node.children[1], symbol_table)
+            register, symbol_type = self.assign_node(node.children[1], symbol_table)
         else:
-            register = self.solve_math(node.children[1], symbol_table)
-        self.store_symbol(address, register[0], symbol.symbol_type, register[1], node.children[0].label.count('*'))
+            register, symbol_type = self.solve_math(node.children[1], symbol_table)
+        self.store_symbol(address, register, symbol.symbol_type, symbol_type, node.children[0].label.count('*'))
         symbol.assigned = True
         return register, symbol.symbol_type
 
@@ -716,6 +716,7 @@ define void @print_char(i8 %a){
             for arg in method_node.children[2].children:
                 args.append(arg.children[0].label)
         func = symbol_table.get_method(method_node.children[1].label, args, method_node.ctx.start)
+        func.written = True
         self.function_stack.insert(0, func)
 
         if not func.defined:
@@ -755,7 +756,6 @@ define void @print_char(i8 %a){
         endstring = "}\n"
         self.write_to_file(endstring)
         self.function_stack.pop(0)
-        func.written = True
         return
 
     def return_node(self, node, symbol_table):
