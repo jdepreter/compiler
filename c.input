@@ -1,7 +1,8 @@
+int f(int x) {return x;}
+
 int main() {
-    int c;
-    {
-        c = 2;
-        int c = 3;
-    }
+    int c = 2;
+    int * d = &c;
+    int z = f(d);
+    printf(z);
 }

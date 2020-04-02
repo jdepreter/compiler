@@ -70,7 +70,7 @@ class LLVM_Converter:
                 }
         }
         self.convert = lambda x: self.format_dict[get_type_and_stars(x)[0]]
-        self.convert2 = lambda x: self.format_dict[get_type_and_stars(x)[0]]+get_type_and_stars(x)[1]
+        self.convert2 = lambda x: self.format_dict[get_type_and_stars(x)[0]] + get_type_and_stars(x)[1]
 
     def write_to_file(self, string):
         if self.write:
@@ -257,8 +257,11 @@ define void @print_char(i8 %a){
         reg = self.register
         self.register += 1
 
+        casted_type = self.cast_type(current_sym_type, new_sym_type)
+        if not casted_type:
+            return False
         string = "%r{} = {} {}{} {} to {}{}\n".format(
-            str(reg), self.cast_type(current_sym_type, new_sym_type), self.format_dict[current_sym_type], current_stars,
+            str(reg), casted_type, self.format_dict[current_sym_type], current_stars,
             register, self.format_dict[new_sym_type], new_stars
         )
         self.write_to_file(string)
@@ -267,7 +270,9 @@ define void @print_char(i8 %a){
     def cast_type(self, current_sym_type, new_sym_type):
         if current_sym_type == 'void':
             raise Exception("Can't cast void")
-        return self.cast_dict[current_sym_type][new_sym_type]
+        if current_sym_type in self.cast_dict and new_sym_type in self.cast_dict[current_sym_type]:
+            return self.cast_dict[current_sym_type][new_sym_type]
+        return False
 
     def store_symbol(self, address, value, address_symbol_type, value_symbol_type, dereference=0):
         value_to_store = self.cast_value(value, value_symbol_type, address_symbol_type)
@@ -466,10 +471,38 @@ define void @print_char(i8 %a){
             arg_types.append(symbol_type)
 
         method = node.symbol_table.get_method(method_name, arg_types, node.ctx.start)
+        if len(method.arguments) < len(arg_types):
+            error = args[len(method.arguments)].ctx.start
+            raise Exception("[Error] Line {}, Position {}: Too many arguments for calling {}".format(
+                error.line, error.column, method_name
+            ))
+
+        elif len(method.arguments) > len(arg_types):
+            if len(arg_types) > 0:
+                error = args[-1].ctx.start
+            else:
+                error = node.ctx.start
+            raise Exception(
+                "[Error] Line {}, Position {}: Too few arguments for calling {} missing arg(s) with type(s): {}".format(
+                    error.line, error.column, method_name, ','.join(method.arguments[len(args) - 1:])
+                )
+            )
+
+        for i, arg_type in enumerate(arg_types):
+            if arg_type != method.arguments[i]:
+                arg_reg[i] = self.cast_value(arg_reg[i], arg_type, method.arguments[i])
+                if not arg_reg[i]:
+                    error = args[i].ctx.start
+                    raise Exception(
+                        "[Error] Line {}, Postition {}: Argument types do not match expected {}, got {}".format(
+                            error.line, error.column, method.arguments[i], arg_type
+                        )
+                    )
+
         m = list(map(self.convert2, method.arguments))
         for i in range(len(args)):
             args[i] = m[i] + ' ' + arg_reg[i]
-        string = ""
+
         if method.symbol_type != "void":
             newreg = self.register
             self.register += 1
@@ -692,7 +725,8 @@ define void @print_char(i8 %a){
                                                           method_node.children[2].children[i].symbol_table,
                                                           method_node.children[2].children[i].children[0].label)
             val_type = get_type_and_stars(val_type)
-            store_str = "store {} %{}, {}* {}\n".format(self.format_dict[val_type[0]]+val_type[1], str(i), self.format_dict[val_type[0]]+val_type[1],
+            store_str = "store {} %{}, {}* {}\n".format(self.format_dict[val_type[0]] + val_type[1], str(i),
+                                                        self.format_dict[val_type[0]] + val_type[1],
                                                         new_val)
             # TODO CAST VALUES
             method_llvm.write_to_file(store_str)
@@ -733,6 +767,3 @@ define void @print_char(i8 %a){
         self.write_to_file(string)
         self.write = False
         return
-
-
-
