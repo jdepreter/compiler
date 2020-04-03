@@ -1,19 +1,5 @@
-#include <stdio.h>
-
-int y = 2;
-
-
-int main(){
-    printf("test");
-    int x = 2;
-    int a = 1;
-    if (x = 1, a = 0) {
-        printf("test");
-    }
+int main() {
+    int x[10];
+    x[0] = 1;
+    printf(x[0]);
 }
-
-int f(int x) {
-    return x;
-}
-int f(int x);
-int x = 4;

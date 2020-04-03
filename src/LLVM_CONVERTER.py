@@ -78,7 +78,10 @@ class LLVM_Converter:
 
     def to_llvm(self):
 #         self.write_to_file("""
-#
+# declare i32 @printf(i8*, ...)
+# @format = private constant [4 x i8] c"%d\\0A\\00"
+# @format_float = private constant [4 x i8] c"%f\\0A\\00"
+# @format_char = private constant [4 x i8] c"%c\\0A\\00"
 # define void @print_int(i32 %a){
 #   %p = call i32 (i8*, ...)
 #        @printf(i8* getelementptr inbounds ([4 x i8],
@@ -119,11 +122,12 @@ class LLVM_Converter:
     # helpermethod to write used for declaration or definition
     def allocate_node(self, node, symbol_table, symbol_type):
         variable = node.label
-        if node.node_type == 'assignment2':
+        if node.node_type in ['assignment2', 'array']:
             variable = node.children[0].label
 
         if node.node_type == 'Arg_definition':
             variable = node.children[1].label
+
         symbol = symbol_table.get_symbol(variable, node.ctx.start)
         sym_type, stars = get_type_and_stars(symbol_type)
 
@@ -140,13 +144,12 @@ class LLVM_Converter:
             symbol.written = True
             return None, None
 
-        reg_nr = symbol.current_register
-        string = "{} = alloca {}{} \n".format(
-            reg_nr,
-            self.format_dict[sym_type], stars
-        )
-        self.write_to_file(string)
-        symbol.written = True
+        if node.node_type == 'array':
+            reg_nr = self.allocate_array(stars, self.format_dict[sym_type], symbol,
+                                         self.solve_math(node.children[1], symbol_table))[0]
+        else:
+            reg_nr = self.alloc_instruction(stars, sym_type, symbol)
+
         if node.node_type == 'assignment2':
             register = None
             if node.children[1].node_type == 'assignment':
@@ -157,13 +160,51 @@ class LLVM_Converter:
 
         return reg_nr, symbol_type
 
+    def alloc_instruction(self, stars, sym_type, symbol):
+        reg_nr = symbol.current_register
+        string = "{} = alloca {}{} \n".format(
+            reg_nr,
+            self.format_dict[sym_type], stars
+        )
+        self.write_to_file(string)
+        symbol.written = True
+        return reg_nr
+
+    def allocate_array(self, stars, llvm_type, symbol, size):
+        """
+        Allocate array
+        :param llvm_type: i32 / float / i8 ...
+        :param size: (register, llvm_type)
+        :return: register, llvm_type
+        """
+        size = size[0]
+        reg_nr = symbol.current_register
+        string = "{} = alloca [{} x {}]\n".format(
+            reg_nr, size, llvm_type + stars
+        )
+        self.write_to_file(string)
+        symbol.written = True
+        symbol.size = size
+        return self.register, '[{} x {}]'.format(size, llvm_type)
+
     def assign_node(self, node, symbol_table):
-        symbol = symbol_table.get_written_symbol(str(node.children[0].label), node.ctx.start)
+        expression = node.children[1]
+        symbol_string = str(node.children[0].label)
+
+        symbol = symbol_table.get_written_symbol(symbol_string, node.ctx.start)
         address = symbol.current_register
         if node.children[1].node_type == 'assignment':
-            register, symbol_type = self.assign_node(node.children[1], symbol_table)
+            register, symbol_type = self.assign_node(expression, symbol_table)
         else:
-            register, symbol_type = self.solve_math(node.children[1], symbol_table)
+            register, symbol_type = self.solve_math(expression, symbol_table)
+
+        if '[]' in str(node.children[0].label):
+            # We are dealing with an array index
+            address, temp = self.get_index_of_array(
+                symbol.current_register, self.format_dict[symbol_type], symbol.size,
+                self.solve_math(node.children[0].children[1], symbol_table)[0]
+            )
+
         self.store_symbol(address, register, symbol.symbol_type, symbol_type, node.children[0].label.count('*'))
         symbol.assigned = True
         return register, symbol.symbol_type
@@ -445,6 +486,15 @@ class LLVM_Converter:
             self.register += 1
             sym_type, stars = get_type_and_stars(symbol_type_stars)
             return self.load_instruction(reg, stars, sym_type, address), symbol_type_stars
+
+        elif node.node_type == 'array_element':
+            sym = symbol_table.get_assigned_symbol(node.label, node.ctx.start)
+            sym_type, stars = get_type_and_stars(sym.symbol_type)
+            address = self.get_index_of_array(sym.current_register, self.format_dict[sym_type] + stars, sym.size,
+                                           self.solve_math(node.children[1], symbol_table)[0])[0]
+            reg = self.register
+            self.register += 1
+            return self.load_instruction(reg, stars, sym_type, address), sym.symbol_type
 
         elif node.node_type == 'bool2' and node.children[0].label == '!':
 
@@ -791,6 +841,23 @@ class LLVM_Converter:
         self.write_to_file(string)
         self.write = False
         return
+
+    def get_index_of_array(self, array_register, llvm_type, size, index):
+        """
+        :param array_register: number of register
+        :param llvm_type: i32 / float / i8 ...
+        :param size: int
+        :param index: int
+        :return: register, llvm_type + *
+        """
+        # register = size x type, size x type array_register, type 0, type index
+        current_reg = self.register
+        self.register += 1
+        string = "%r{} = getelementptr inbounds [{} x {}], [{} x {}]* {}, i32 0, i32 {}\n".format(
+            current_reg, size, llvm_type, size, llvm_type, array_register, index
+        )
+        self.write_to_file(string)
+        return "%r" + str(current_reg), llvm_type
 
     def include(self):
         string = "declare i32 @printf(i8 *, ...)\n"
