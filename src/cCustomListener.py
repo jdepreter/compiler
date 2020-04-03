@@ -87,6 +87,12 @@ class CASTGenerator(cListener):
         elif ctx.CHAR():
             string = str(ord(str(ctx.CHAR())[1]))
             symbol_type = "char"
+
+        elif ctx.STRING():
+            string = str(ctx.STRING())
+            symbol_type = "char*"
+            self.symbol_table.add_string(string)
+
         node = self.create_node(string, "rvalue", self.currentNode, ctx)
         self.currentNode.children.append(node)
         self.currentNode = node
@@ -121,6 +127,17 @@ class CASTGenerator(cListener):
         self.currentNode.symbol_table = self.symbol_table.get_current_scope()
 
     def exitAddress(self, ctx:cParser.AddressContext):
+        self.currentNode = self.currentNode.parent
+
+    def enterInclude(self, ctx:cParser.IncludeContext):
+        node = self.create_node("include", "include", self.currentNode, ctx)
+        self.currentNode.children.append(node)
+        self.currentNode = node
+        self.symbol_table.include_stdio()
+        self.currentNode.symbol_table = self.symbol_table.get_current_scope()
+
+
+    def exitInclude(self, ctx:cParser.IncludeContext):
         self.currentNode = self.currentNode.parent
 
     def enterAssignment(self, ctx:cParser.AssignmentContext):

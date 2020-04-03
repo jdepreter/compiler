@@ -12,7 +12,11 @@ int main(){
 }
 
 int f(int x) {
+    printf("tdb");
+    printf("test");
+    printf("%i", x);
     return x;
+
 }
 int f(int x);
 int x = 4;

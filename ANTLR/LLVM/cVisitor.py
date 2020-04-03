@@ -24,6 +24,11 @@ class cVisitor(ParseTreeVisitor):
         return self.visitChildren(ctx)
 
 
+    # Visit a parse tree produced by cParser#include.
+    def visitInclude(self, ctx:cParser.IncludeContext):
+        return self.visitChildren(ctx)
+
+
     # Visit a parse tree produced by cParser#scope.
     def visitScope(self, ctx:cParser.ScopeContext):
         return self.visitChildren(ctx)

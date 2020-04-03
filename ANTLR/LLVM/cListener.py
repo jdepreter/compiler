@@ -35,6 +35,15 @@ class cListener(ParseTreeListener):
         pass
 
 
+    # Enter a parse tree produced by cParser#include.
+    def enterInclude(self, ctx:cParser.IncludeContext):
+        pass
+
+    # Exit a parse tree produced by cParser#include.
+    def exitInclude(self, ctx:cParser.IncludeContext):
+        pass
+
+
     # Enter a parse tree produced by cParser#scope.
     def enterScope(self, ctx:cParser.ScopeContext):
         pass

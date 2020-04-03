@@ -2,9 +2,11 @@ grammar c;
 
 c: (line)* ;
 
-line: ((definition SEMICOLON)|(method_declaration SEMICOLON)| method_definition| line_no_def);
+line: ((definition SEMICOLON)|(method_declaration SEMICOLON)| method_definition| line_no_def | include);
 
 line_no_def: (assignment_line SEMICOLON) | (bool1 SEMICOLON)| ifelse | for_loop | while_loop | scope |switchcase | break_line | continue_line | return_line;
+
+include: '#include''<stdio.h>';
 
 scope: LCURLYBRACE (line)* RCURLYBRACE;
 
@@ -126,6 +128,7 @@ rvalue
     :INT
     |FLOAT
     |CHAR
+    |STRING
     |AMPERSAND IDENTIFIER
     |method_call
     ;
@@ -200,6 +203,7 @@ INT
     ;
 
 CHAR: '\''[ -~]'\'';
+STRING: '"'[ -~]* '"';
 EQUALS: '=';
 CONST : 'const';
 INT_TYPE: 'int';

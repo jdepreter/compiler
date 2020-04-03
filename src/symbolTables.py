@@ -41,6 +41,10 @@ class SymbolTable:
 
         self.method_register = 4
 
+        self.strings = dict()
+        self.restrings = dict()
+        self.strings_nr = 0
+
         outer_method_scope = dict()
         # printf_int = MethodType('void', ['int'], False, 'printf', 0)
         # printf_int.internal_name = 'print_int'
@@ -60,6 +64,7 @@ class SymbolTable:
         outer_method_scope['printf_char'].internal_name = 'print_char'
         outer_method_scope['printf_float'] = MethodType('void', ['float'], False, 'printf', 2)
         outer_method_scope['printf_float'].internal_name = 'print_float'
+
         #
         outer_method_scope['main'] = MethodType('int', [], False, 'main', 3)
         outer_method_scope['main'].internal_name = 'main'
@@ -68,6 +73,7 @@ class SymbolTable:
 
         self.method_stack = [outer_method_scope]
         self.method_list = [outer_method_scope]
+        self.printf = None
 
     def warn_unused(self):
         for table in self.table_list:
@@ -75,6 +81,11 @@ class SymbolTable:
                 if not table[key].used:
                     warn = "Warning: {} is unused".format(key)
                     print(warn)
+
+    def include_stdio(self):
+        self.method_stack[0]["printf"] = MethodType('int', ['char*', ...], False, 'printf', 0)
+        self.method_stack[0]["printf"] = MethodType('int', ['char*'], False, 'printf', 0)
+        self.printf = MethodType('int', ['char*'], False, 'printf', 0)
 
     def open_scope(self):
         newdict = dict()
@@ -156,6 +167,8 @@ class SymbolTable:
         # key = self.generate_key(method, arg_types)
         if method == 'printf':
             try:
+                if (arg_types[0] == 'char*'):
+                    return self.printf
                 return self.method_stack[-1]["printf_{}".format(arg_types[0])]
             except:
                 raise UndeclaredVariable("[Error] Line {}, Position {}: method {}({}) is undeclared"
@@ -172,6 +185,9 @@ class SymbolTable:
         # key = self.generate_key(method, arg_types)
         if method == 'printf':
             try:
+                if (arg_types[0] == 'char*'):
+                    return self.printf
+
                 return self.method_stack[-1]["printf_{}".format(arg_types[0])]
             except:
                 raise UndeclaredVariable("[Error] Line {}, Position {}: method {}({}) is undeclared"
@@ -188,10 +204,23 @@ class SymbolTable:
         raise UndeclaredVariable("[Error] Line {}, Position {}: method {}({}) is undeclared"
                                  .format(error.line, error.column, method, ','.join(arg_types)))
 
+    def add_string(self, string):
+        if string not in self.strings:
+            val = '@.str.{}'.format(str(self.strings_nr))
+            self.strings[string] = val
+            self.strings_nr += 1
+            self.restrings[val] = string
+
+    def get_strings(self):
+        return self.strings
+
     def get_current_scope(self):
         s = SymbolTable()
         s.table_stack = list(self.table_stack)
         s.method_stack = list(self.method_stack)
         s.table_list = self.table_list
         s.method_list = self.method_list
+        s.printf = self.printf
+        s.strings = self.strings
+        s.restrings = self.restrings
         return s
