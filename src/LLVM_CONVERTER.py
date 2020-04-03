@@ -183,15 +183,28 @@ define void @print_char(i8 %a){
             reg_nr, size, llvm_type + stars
         )
         self.write_to_file(string)
+        symbol.written = True
+        symbol.size = size
         return self.register, '[{} x {}]'.format(size, llvm_type)
 
     def assign_node(self, node, symbol_table):
-        symbol = symbol_table.get_written_symbol(str(node.children[0].label), node.ctx.start)
+        expression = node.children[1]
+        symbol_string = str(node.children[0].label)
+
+        symbol = symbol_table.get_written_symbol(symbol_string, node.ctx.start)
         address = symbol.current_register
         if node.children[1].node_type == 'assignment':
-            register, symbol_type = self.assign_node(node.children[1], symbol_table)
+            register, symbol_type = self.assign_node(expression, symbol_table)
         else:
-            register, symbol_type = self.solve_math(node.children[1], symbol_table)
+            register, symbol_type = self.solve_math(expression, symbol_table)
+
+        if '[]' in str(node.children[0].label):
+            # We are dealing with an array index
+            address, temp = self.get_index_of_array(
+                symbol.current_register, self.format_dict[symbol_type], symbol.size,
+                self.solve_math(node.children[0].children[1], symbol_table)[0]
+            )
+
         self.store_symbol(address, register, symbol.symbol_type, symbol_type, node.children[0].label.count('*'))
         symbol.assigned = True
         return register, symbol.symbol_type
@@ -467,6 +480,15 @@ define void @print_char(i8 %a){
             self.register += 1
             sym_type, stars = get_type_and_stars(symbol_type_stars)
             return self.load_instruction(reg, stars, sym_type, address), symbol_type_stars
+
+        elif node.node_type == 'array_element':
+            sym = symbol_table.get_assigned_symbol(node.label, node.ctx.start)
+            sym_type, stars = get_type_and_stars(sym.symbol_type)
+            address = self.get_index_of_array(sym.current_register, self.format_dict[sym_type] + stars, sym.size,
+                                           self.solve_math(node.children[1], symbol_table)[0])[0]
+            reg = self.register
+            self.register += 1
+            return self.load_instruction(reg, stars, sym_type, address), sym.symbol_type
 
         elif node.node_type == 'bool2' and node.children[0].label == '!':
 
@@ -814,8 +836,10 @@ define void @print_char(i8 %a){
         :return: register, llvm_type + *
         """
         # register = size x type, size x type array_register, type 0, type index
+        current_reg = self.register
+        self.register += 1
         string = "%r{} = getelementptr inbounds [{} x {}], [{} x {}]* {}, i32 0, i32 {}\n".format(
-            self.register, size, llvm_type, size, llvm_type, array_register, index
+            current_reg, size, llvm_type, size, llvm_type, array_register, index
         )
         self.write_to_file(string)
-        return self.register, llvm_type + '*'
+        return "%r" + str(current_reg), llvm_type

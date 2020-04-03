@@ -112,6 +112,7 @@ class SymbolTable:
 
     def get_written_symbol(self, symbol_name, error):
         symbol_name = re.sub(r'\*', '', symbol_name)
+        symbol_name = re.sub(r'\[]', '', symbol_name)
         for scope in self.table_stack:
             if symbol_name in scope and scope[symbol_name].written:
                 scope[symbol_name].used = True
@@ -122,6 +123,7 @@ class SymbolTable:
 
     def get_symbol(self, symbol, error):
         symbol = re.sub(r'\*', '', symbol)
+        symbol = re.sub(r'\[]', '', symbol)
         for scope in self.table_stack:
             if symbol in scope:
                 scope[symbol].used = True

@@ -62,14 +62,36 @@ class CASTGenerator(cListener):
         if ctx.IDENTIFIER():
             string = str(ctx.IDENTIFIER())
 
-        node = self.create_node(string, "lvalue", self.currentNode, ctx)
-        self.currentNode.children.append(node)
-        self.currentNode = node
-        self.currentNode.symbol_table = self.symbol_table.get_current_scope()
-        if string != "":
-            self.currentNode.symbol_type = self.currentNode.symbol_table.get_symbol(string, ctx.start)
+        if ctx.SLBRACKET():     # has [] operand
+            # Create array_element node
+            parent = self.create_node(string + "[]", "array_element", self.currentNode, ctx)
+            parent.symbol_table = self.symbol_table.get_current_scope()
+            self.currentNode.children.append(parent)
+
+            # Create var node
+            var_node = self.create_node(string, 'lvalue', parent, ctx)
+            parent.children.append(var_node)
+            var_node.symbol_table = self.symbol_table.get_current_scope()
+
+            # Create Index node
+            index_node = self.create_node("index", "index", parent, ctx)
+            parent.children.append(index_node)
+            index_node.symbol_table = self.symbol_table.get_current_scope()
+            self.currentNode = index_node
+
+        else:
+            node = self.create_node(string, "lvalue", self.currentNode, ctx)
+            self.currentNode.children.append(node)
+            node.symbol_table = self.symbol_table.get_current_scope()
+            if string != "":
+                node.symbol_type = self.currentNode.symbol_table.get_symbol(string, ctx.start)
+
+            self.currentNode = node
 
     def exitLvalue(self, ctx: cParser.LvalueContext):
+        if ctx.SLBRACKET():
+            self.currentNode = self.currentNode.parent
+
         if self.currentNode.label == "":
             self.currentNode.children[0].parent = self.currentNode.parent
             index = self.currentNode.parent.children.index(self.currentNode)
@@ -146,7 +168,7 @@ class CASTGenerator(cListener):
     def exitAssignment(self, ctx: cParser.AssignmentContext):
 
         var = self.currentNode.children[0]
-        while var.label in ['ass', 'Increment_var', 'Increment_op', 'increment']:
+        while var.label in ['assignment', 'Increment_var', 'Increment_op', 'increment']:
             var = var.children[0]
         var_type = self.symbol_table.get_symbol(var.label, ctx.start)
         if var_type.const:
