@@ -5,7 +5,7 @@ char a = b+c;
 char d = b+2;
 int x = a+1;
 int y = b-1;
-printf(b);
+printf("%c",b);
 printf(c);
 printf(d);
 printf(y);

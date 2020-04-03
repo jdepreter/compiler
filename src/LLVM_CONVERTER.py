@@ -515,8 +515,37 @@ class LLVM_Converter:
         self.store_symbol(symbol.current_register, '%r' + str(reg), symbol_type, symbol_type)
         return reg
 
+    def call_printf(self, node, symbol_table):
+        method_name = node.children[0].label
+        args = node.children[1].children[:]
+        arg_types = []
+        arg_reg = []
+        arg_reg_types = []
+        for arg in args:
+            reg, symbol_type = self.solve_math(arg, symbol_table)
+            arg_reg.append(reg)
+            arg_types.append(symbol_type)
+            val, stars = get_type_and_stars(symbol_type)
+            arg_reg_types.append('{} {}'.format(self.format_dict[val]+stars, reg))
+        method = node.symbol_table.get_written_method(method_name, arg_types, node.ctx.start)
+
+        length = len(symbol_table.restrings[arg_reg[0]][1:-1]) + 1
+
+        newreg = self.register
+        self.register += 1
+
+        string = "%r{} = call i32 (i8*, ...) @printf(i8* getelementptr inbounds ([{} x i8]," \
+                 " [{} x i8]* {}, i32 0, i32 0)".format(str(newreg), length, length, arg_reg[0])
+        if len(args) > 1:
+            string += ",{}".format(','.join(arg_reg_types[1:]))
+        string += ")\n"
+        self.write_to_file(string)
+        return "%r"+str(newreg), "int"
+
     def call_method(self, node, symbol_table):
         method_name = node.children[0].label
+        if method_name == "printf":
+            return self.call_printf(node, symbol_table)
         args = node.children[1].children[:]
         arg_types = []
         arg_reg = []
@@ -526,6 +555,7 @@ class LLVM_Converter:
             arg_types.append(symbol_type)
 
         method = node.symbol_table.get_written_method(method_name, arg_types, node.ctx.start)
+
         if len(method.arguments) < len(arg_types):
             error = args[len(method.arguments)].ctx.start
             raise Exception("[Error] Line {}, Position {}: Too many arguments for calling {}".format(
@@ -558,20 +588,12 @@ class LLVM_Converter:
         for i in range(len(args)):
             args[i] = m[i] + ' ' + arg_reg[i]
 
+
         if method.symbol_type != "void":
             newreg = self.register
             self.register += 1
-            if method_name == 'printf':
 
-                length = len(symbol_table.restrings[arg_reg[0]][1:-1])+1
-
-                string = "%r{} = call i32 (i8*, ...) @printf(i8* getelementptr inbounds ([{} x i8]," \
-                         " [{} x i8]* {}, i32 0, i32 0)".format(str(newreg), length, length, arg_reg[0])
-                if len(args)>1:
-                    string += ",{}".format(','.join(args[1:]))
-                string += ")\n"
-            else:
-                string = "%r{} = call {} ({}) @{}({})\n".format(str(newreg), self.format_dict[method.symbol_type],
+            string = "%r{} = call {} ({}) @{}({})\n".format(str(newreg), self.format_dict[method.symbol_type],
                                                             ','.join(m),
                                                             method.internal_name,
                                                             ','.join(args))

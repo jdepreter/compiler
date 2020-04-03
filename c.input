@@ -1,5 +1,6 @@
+#include <stdio.h>
 int main() {
     int x[10];
     x[0] = 1;
-    printf(x[0]);
+    printf("3");
 }
