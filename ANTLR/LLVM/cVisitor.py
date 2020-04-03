@@ -129,6 +129,11 @@ class cVisitor(ParseTreeVisitor):
         return self.visitChildren(ctx)
 
 
+    # Visit a parse tree produced by cParser#array.
+    def visitArray(self, ctx:cParser.ArrayContext):
+        return self.visitChildren(ctx)
+
+
     # Visit a parse tree produced by cParser#variable_identifier.
     def visitVariable_identifier(self, ctx:cParser.Variable_identifierContext):
         return self.visitChildren(ctx)

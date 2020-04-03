@@ -1,18 +1,11 @@
 #include <stdio.h>
 
-int y = 2;
-
-
 int main(){
-    int x = 2;
-    int a = 1;
-    if (x = 1, a = 0) {
-        printf("test");
-    }
+    int y = 2;
+    int z = 2;
+    int x[10];
+    x[2] = 0;
+    x[z = 5, x[2]] = 1;
+    printf("%d", x[0]);
+    z= 2 , y= 9, x[2];
 }
-
-int f(int x) {
-    return x;
-}
-int f(int x);
-int x = 4;

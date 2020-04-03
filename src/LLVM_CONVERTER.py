@@ -779,3 +779,31 @@ define void @print_char(i8 %a){
         self.write_to_file(string)
         self.write = False
         return
+
+    def get_index_of_array(self, array_register, llvm_type, size, index):
+        """
+        :param array_register: number of register
+        :param llvm_type: i32 / float / i8 ...
+        :param size: int
+        :param index: int
+        :return: register, llvm_type + *
+        """
+        # register = size x type, size x type array_register, type 0, type index
+        string = "%r{} = getelementptr inbounds [{} x {}], [{} x {}]* {}, i32 0, i32 {}".format(
+            self.register, size, llvm_type, size, llvm_type, array_register, index
+        )
+        self.write_to_file(string)
+        return self.register, llvm_type + '*'
+
+    def allocate_array(self, llvm_type, size):
+        """
+        Allocate array
+        :param llvm_type: i32 / float / i8 ...
+        :param size: int
+        :return: register, llvm_type
+        """
+        string = "%r{} = alloca [{} x {}]".format(
+            self.register, size, llvm_type
+        )
+        self.write_to_file(string)
+        return self.register, '[{} x {}]'.format(size, llvm_type)

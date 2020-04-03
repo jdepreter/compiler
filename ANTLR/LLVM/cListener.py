@@ -224,6 +224,15 @@ class cListener(ParseTreeListener):
         pass
 
 
+    # Enter a parse tree produced by cParser#array.
+    def enterArray(self, ctx:cParser.ArrayContext):
+        pass
+
+    # Exit a parse tree produced by cParser#array.
+    def exitArray(self, ctx:cParser.ArrayContext):
+        pass
+
+
     # Enter a parse tree produced by cParser#variable_identifier.
     def enterVariable_identifier(self, ctx:cParser.Variable_identifierContext):
         pass

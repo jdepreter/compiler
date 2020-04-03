@@ -18,8 +18,8 @@ while_loop : (WHILE LBRACKET condition RBRACKET line_no_def)
             | do_block WHILE LBRACKET condition RBRACKET SEMICOLON;
 
 for_initial : (definition | );
-condition : (bool1 | assignment_line | );
-for_update : (bool1 | assignment_line | );
+condition : assignment_line;
+for_update : assignment_line;
 break_line : BREAK SEMICOLON;
 continue_line : CONTINUE SEMICOLON;
 do_block : DO line_no_def;
@@ -42,20 +42,25 @@ arg_definition : CONST? var_type IDENTIFIER;
 
 method_call: IDENTIFIER LBRACKET (args)? RBRACKET;
 
-args :  (bool1 | assignment_line) (',' (bool1 | assignment_line))*;
+args :  assignment_line (',' assignment_line)*;
 
 //declaration: CONST? var_type IDENTIFIER EQUALS bool1;
-definition: CONST? var_type ((variable_identifier|assignment2)(','(variable_identifier|assignment2))*);
+definition: CONST? var_type ((variable_identifier|assignment2|array)(','(variable_identifier|assignment2|array))*);
+
+// het ding tussen [] moet een int zijn
+array : variable_identifier SLBRACKET assignment_line SRBRACKET ;
 
 variable_identifier : IDENTIFIER;
 
 assignment_line
-    : assignment(COMMA assignment)*
+    : (assignment | bool1)(COMMA (assignment | bool1))*
     ;
 
 assignment
     :lvalue EQUALS assignment
     |lvalue EQUALS bool1
+    |lvalue SLBRACKET assignment_line SRBRACKET EQUALS assignment
+    |lvalue SLBRACKET assignment_line SRBRACKET EQUALS bool1
     ;
 
 assignment2
@@ -130,7 +135,7 @@ rvalue
     |method_call
     ;
 lvalue
-    :IDENTIFIER
+    :IDENTIFIER (SLBRACKET assignment_line SRBRACKET)*
     |dereference
     ;
 
@@ -182,6 +187,8 @@ MOD  : '%';
 SEMICOLON: ';';
 LBRACKET: '(';
 RBRACKET: ')';
+SLBRACKET: '[';
+SRBRACKET: ']';
 NOT: '!';
 AND: '&&';
 OR: '||';
