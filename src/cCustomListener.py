@@ -194,17 +194,26 @@ class CASTGenerator(cListener):
         else:
             for i in range(1, len(self.currentNode.children)):
                 node = self.currentNode.children[i]
-                symbol = node.label
-                assigned = node.node_type == 'assignment2'
-                if assigned:
+                if node.node_type == 'array':
                     symbol = node.children[0].label
-                self.symbol_table.add_symbol(symbol, self.currentNode.children[0].label, ctx.start, assigned, False)
+                    assigned = False
+                    array_size_node = node.children[1]  # solve this node to get array size
+                    self.symbol_table.add_symbol(symbol, self.currentNode.children[0].label, ctx.start, assigned, False,
+                                                 array_size_node=array_size_node)
+
+                else:
+                    symbol = node.label
+                    assigned = node.node_type == 'assignment2'
+                    if assigned:
+                        symbol = node.children[0].label
+                    self.symbol_table.add_symbol(symbol, self.currentNode.children[0].label, ctx.start, assigned, False)
 
         self.currentNode = self.currentNode.parent
 
     """
     type handling
     """
+
     def enterPointer_type(self, ctx: cParser.Pointer_typeContext):
         string = "pointer"
         symbol_type = ""
@@ -414,10 +423,10 @@ class CASTGenerator(cListener):
     def exitVariable_identifier(self, ctx: cParser.Variable_identifierContext):
         self.currentNode = self.currentNode.parent
 
-
     """
     Methods 
     """
+
     def enterMethod_call(self, ctx: cParser.Method_callContext):
         node = self.create_node("method_call", "method_call", self.currentNode, ctx)
         self.currentNode.children.append(node)
@@ -535,6 +544,7 @@ class CASTGenerator(cListener):
     """
     Unary operators
     """
+
     def enterIncrement(self, ctx: cParser.IncrementContext):
         node = self.create_node("increment", "increment", self.currentNode, ctx)
         self.currentNode.children.append(node)
@@ -609,6 +619,7 @@ class CASTGenerator(cListener):
     """
     Loop de Loop
     """
+
     def enterFor_loop(self, ctx: cParser.For_loopContext):
         node = self.create_node("for", "for", self.currentNode, ctx)
         self.currentNode.children.append(node)
@@ -677,6 +688,7 @@ class CASTGenerator(cListener):
     """
     If else / switch 
     """
+
     def enterCondition(self, ctx: cParser.ConditionContext):
         """
         Ook gebruikt voor loops
@@ -736,4 +748,13 @@ class CASTGenerator(cListener):
         self.currentNode.symbol_table = self.symbol_table.get_current_scope()
 
     def exitDefault(self, ctx: cParser.DefaultContext):
+        self.currentNode = self.currentNode.parent
+
+    def enterArray(self, ctx: cParser.ArrayContext):
+        node = self.create_node("array", "array", self.currentNode, ctx)
+        self.currentNode.children.append(node)
+        self.currentNode = node
+        self.currentNode.symbol_table = self.symbol_table.get_current_scope()
+
+    def exitArray(self, ctx: cParser.ArrayContext):
         self.currentNode = self.currentNode.parent

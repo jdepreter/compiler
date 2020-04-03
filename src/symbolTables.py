@@ -15,21 +15,26 @@ class MethodType:
 
 
 class SymbolType:
-    def __init__(self, symbol_type, assigned, const, current_register, _global=False):
+    def __init__(self, symbol_type, assigned, const, current_register, _global=False, array_size_node=None):
         self.symbol_type = symbol_type
         self.assigned = assigned
         self.const = const
         self.reg = current_register
-        if (_global):
+        if _global:
             self.current_register = '@x_' + str(current_register)
         else:
             self.current_register = '%a' + str(current_register)
         self.used = False
         self.is_global = _global
+        self.array_size_node = array_size_node
+        self.size = array_size_node is not None
         self.written = False
 
     def set_reg(self, current_register):
         self.current_register = current_register
+
+    def is_array(self):
+        return self.size > 0
 
 
 class SymbolTable:
@@ -88,7 +93,7 @@ class SymbolTable:
         self.table_stack.pop(0)
         self.method_stack.pop(0)
 
-    def add_symbol(self, symbol, symbol_type, error, assinged=True, const=False):
+    def add_symbol(self, symbol, symbol_type, error, assinged=True, const=False, array_size_node=None):
         if symbol in self.table_stack[0]:
             raise DuplicateDeclaration("[Error] Line {}, Position {}: Duplicate declaration of variable {} "
                                        .format(error.line, error.column, symbol))

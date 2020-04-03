@@ -59,8 +59,8 @@ assignment_line
 assignment
     :lvalue EQUALS assignment
     |lvalue EQUALS bool1
-    |lvalue SLBRACKET assignment_line SRBRACKET EQUALS assignment
-    |lvalue SLBRACKET assignment_line SRBRACKET EQUALS bool1
+    |array EQUALS assignment
+    |array EQUALS bool1
     ;
 
 assignment2

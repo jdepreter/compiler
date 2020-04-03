@@ -122,11 +122,12 @@ define void @print_char(i8 %a){
     # helpermethod to write used for declaration or definition
     def allocate_node(self, node, symbol_table, symbol_type):
         variable = node.label
-        if node.node_type == 'assignment2':
+        if node.node_type in ['assignment2', 'array']:
             variable = node.children[0].label
 
         if node.node_type == 'Arg_definition':
             variable = node.children[1].label
+
         symbol = symbol_table.get_symbol(variable, node.ctx.start)
         sym_type, stars = get_type_and_stars(symbol_type)
 
@@ -143,13 +144,12 @@ define void @print_char(i8 %a){
             symbol.written = True
             return None, None
 
-        reg_nr = symbol.current_register
-        string = "{} = alloca {}{} \n".format(
-            reg_nr,
-            self.format_dict[sym_type], stars
-        )
-        self.write_to_file(string)
-        symbol.written = True
+        if node.node_type == 'array':
+            reg_nr = self.allocate_array(stars, self.format_dict[sym_type], symbol,
+                                         self.solve_math(node.children[1], symbol_table))[0]
+        else:
+            reg_nr = self.alloc_instruction(stars, sym_type, symbol)
+
         if node.node_type == 'assignment2':
             register = None
             if node.children[1].node_type == 'assignment':
@@ -159,6 +159,31 @@ define void @print_char(i8 %a){
             self.store_symbol(reg_nr, register[0], symbol_type, register[1])
 
         return reg_nr, symbol_type
+
+    def alloc_instruction(self, stars, sym_type, symbol):
+        reg_nr = symbol.current_register
+        string = "{} = alloca {}{} \n".format(
+            reg_nr,
+            self.format_dict[sym_type], stars
+        )
+        self.write_to_file(string)
+        symbol.written = True
+        return reg_nr
+
+    def allocate_array(self, stars, llvm_type, symbol, size):
+        """
+        Allocate array
+        :param llvm_type: i32 / float / i8 ...
+        :param size: (register, llvm_type)
+        :return: register, llvm_type
+        """
+        size = size[0]
+        reg_nr = symbol.current_register
+        string = "{} = alloca [{} x {}]\n".format(
+            reg_nr, size, llvm_type + stars
+        )
+        self.write_to_file(string)
+        return self.register, '[{} x {}]'.format(size, llvm_type)
 
     def assign_node(self, node, symbol_table):
         symbol = symbol_table.get_written_symbol(str(node.children[0].label), node.ctx.start)
@@ -789,21 +814,8 @@ define void @print_char(i8 %a){
         :return: register, llvm_type + *
         """
         # register = size x type, size x type array_register, type 0, type index
-        string = "%r{} = getelementptr inbounds [{} x {}], [{} x {}]* {}, i32 0, i32 {}".format(
+        string = "%r{} = getelementptr inbounds [{} x {}], [{} x {}]* {}, i32 0, i32 {}\n".format(
             self.register, size, llvm_type, size, llvm_type, array_register, index
         )
         self.write_to_file(string)
         return self.register, llvm_type + '*'
-
-    def allocate_array(self, llvm_type, size):
-        """
-        Allocate array
-        :param llvm_type: i32 / float / i8 ...
-        :param size: int
-        :return: register, llvm_type
-        """
-        string = "%r{} = alloca [{} x {}]".format(
-            self.register, size, llvm_type
-        )
-        self.write_to_file(string)
-        return self.register, '[{} x {}]'.format(size, llvm_type)
