@@ -77,38 +77,38 @@ class LLVM_Converter:
             self.file.write(string)
 
     def to_llvm(self):
-#         self.write_to_file("""
-# declare i32 @printf(i8*, ...)
-# @format = private constant [4 x i8] c"%d\\0A\\00"
-# @format_float = private constant [4 x i8] c"%f\\0A\\00"
-# @format_char = private constant [4 x i8] c"%c\\0A\\00"
-# define void @print_int(i32 %a){
-#   %p = call i32 (i8*, ...)
-#        @printf(i8* getelementptr inbounds ([4 x i8],
-#                                            [4 x i8]* @format,
-#                                            i32 0, i32 0),
-#                i32 %a)
-#   ret void
-# }
-#
-# define void @print_float(float %a){
-#   %a_1 = fpext float %a to double
-#   %p = call i32 (i8*, ...)
-#        @printf(i8* getelementptr inbounds ([4 x i8],
-#                                            [4 x i8]* @format_float,
-#                                            i32 0, i32 0),
-#                double %a_1)
-#   ret void
-# }
-#
-# define void @print_char(i8 %a){
-#   %p = call i32 (i8*, ...)
-#        @printf(i8* getelementptr inbounds ([4 x i8],
-#                                            [4 x i8]* @format_char,
-#                                            i32 0, i32 0),
-#                i8 %a)
-#   ret void
-# }\n""")
+        #         self.write_to_file("""
+        # declare i32 @printf(i8*, ...)
+        # @format = private constant [4 x i8] c"%d\\0A\\00"
+        # @format_float = private constant [4 x i8] c"%f\\0A\\00"
+        # @format_char = private constant [4 x i8] c"%c\\0A\\00"
+        # define void @print_int(i32 %a){
+        #   %p = call i32 (i8*, ...)
+        #        @printf(i8* getelementptr inbounds ([4 x i8],
+        #                                            [4 x i8]* @format,
+        #                                            i32 0, i32 0),
+        #                i32 %a)
+        #   ret void
+        # }
+        #
+        # define void @print_float(float %a){
+        #   %a_1 = fpext float %a to double
+        #   %p = call i32 (i8*, ...)
+        #        @printf(i8* getelementptr inbounds ([4 x i8],
+        #                                            [4 x i8]* @format_float,
+        #                                            i32 0, i32 0),
+        #                double %a_1)
+        #   ret void
+        # }
+        #
+        # define void @print_char(i8 %a){
+        #   %p = call i32 (i8*, ...)
+        #        @printf(i8* getelementptr inbounds ([4 x i8],
+        #                                            [4 x i8]* @format_char,
+        #                                            i32 0, i32 0),
+        #                i8 %a)
+        #   ret void
+        # }\n""")
         # self.stack.insert(0, self.ast.startnode)
         # self.write_to_file("define i32 @main() {\n"
         #                 "start:\n")
@@ -472,7 +472,6 @@ class LLVM_Converter:
             if str(node.symbol_type) == "char*" and len(str(node.label)) != 1:
                 return self.make_string(str(node.label), symbol_table), "char*"
 
-
             if str(node.symbol_type)[0] == '&':
                 value = symbol_table.get_assigned_symbol(value, node.ctx.start).current_register
             return value, str(node.symbol_type)
@@ -491,7 +490,7 @@ class LLVM_Converter:
             sym = symbol_table.get_assigned_symbol(node.label, node.ctx.start)
             sym_type, stars = get_type_and_stars(sym.symbol_type)
             address = self.get_index_of_array(sym.current_register, self.format_dict[sym_type] + stars, sym.size,
-                                           self.solve_math(node.children[1], symbol_table)[0])[0]
+                                              self.solve_math(node.children[1], symbol_table)[0])[0]
             reg = self.register
             self.register += 1
             return self.load_instruction(reg, stars, sym_type, address), sym.symbol_type
@@ -526,7 +525,7 @@ class LLVM_Converter:
             arg_reg.append(reg)
             arg_types.append(symbol_type)
             val, stars = get_type_and_stars(symbol_type)
-            arg_reg_types.append('{} {}'.format(self.format_dict[val]+stars, reg))
+            arg_reg_types.append('{} {}'.format(self.format_dict[val] + stars, reg))
         method = node.symbol_table.get_written_method(method_name, arg_types, node.ctx.start)
 
         length = len(symbol_table.restrings[arg_reg[0]][1:-1]) + 1
@@ -540,7 +539,7 @@ class LLVM_Converter:
             string += ",{}".format(','.join(arg_reg_types[1:]))
         string += ")\n"
         self.write_to_file(string)
-        return "%r"+str(newreg), "int"
+        return "%r" + str(newreg), "int"
 
     def call_method(self, node, symbol_table):
         method_name = node.children[0].label
@@ -587,7 +586,6 @@ class LLVM_Converter:
         m = list(map(self.convert2, method.arguments))
         for i in range(len(args)):
             args[i] = m[i] + ' ' + arg_reg[i]
-
 
         if method.symbol_type != "void":
             newreg = self.register
@@ -894,9 +892,10 @@ class LLVM_Converter:
     def define_strings(self, symbol_table):
         all_strings = symbol_table.get_strings()
         for string in all_strings:
-            write_string = '{} = private unnamed_addr constant [{} x i8] c"{}\\00", align 1'.format(all_strings[string],
-                                                                                                    len(string[1:-1]) + 1,
-                                                                                                    string[1:-1])
+            write_string = '{} = private unnamed_addr constant [{} x i8] c"{}\\00", align 1\n'.format(
+                all_strings[string],
+                len(string[1:-1]) + 1,
+                string[1:-1]
+            )
             self.write_to_file(write_string)
         return
-

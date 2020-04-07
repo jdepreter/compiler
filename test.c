@@ -3,7 +3,8 @@
 
 
 int main(){
-    int x[10];
-    x[0] = 1;
+    int x = 5;
+    int * y = &x;
+    ++*y;
 }
 

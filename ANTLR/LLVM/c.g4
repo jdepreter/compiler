@@ -4,7 +4,7 @@ c: (line)* ;
 
 line: ((definition SEMICOLON)|(method_declaration SEMICOLON)| method_definition| line_no_def | include);
 
-line_no_def: (assignment_line SEMICOLON) | (bool1 SEMICOLON)| ifelse | for_loop | while_loop | scope |switchcase | break_line | continue_line | return_line;
+line_no_def: (assignment_line SEMICOLON) | ifelse | for_loop | while_loop | scope |switchcase | break_line | continue_line | return_line;
 
 include: '#include''<stdio.h>';
 
@@ -77,9 +77,9 @@ increment
     |increment_op_first
     ;
 
-increment_var_first: IDENTIFIER(MINMIN|PLUSPLUS);
+increment_var_first: lvalue(MINMIN|PLUSPLUS);
 
-increment_op_first: (MINMIN|PLUSPLUS)IDENTIFIER;
+increment_op_first: (MINMIN|PLUSPLUS)lvalue;
 
 
 pointer_type: (INT_TYPE | FLOAT_TYPE | CHAR_TYPE)MAAL+;
@@ -125,9 +125,9 @@ vm_sol
     ;
 
 value
-    : lvalue
+    : increment
+    | lvalue
     | rvalue
-    | increment
     ;
 rvalue
     :INT
@@ -138,8 +138,9 @@ rvalue
     |method_call
     ;
 lvalue
-    :IDENTIFIER (SLBRACKET assignment_line SRBRACKET)*
-    |dereference
+    : LBRACKET lvalue RBRACKET
+    | IDENTIFIER (SLBRACKET assignment_line SRBRACKET)*
+    | dereference
     ;
 
 dereference
