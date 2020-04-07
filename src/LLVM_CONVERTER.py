@@ -119,6 +119,17 @@ class LLVM_Converter:
         # self.write_to_file("ret i32 0\n"
         #                 "}\n")
 
+    def get_address_register(self, node, symbol_table):
+        if node.node_type == 'array_element':
+            sym = symbol_table.get_assigned_symbol(node.label, node.ctx.start)
+            sym_type, stars = get_type_and_stars(sym.symbol_type)
+            address = self.get_index_of_array(sym.current_register, self.format_dict[sym_type] + stars, sym.size,
+                                              self.solve_math(node.children[1], symbol_table)[0])[0]
+            return address
+        else:
+            return symbol_table.get_assigned_symbol(node.label, node.ctx.start).current_register
+
+
     # helpermethod to write used for declaration or definition
     def allocate_node(self, node, symbol_table, symbol_type):
         variable = node.label
@@ -432,19 +443,20 @@ class LLVM_Converter:
             return '%r' + str(reg2), 'int'
 
         elif node.node_type == 'Increment_var':
-
+            address_register = self.get_address_register(node.children[0], symbol_table)
             reg, symbol_type = self.solve_llvm_node(node.children[0], symbol_table)
             symbol = symbol_table.get_written_symbol(node.children[0].label, node.children[0].ctx.start)
 
-            new_register = self.increment_register(reg, symbol_type, node.children[1].label, symbol)
+            new_register = self.increment_register(reg, symbol_type, node.children[1].label, address_register)
 
             return new_register, symbol_type
 
         elif node.node_type == 'Increment_op':
+            address_register = self.get_address_register(node.children[0], symbol_table)
             reg, symbol_type = self.solve_llvm_node(node.children[0], symbol_table)
             symbol = symbol_table.get_written_symbol(node.children[0].label, node.children[0].ctx.start)
 
-            new_register = self.increment_register(reg, symbol_type, node.children[1].label, symbol)
+            self.increment_register(reg, symbol_type, node.children[1].label, address_register)
 
             return '%r' + str(reg), symbol.symbol_type
 
@@ -514,7 +526,7 @@ class LLVM_Converter:
         self.store_symbol(symbol.current_register, '%r' + str(reg), symbol_type, symbol_type)
         return reg
 
-    def increment_register(self, register, symbol_type, plusplus, symbol):
+    def increment_register(self, register, symbol_type, plusplus, address):
         reg = self.register
         self.register += 1
         sym_type, stars = get_type_and_stars(symbol_type)
@@ -523,7 +535,7 @@ class LLVM_Converter:
             register
         )
         self.write_to_file(string)
-        self.store_symbol(symbol.current_register, '%r' + str(reg), symbol_type, symbol_type)
+        self.store_symbol(address, '%r' + str(reg), symbol_type, symbol_type)
         return reg
 
     def call_printf(self, node, symbol_table):

@@ -2,5 +2,6 @@
 int main() {
     int x[10];
     x[0] = 1;
-    printf("3");
+    x[0]++;
+    printf("%i", x[0]);
 }
