@@ -1,18 +1,20 @@
+#include <stdio.h>
+
 int main(){
 int y = 0;
 int x = 8;
 if (x == 8) {
-    printf(x);
+    printf("%d", x);
 }
 else {
     if (y) {
-        printf('t');
+        printf("t");
     }
     else {
-        printf('f');
+        printf("f");
     }
-    printf('f');
+    printf("f");
 }
-printf(x+1);
+printf("%d", x+1);
 return 0;
 }

@@ -1,3 +1,5 @@
+#include <stdio.h>
+
 int x(int i, float y, char c){
 
     if (1==i){
@@ -11,6 +13,6 @@ int x(int i, float y, char c){
 
 int main(){
     int y = x(3, 3.0, 'c');
-    printf(y);
+    printf("%d", y);
     return 0;
 }

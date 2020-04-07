@@ -1,4 +1,6 @@
-int f(int x) {printf(x); return x;}
+#include <stdio.h>
+
+int f(int x) {printf("%d", x); return x;}
 int f(int x);
 
 int main() {
