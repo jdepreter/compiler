@@ -129,7 +129,6 @@ class LLVM_Converter:
         else:
             return symbol_table.get_assigned_symbol(node.label, node.ctx.start).current_register
 
-
     # helpermethod to write used for declaration or definition
     def allocate_node(self, node, symbol_table, symbol_type):
         variable = node.label
@@ -445,20 +444,18 @@ class LLVM_Converter:
         elif node.node_type == 'Increment_var':
             address_register = self.get_address_register(node.children[0], symbol_table)
             reg, symbol_type = self.solve_llvm_node(node.children[0], symbol_table)
-            symbol = symbol_table.get_written_symbol(node.children[0].label, node.children[0].ctx.start)
-
-            new_register = self.increment_register(reg, symbol_type, node.children[1].label, address_register)
-
-            return new_register, symbol_type
-
-        elif node.node_type == 'Increment_op':
-            address_register = self.get_address_register(node.children[0], symbol_table)
-            reg, symbol_type = self.solve_llvm_node(node.children[0], symbol_table)
-            symbol = symbol_table.get_written_symbol(node.children[0].label, node.children[0].ctx.start)
 
             self.increment_register(reg, symbol_type, node.children[1].label, address_register)
 
-            return '%r' + str(reg), symbol.symbol_type
+            return reg, symbol_type
+
+        elif node.node_type == 'Increment_op':
+            address_register = self.get_address_register(node.children[1], symbol_table)
+            reg, symbol_type = self.solve_llvm_node(node.children[1], symbol_table)
+
+            new_register = self.increment_register(reg, symbol_type, node.children[0].label, address_register)
+
+            return new_register, symbol_type
 
         elif node.node_type == 'unary plus':
             return self.solve_math(node.children[1], symbol_table)
@@ -536,7 +533,7 @@ class LLVM_Converter:
         )
         self.write_to_file(string)
         self.store_symbol(address, '%r' + str(reg), symbol_type, symbol_type)
-        return reg
+        return "%r" + str(reg)
 
     def call_printf(self, node, symbol_table):
         method_name = node.children[0].label

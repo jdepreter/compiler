@@ -1,12 +1,15 @@
-int main(){{
-    int c = 1;
+#include <stdio.h>
+
+int main() {
     {
         int c = 1;
-        c = c + 1;
-        printf(c);
+        {
+            int c = 1;
+            c = c + 1;
+            printf("%d",c);
+        }
+        c = c + 2;
+        printf("%d",c);
     }
-    c = c + 2;
-    printf(c);
-}
-return 0;
+    return 0;
 }

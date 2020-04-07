@@ -16,32 +16,32 @@ class Assignment1(unittest.TestCase):
     def test_scope(self):
         self.assertEqual(to_llvm("scope_1.c", "scope_1"), "")
         self.assertEqual(to_llvm("scope_empty.c", "scope_empty"), "")
-        self.assertEqual(to_llvm("scope_nested.c", "scope_nested"), "2\n3\n")
+        self.assertEqual(to_llvm("scope_nested.c", "scope_nested"), "23")
 
     def test_folding(self):
-        self.assertEqual(to_llvm("folding.c", "folding"), "40.000000\n13.000000\n")
+        self.assertEqual(to_llvm("folding.c", "folding"), "40.00000013.000000")
 
     def test_bool_folding(self):
-        self.assertEqual(to_llvm("bool_testing.c", "bool_testing"), "6\n")
+        self.assertEqual(to_llvm("bool_testing.c", "bool_testing"), "6")
 
     def test_modulo(self):
-        self.assertEqual(to_llvm("modulo.c", "modulo"), "1\n")
+        self.assertEqual(to_llvm("modulo.c", "modulo"), "1")
 
     def test_char(self):
-        self.assertEqual(to_llvm("char_casting.c", "char_casting"), "b\nc\nd\n97\n")
-        self.assertEqual(to_llvm("char_folding.c", "char_folding"), "d\n")
+        self.assertEqual(to_llvm("char_casting.c", "char_casting"), "bcd97")
+        self.assertEqual(to_llvm("char_folding.c", "char_folding"), "d")
 
     def test_pointers(self):
         self.assertEqual(to_llvm("pointers.c", "pointers"), "")
-        self.assertEqual(to_llvm("pointer_dereference.c", "pointer_dereference"), "3\n")
+        self.assertEqual(to_llvm("pointer_dereference.c", "pointer_dereference"), "3")
 
     def test_not(self):
-        self.assertEqual(to_llvm("not_testing.c", "not_testing"), "1\n")
+        self.assertEqual(to_llvm("not_testing.c", "not_testing"), "1")
 
     def test_unary(self):
-        self.assertEqual(to_llvm("unary_magic.c", "unary_magic"), "3\n")
-        self.assertEqual(to_llvm("unary_++.c", "unary_++"), "7\n9\n9\n")
-        self.assertEqual(to_llvm("unary_--.c", "unary_--"), "5\n3\n3\n")
+        self.assertEqual(to_llvm("unary_magic.c", "unary_magic"), "3")
+        self.assertEqual(to_llvm("unary_++.c", "unary_++"), "799")
+        self.assertEqual(to_llvm("unary_--.c", "unary_--"), "533")
 
     def test_errors(self):
         with self.assertRaises(src.CustomExceptions.CSyntaxError):
@@ -69,23 +69,16 @@ class Assignment1(unittest.TestCase):
             to_llvm("incompatible_type_error.c", "incompatible_type")
 
 
-    def test_if_else(self):
-        self.assertEqual(to_llvm("ifelse/true_true.c", "true_true"), "8\n9\n")
-        self.assertEqual(to_llvm("ifelse/true_false.c", "true_false"), "8\n9\n")
-        self.assertEqual(to_llvm("ifelse/false.c", "false"), "f\nf\n2\n")
-        self.assertEqual(to_llvm("ifelse/false_true.c", "false"), "t\nf\n2\n")
-
-
 class IfElse(unittest.TestCase):
     def test_if_else(self):
-        self.assertEqual(to_llvm("ifelse/true_true.c", "true_true"), "8\n9\n")
-        self.assertEqual(to_llvm("ifelse/true_false.c", "true_false"), "8\n9\n")
-        self.assertEqual(to_llvm("ifelse/false.c", "false"), "f\nf\n2\n")
-        self.assertEqual(to_llvm("ifelse/false_true.c", "false"), "t\nf\n2\n")
+        self.assertEqual(to_llvm("ifelse/true_true.c", "true_true"), "89")
+        self.assertEqual(to_llvm("ifelse/true_false.c", "true_false"), "89")
+        self.assertEqual(to_llvm("ifelse/false.c", "false"), "ff2")
+        self.assertEqual(to_llvm("ifelse/false_true.c", "false"), "tf2")
 
     def test_if_else_assignment(self):
         self.assertEqual(to_llvm("ifelse/fancy_if_false.c", "fancy_if_false"), "")
-        self.assertEqual(to_llvm("ifelse/fancy_if_true.c", "fancy_if_true"), "2\n")
+        self.assertEqual(to_llvm("ifelse/fancy_if_true.c", "fancy_if_true"), "2")
 
 
 class Loops(unittest.TestCase):
@@ -109,15 +102,15 @@ class Function(unittest.TestCase):
         self.assertEqual(clear_newlines(to_llvm("functions/faculty.c", "faculty")), "6")
 
     def test_declaration(self):
-        self.assertEqual(to_llvm("functions/declaration_1.c", "declaration_1"), "2\n")
-        self.assertEqual(to_llvm("functions/declaration_2.c", "declaration_2"), "2\n")
-        self.assertEqual(to_llvm("functions/declaration_multi.c", "declaration_multi"), "2\n")
+        self.assertEqual(to_llvm("functions/declaration_1.c", "declaration_1"), "2")
+        self.assertEqual(to_llvm("functions/declaration_2.c", "declaration_2"), "2")
+        self.assertEqual(to_llvm("functions/declaration_multi.c", "declaration_multi"), "2")
 
     def test_definition_only(self):
-        self.assertEqual(to_llvm("functions/definition_only.c", "definition_only"), "2\n")
+        self.assertEqual(to_llvm("functions/definition_only.c", "definition_only"), "2")
 
     def test_forward_declaration(self):
-        self.assertEqual(to_llvm("functions/definition_after.c", "definition_after"), "2\n")
+        self.assertEqual(to_llvm("functions/definition_after.c", "definition_after"), "2")
 
     def test_duplicate_definition(self):
         with self.assertRaises(Exception):
