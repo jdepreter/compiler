@@ -594,6 +594,11 @@ class CASTGenerator(cListener):
         self.currentNode = self.currentNode.parent
 
     def enterIncrement_op_first(self, ctx: cParser.Increment_op_firstContext):
+        """
+        old var is returned, but var is still updated
+        :param ctx:
+        :return:
+        """
         node = self.create_node("Increment_op", "Increment_op", self.currentNode, ctx)
         self.currentNode.children.append(node)
         self.currentNode = node
@@ -602,35 +607,37 @@ class CASTGenerator(cListener):
             string = '++'
 
         node2 = self.create_node(string, "increment", self.currentNode, ctx)
-        node1 = self.create_node(str(ctx.IDENTIFIER()), "var", self.currentNode, ctx)
-        self.currentNode.children.append(node1)
         self.currentNode.children.append(node2)
         self.currentNode.symbol_table = self.symbol_table.get_current_scope()
-        node1.symbol_table = self.symbol_table.get_current_scope()
         node2.symbol_table = self.symbol_table.get_current_scope()
-        node1.symbol_type = node1.symbol_table.get_symbol(str(ctx.IDENTIFIER()), ctx.start).symbol_type
+        # node1.symbol_type = node1.symbol_table.get_symbol(str(ctx.IDENTIFIER()), ctx.start).symbol_type
 
     def exitIncrement_op_first(self, ctx: cParser.Increment_op_firstContext):
         self.currentNode = self.currentNode.parent
 
     def enterIncrement_var_first(self, ctx: cParser.Increment_var_firstContext):
+        """
+        variable is updated then returned
+        :param ctx:
+        :return:
+        """
         node = self.create_node("Increment_var", "Increment_var", self.currentNode, ctx)
+        node.symbol_table = self.symbol_table.get_current_scope()
         self.currentNode.children.append(node)
         self.currentNode = node
+
+        # node1.symbol_type = node1.symbol_table.get_symbol(str(ctx.IDENTIFIER()), ctx.start).symbol_type
+
+    def exitIncrement_var_first(self, ctx: cParser.Increment_var_firstContext):
         string = '--'
         if ctx.PLUSPLUS():
             string = '++'
 
         node2 = self.create_node(string, "Increment_var", self.currentNode, ctx)
-        node1 = self.create_node(str(ctx.IDENTIFIER()), "var", self.currentNode, ctx)
-        self.currentNode.children.append(node1)
         self.currentNode.children.append(node2)
         self.currentNode.symbol_table = self.symbol_table.get_current_scope()
-        node1.symbol_table = self.symbol_table.get_current_scope()
         node2.symbol_table = self.symbol_table.get_current_scope()
-        node1.symbol_type = node1.symbol_table.get_symbol(str(ctx.IDENTIFIER()), ctx.start).symbol_type
 
-    def exitIncrement_var_first(self, ctx: cParser.Increment_var_firstContext):
         self.currentNode = self.currentNode.parent
 
     def enterUnary_min(self, ctx: cParser.Unary_minContext):

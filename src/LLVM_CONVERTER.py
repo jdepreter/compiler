@@ -433,18 +433,18 @@ class LLVM_Converter:
 
         elif node.node_type == 'Increment_var':
 
-            symbol = symbol_table.get_assigned_symbol(node.children[0].label, node.ctx.start)
-            new_sym = self.load_symbol(symbol)
+            reg, symbol_type = self.solve_llvm_node(node.children[0], symbol_table)
+            symbol = symbol_table.get_written_symbol(node.children[0].label, node.children[0].ctx.start)
 
-            self.increment_var(new_sym, node, symbol, symbol.symbol_type)
+            new_register = self.increment_register(reg, symbol_type, node.children[1].label, symbol)
 
-            return new_sym, symbol.symbol_type
+            return new_register, symbol_type
 
         elif node.node_type == 'Increment_op':
-            symbol = symbol_table.get_assigned_symbol(node.children[0].label, node.ctx.start)
-            new_sym = self.load_symbol(symbol)
+            reg, symbol_type = self.solve_llvm_node(node.children[0], symbol_table)
+            symbol = symbol_table.get_written_symbol(node.children[0].label, node.children[0].ctx.start)
 
-            reg = self.increment_var(new_sym, node, symbol, symbol.symbol_type)
+            new_register = self.increment_register(reg, symbol_type, node.children[1].label, symbol)
 
             return '%r' + str(reg), symbol.symbol_type
 
@@ -509,6 +509,18 @@ class LLVM_Converter:
         string = '%r{} = {} {}{} {}, 1\n'.format(
             str(reg), self.optype[symbol_type][node.children[1].label], self.format_dict[sym_type], stars,
             new_sym
+        )
+        self.write_to_file(string)
+        self.store_symbol(symbol.current_register, '%r' + str(reg), symbol_type, symbol_type)
+        return reg
+
+    def increment_register(self, register, symbol_type, plusplus, symbol):
+        reg = self.register
+        self.register += 1
+        sym_type, stars = get_type_and_stars(symbol_type)
+        string = '%r{} = {} {}{} {}, 1\n'.format(
+            str(reg), self.optype[symbol_type][plusplus], self.format_dict[sym_type], stars,
+            register
         )
         self.write_to_file(string)
         self.store_symbol(symbol.current_register, '%r' + str(reg), symbol_type, symbol_type)
