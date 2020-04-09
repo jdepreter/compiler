@@ -119,7 +119,11 @@ class CASTGenerator(cListener):
             symbol_type = "char"
 
         elif ctx.STRING():
+
             string = str(ctx.STRING())[1:-1]
+            string = bytes(string, "ASCII").decode("unicode_escape")
+
+
             symbol_type = "char*"
             self.symbol_table.add_string(string)
 
