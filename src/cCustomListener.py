@@ -121,7 +121,7 @@ class CASTGenerator(cListener):
         elif ctx.STRING():
 
             string = str(ctx.STRING())[1:-1]
-            string = bytes(string, "utf-8").decode("unicode_escape")
+            string = bytes(string, "ASCII").decode("unicode_escape")
 
 
             symbol_type = "char*"
