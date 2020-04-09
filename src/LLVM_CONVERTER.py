@@ -843,7 +843,7 @@ class LLVM_Converter:
 
     def declare_method(self, method_node, symbol_table):
         args = []
-        if method_node.children[2].node_type == 'def_args':
+        if len(method_node.children) > 2 and method_node.children[2].node_type == 'def_args':
             for arg in method_node.children[2].children:
                 args.append(arg.children[0].label)
         func = symbol_table.get_method(method_node.children[1].label, args, method_node.ctx.start)

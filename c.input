@@ -1,14 +1,23 @@
 #include <stdio.h>
 
-// This should print: 10, 10, 11, 11
+void f();
+
+void g();
+
+void f(){
+	printf("Hello ");
+	return;
+}
+
+void g(){
+	printf("World\n");
+	f();
+	printf("World\n");
+}
+
 int main(){
-	int x = 0;
-	int* xp = &x;
-	*xp = 10;
-	printf("%d; ", x);
-	printf("%d\n", *xp);
-	(*xp)++;
-	printf("%d; ", x);
-	printf("%d\n", *xp);
-	return 0;
+    // Should print "hello world" twice
+	f();
+	g();
+	return 1;
 }
