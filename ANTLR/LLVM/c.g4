@@ -6,7 +6,7 @@ line: ((definition SEMICOLON)|(method_declaration SEMICOLON)| method_definition|
 
 line_no_def: (assignment_line SEMICOLON) | ifelse | for_loop | while_loop | scope |switchcase | break_line | continue_line | return_line;
 
-include: '#include''<stdio.h>';
+include: '#include''<' 'stdio.h''>';
 
 scope: LCURLYBRACE (line)* RCURLYBRACE;
 
@@ -211,7 +211,9 @@ INT
     ;
 
 CHAR: '\''[ -~]'\'';
-STRING: '"'[ -~]* '"';
+STRING: '"' ~('"')* '"';
+//STRING : '"' CHAR_NO_NL* '"';
+//fragment CHAR_NO_NL : 'a'..'z'| 'A'..'Z' | '\t'| '\\' | '\n' | EOF;
 EQUALS: '=';
 CONST : 'const';
 INT_TYPE: 'int';
