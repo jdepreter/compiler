@@ -21,14 +21,18 @@ def double_to_hex(f):
 
 
 def get_type_and_stars(input_type):
-    if '&' == input_type[0]:
-        input_type = input_type[1:]
+
     stars = input_type.count('*')
     if stars == 0:
         symbol_type = input_type
     else:
         symbol_type = input_type[:-stars]
-    return symbol_type, input_type[len(input_type) - stars:]
+
+    if '&' == symbol_type[0]:
+        symbol_type = symbol_type[1:]
+        return symbol_type, input_type[len(input_type) - stars:]+'*'
+    else:
+        return symbol_type, input_type[len(input_type) - stars:]
 
 
 def allowed_operation(symbol_type1, symbol_type2, operation, ctx):

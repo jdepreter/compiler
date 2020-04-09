@@ -1,10 +1,10 @@
 #include <stdio.h>
 
 int main() {
-    int x = 6;
-    x++;
-    printf("%d",x++);
-    printf("%d",++x);
-    printf("%d",x);
-    return 0;
+    int x,y,z;
+    char c;
+    float d;
+    scanf("%d", &x);
+    scanf("%c", &c);
+    scanf("%f", &d);
 }

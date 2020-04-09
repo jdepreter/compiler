@@ -1,6 +1,13 @@
 from src.helperfuncs import *
 
 
+def string_to_charptr(string, symbol_table):
+    length = len(symbol_table.restrings[string]) + 1
+    string = "i8* getelementptr inbounds ([{} x i8], [{} x i8]* {}, i32 0, i32 0)"\
+        .format(length, length, string)
+    return string
+
+
 class LLVM_Converter:
     def __init__(self, ast, file):
         self.ast = ast
@@ -478,7 +485,7 @@ class LLVM_Converter:
 
             if str(node.symbol_type) == "float":
                 value = self.store_float(float(node.label))
-            if str(node.symbol_type) == "char*" and len(str(node.label)) != 1:
+            if str(node.symbol_type) == "char*":
                 return self.make_string(str(node.label), symbol_table), "char*"
 
             if str(node.symbol_type)[0] == '&':
@@ -549,13 +556,36 @@ class LLVM_Converter:
             arg_reg_types.append('{} {}'.format(self.format_dict[val] + stars, reg))
         method = node.symbol_table.get_written_method(method_name, arg_types, node.ctx.start)
 
-        length = len(symbol_table.restrings[arg_reg[0]][1:-1]) + 1
+        # length = len(symbol_table.restrings[arg_reg[0]]) + 1
 
         newreg = self.register
         self.register += 1
 
-        string = "%r{} = call i32 (i8*, ...) @printf(i8* getelementptr inbounds ([{} x i8]," \
-                 " [{} x i8]* {}, i32 0, i32 0)".format(str(newreg), length, length, arg_reg[0])
+        string = "%r{} = call i32 (i8*, ...) @printf({}".format(str(newreg), string_to_charptr( arg_reg[0], symbol_table))
+        if len(args) > 1:
+            string += ",{}".format(','.join(arg_reg_types[1:]))
+        string += ")\n"
+        self.write_to_file(string)
+        return "%r" + str(newreg), "int"
+
+    def call_scanf(self, node, symbol_table):
+        method_name = node.children[0].label
+        args = node.children[1].children[:]
+        arg_types = []
+        arg_reg = []
+        arg_reg_types = []
+        for arg in args:
+            reg, symbol_type = self.solve_math(arg, symbol_table)
+            arg_reg.append(reg)
+            arg_types.append(symbol_type)
+            val, stars = get_type_and_stars(symbol_type)
+            arg_reg_types.append('{} {}'.format(self.format_dict[val] + stars, reg))
+
+        newreg = self.register
+        self.register += 1
+
+        string = "%r{} = call i32 (i8*, ...) @__isoc99_scanf({}".format(str(newreg),
+                                                                string_to_charptr(arg_reg[0], symbol_table))
         if len(args) > 1:
             string += ",{}".format(','.join(arg_reg_types[1:]))
         string += ")\n"
@@ -566,6 +596,8 @@ class LLVM_Converter:
         method_name = node.children[0].label
         if method_name == "printf":
             return self.call_printf(node, symbol_table)
+        if method_name == "scanf":
+            return self.call_scanf(node, symbol_table)
         args = node.children[1].children[:]
         arg_types = []
         arg_reg = []
@@ -901,7 +933,7 @@ class LLVM_Converter:
         return "%r" + str(current_reg), llvm_type
 
     def include(self):
-        string = "declare i32 @printf(i8 *, ...)\n"
+        string = "declare i32 @printf(i8 *, ...)\ndeclare i32 @__isoc99_scanf(i8*, ...)\n"
         self.write_to_file(string)
 
     def make_string(self, string, symbol_table):
@@ -915,8 +947,8 @@ class LLVM_Converter:
         for string in all_strings:
             write_string = '{} = private unnamed_addr constant [{} x i8] c"{}\\00", align 1\n'.format(
                 all_strings[string],
-                len(string[1:-1]) + 1,
-                string[1:-1]
+                len(string) + 1,
+                string
             )
             self.write_to_file(write_string)
         return
