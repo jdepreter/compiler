@@ -559,6 +559,8 @@ class LLVM_Converter:
             val, stars = get_type_and_stars(symbol_type)
             if symbol_type == "char*":
                 arg_reg_types.append('{} {}'.format(self.format_dict[val] + stars, string_to_charptr(reg, symbol_table)))
+            elif symbol_type == "float":
+                arg_reg_types.append('{} {}'.format("double", self.float_to_double(reg)))
             else:
                 arg_reg_types.append('{} {}'.format(self.format_dict[val] + stars, reg))
 
@@ -956,3 +958,12 @@ class LLVM_Converter:
             )
             self.write_to_file(write_string)
         return
+
+    def float_to_double(self, float_reg):
+        reg = self.register
+        self.register+=1
+
+        string = "%r{} = fpext float {} to double".format(str(reg) , float_reg)
+        self.write_to_file(string)
+
+        return "%r"+ str(reg)
