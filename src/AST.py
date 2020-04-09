@@ -63,7 +63,7 @@ class Node:
             c1 = int(self.children[1].label)
         else:
             c1 = float(self.children[1].label)
-        self.symbol_type = symbol_type
+
 
         if self.node_type == '+':
             self.label = c0 + c1
@@ -79,6 +79,7 @@ class Node:
         dic = {True: 1, False: 0}
 
         if self.node_type == 'bool2':
+            symbol_type = 'int'
             if self.label == '==':
                 self.label = dic[c0 == c1]
             elif self.label == '!=':
@@ -93,10 +94,12 @@ class Node:
                 self.label = dic[c0 >= c1]
 
         if self.label == '&&':
-            self.label = dic[c0 and c1]
+            symbol_type = 'int'
+            self.label = dic[bool(c0 and c1)]
 
         elif self.label == '||':
-            self.label = dic[c0 or c1]
+            symbol_type = 'int'
+            self.label = dic[bool(c0 or c1)]
 
         # INTEGER OPERATION
         if '.' not in str(self.children[0].label) and '.' not in str(self.children[1].label):
@@ -104,12 +107,13 @@ class Node:
 
         self.children = []
         self.node_type = 'rvalue'
+        self.symbol_type = symbol_type
         return True
 
     def render_dot(self, graph=None):
         if graph is None:
             graph = Digraph(format='png')
-        graph.node(str(self.id), str(self.label))
+        graph.node(str(self.id), str(self.label) + "\n(" + str(self.symbol_type) + ')')
 
         if self.parent is not None:
             graph.edge(str(self.parent.id), str(self.id))

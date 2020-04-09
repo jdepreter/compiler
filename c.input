@@ -1,11 +1,9 @@
+
 #include <stdio.h>
 
-
+// This should print 1 and 0 alternating 
 int main(){
-    // Should print "hello world" twice
-	int x  =3;
-	int y  =3;
-	scanf("%d %d", &x, &y);
-	printf("%d ;\n%d" , x, y);
-	return 0;
+    int x;
+    scanf("%d", &x);
+    printf("%d", x);
 }
