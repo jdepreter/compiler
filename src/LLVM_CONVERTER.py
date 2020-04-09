@@ -129,14 +129,17 @@ class LLVM_Converter:
         #                 "}\n")
 
     def get_address_register(self, node, symbol_table):
+        sym = symbol_table.get_assigned_symbol(node.label, node.ctx.start)
+        sym_type, stars = get_type_and_stars(sym.symbol_type)
+        address = sym.current_register
         if node.node_type == 'array_element':
-            sym = symbol_table.get_assigned_symbol(node.label, node.ctx.start)
-            sym_type, stars = get_type_and_stars(sym.symbol_type)
             address = self.get_index_of_array(sym.current_register, self.format_dict[sym_type] + stars, sym.size,
                                               self.solve_math(node.children[1], symbol_table)[0])[0]
-            return address
-        else:
-            return symbol_table.get_assigned_symbol(node.label, node.ctx.start).current_register
+
+        if node.label.count('*') > 0:
+            address = self.dereference(address, stars, sym_type, node.label.count('*'))[0]
+
+        return address
 
     # helpermethod to write used for declaration or definition
     def allocate_node(self, node, symbol_table, symbol_type):
@@ -840,7 +843,7 @@ class LLVM_Converter:
 
     def declare_method(self, method_node, symbol_table):
         args = []
-        if method_node.children[2].node_type == 'def_args':
+        if len(method_node.children) > 2 and method_node.children[2].node_type == 'def_args':
             for arg in method_node.children[2].children:
                 args.append(arg.children[0].label)
         func = symbol_table.get_method(method_node.children[1].label, args, method_node.ctx.start)
