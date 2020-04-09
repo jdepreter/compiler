@@ -1,10 +1,9 @@
 #include <stdio.h>
 
 int main() {
-    int x,y,z;
-    char c;
-    float d;
-    scanf("%d", &x);
-    scanf("%c", &c);
-    scanf("%f", &d);
+    int* x[5];
+    int y = 6;
+    x[0] = &y;
+    *x[0] = 4;
+    printf("%d", y);
 }

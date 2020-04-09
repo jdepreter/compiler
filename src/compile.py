@@ -10,12 +10,11 @@ from src.LLVM_CONVERTER import LLVM_Converter
 from src.cErrorListener import CErrorListener
 
 import platform
-from subprocess import check_output
+from subprocess import check_output, CalledProcessError
 from pathlib import Path
 
 
-
-def to_llvm(filename, outputname ):
+def to_llvm(filename, outputname):
     Path("llvm").mkdir(parents=True, exist_ok=True)
     input_stream = FileStream(filename)
     lexer = cLexer(input_stream)
@@ -51,8 +50,14 @@ def to_llvm(filename, outputname ):
     f.close()
 
     if platform.system() == 'Linux':
-        result = check_output("clang ./llvm/{}.ll -o ./llvm/{} && ./llvm/{}".format(outputname, outputname, outputname),
-                              shell=True).decode("utf-8")
+        result = ''
+        try:
+            result = check_output(
+                "clang ./llvm/{}.ll -o ./llvm/{} && ./llvm/{}".format(outputname, outputname, outputname),
+                shell=True).decode("utf-8")
+        except CalledProcessError as e:
+            if e.returncode != 1:
+                raise e
         return result
 
 

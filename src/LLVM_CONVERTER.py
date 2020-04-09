@@ -127,14 +127,17 @@ class LLVM_Converter:
         #                 "}\n")
 
     def get_address_register(self, node, symbol_table):
+        sym = symbol_table.get_assigned_symbol(node.label, node.ctx.start)
+        sym_type, stars = get_type_and_stars(sym.symbol_type)
+        address = sym.current_register
         if node.node_type == 'array_element':
-            sym = symbol_table.get_assigned_symbol(node.label, node.ctx.start)
-            sym_type, stars = get_type_and_stars(sym.symbol_type)
             address = self.get_index_of_array(sym.current_register, self.format_dict[sym_type] + stars, sym.size,
                                               self.solve_math(node.children[1], symbol_table)[0])[0]
-            return address
-        else:
-            return symbol_table.get_assigned_symbol(node.label, node.ctx.start).current_register
+
+        if node.label.count('*') > 0:
+            address = self.dereference(address, stars, sym_type, node.label.count('*'))[0]
+
+        return address
 
     # helpermethod to write used for declaration or definition
     def allocate_node(self, node, symbol_table, symbol_type):
