@@ -2,8 +2,10 @@ from src.helperfuncs import *
 
 
 def string_to_charptr(string, symbol_table):
+    if not string in symbol_table.restrings:
+        return string
     length = len(symbol_table.restrings[string]) + 1
-    string = "i8* getelementptr inbounds ([{} x i8], [{} x i8]* {}, i32 0, i32 0)"\
+    string = "getelementptr inbounds ([{} x i8], [{} x i8]* {}, i32 0, i32 0)"\
         .format(length, length, string)
     return string
 
@@ -543,7 +545,6 @@ class LLVM_Converter:
         return "%r" + str(reg)
 
     def call_printf(self, node, symbol_table):
-        method_name = node.children[0].label
         args = node.children[1].children[:]
         arg_types = []
         arg_reg = []
@@ -553,15 +554,16 @@ class LLVM_Converter:
             arg_reg.append(reg)
             arg_types.append(symbol_type)
             val, stars = get_type_and_stars(symbol_type)
-            arg_reg_types.append('{} {}'.format(self.format_dict[val] + stars, reg))
-        method = node.symbol_table.get_written_method(method_name, arg_types, node.ctx.start)
+            if symbol_type == "char*":
+                arg_reg_types.append('{} {}'.format(self.format_dict[val] + stars, string_to_charptr(reg, symbol_table)))
+            else:
+                arg_reg_types.append('{} {}'.format(self.format_dict[val] + stars, reg))
 
-        # length = len(symbol_table.restrings[arg_reg[0]]) + 1
 
         newreg = self.register
         self.register += 1
 
-        string = "%r{} = call i32 (i8*, ...) @printf({}".format(str(newreg), string_to_charptr( arg_reg[0], symbol_table))
+        string = "%r{} = call i32 (i8*, ...) @printf(i8* {}".format(str(newreg), string_to_charptr( arg_reg[0], symbol_table))
         if len(args) > 1:
             string += ",{}".format(','.join(arg_reg_types[1:]))
         string += ")\n"
@@ -569,7 +571,6 @@ class LLVM_Converter:
         return "%r" + str(newreg), "int"
 
     def call_scanf(self, node, symbol_table):
-        method_name = node.children[0].label
         args = node.children[1].children[:]
         arg_types = []
         arg_reg = []
@@ -584,7 +585,7 @@ class LLVM_Converter:
         newreg = self.register
         self.register += 1
 
-        string = "%r{} = call i32 (i8*, ...) @__isoc99_scanf({}".format(str(newreg),
+        string = "%r{} = call i32 (i8*, ...) @__isoc99_scanf(i8* {}".format(str(newreg),
                                                                 string_to_charptr(arg_reg[0], symbol_table))
         if len(args) > 1:
             string += ",{}".format(','.join(arg_reg_types[1:]))
