@@ -494,7 +494,7 @@ class LLVM_Converter:
                 return self.make_string(str(node.label), symbol_table), "char*"
 
             if str(node.symbol_type)[0] == '&':
-                value = symbol_table.get_assigned_symbol(value, node.ctx.start).current_register
+                value = symbol_table.get_written_symbol(value, node.ctx.start).current_register
             return value, str(node.symbol_type)
 
         elif node.node_type == 'lvalue':
@@ -578,12 +578,17 @@ class LLVM_Converter:
         arg_types = []
         arg_reg = []
         arg_reg_types = []
+        first = True
         for arg in args:
+            if not first:
+                symbol = symbol_table.get_symbol(arg.label, arg.ctx.start)
+                symbol.written = True
             reg, symbol_type = self.solve_math(arg, symbol_table)
             arg_reg.append(reg)
             arg_types.append(symbol_type)
             val, stars = get_type_and_stars(symbol_type)
             arg_reg_types.append('{} {}'.format(self.format_dict[val] + stars, reg))
+            first = False
 
         newreg = self.register
         self.register += 1
@@ -594,6 +599,12 @@ class LLVM_Converter:
             string += ",{}".format(','.join(arg_reg_types[1:]))
         string += ")\n"
         self.write_to_file(string)
+        first = True
+        for arg in args:
+            if not first:
+                symbol = symbol_table.get_symbol(arg.label, arg.ctx.start)
+                symbol.assigned = True
+            first = False
         return "%r" + str(newreg), "int"
 
     def call_method(self, node, symbol_table):
