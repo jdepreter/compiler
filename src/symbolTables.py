@@ -152,6 +152,11 @@ class SymbolTable:
         return key
 
     def add_method(self, method, method_type, error, args, defined=True):
+        if len(self.method_stack) != 1:
+            if defined:
+                raise Exception('[Error] Line {}, Position {}: function definition is not allowed here')
+            else:
+                raise Exception('[Error] Line {}, Position {}: function declaration is not allowed here')
         if method == "main":
             if self.main_defined:
                 raise Exception("multiple definitions of main")
@@ -163,7 +168,7 @@ class SymbolTable:
                 raise DuplicateDeclaration("[Error] Line {}, Position {}: Duplicate declaration of method {} "
                                            .format(error.line, error.column, method))
             else:
-                if args != self.method_stack[0][method].arguments:
+                if args != self.method_stack[0][method].arguments or method_type != self.method_stack[0][method].symbol_type:
                     raise Exception("[Error] Line {}: Conflicting types for {} "
                                     .format(error.line, method))
                 self.method_stack[0][method].defined = self.method_stack[0][method].defined or defined

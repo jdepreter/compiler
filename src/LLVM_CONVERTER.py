@@ -174,7 +174,7 @@ class LLVM_Converter:
 
         if node.node_type == 'array':
             reg_nr = self.allocate_array(stars, self.format_dict[sym_type], symbol,
-                                         self.solve_math(node.children[1], symbol_table))[0]
+                                         node.children[1], symbol_table)[0]
         else:
             reg_nr = self.alloc_instruction(stars, sym_type, symbol)
 
@@ -198,17 +198,32 @@ class LLVM_Converter:
         symbol.written = True
         return reg_nr
 
-    def allocate_array(self, stars, llvm_type, symbol, size):
+    def allocate_array(self, stars, llvm_type, symbol, index_node, symbol_table):
         """
         Allocate array
         :param llvm_type: i32 / float / i8 ...
         :param size: (register, llvm_type)
         :return: register, llvm_type
         """
-        size = size[0]
+        register, symbol_type = self.solve_llvm_node(index_node, symbol_table)
+        if symbol_type == 'int':
+            ...
+        elif symbol_type == 'char':
+            register = self.cast_value(register, symbol_type, 'int')
+        else:
+            raise Exception("Error Line {}, Position {}: array subscript is not an integer".format(
+                index_node.ctx.start.line, index_node.ctx.start.column
+            ))
+        try:
+            size = int(register)
+        except ValueError:
+            raise Exception("Error Line {}, Position {}: ISO C90 forbids variable length array".format(
+                index_node.ctx.start.line, index_node.ctx.start.column,
+            ))
+        size = register
         reg_nr = symbol.current_register
         string = "{} = alloca [{} x {}]\n".format(
-            reg_nr, size, llvm_type + stars
+            reg_nr, register, llvm_type + stars
         )
         self.write_to_file(string)
         symbol.written = True
@@ -545,6 +560,12 @@ class LLVM_Converter:
                 return self.load_instruction(reg, stars, sym_type, address), symbol_type_stars
 
         elif node.node_type == 'array_element':
+            sym = symbol_table.get_symbol(node.label, node.ctx.start)
+            if not sym.size:
+                symbol_name = re.sub(r'\[]', '', node.label)
+                raise Exception("Error Line {}, Position {}: {} is not an array".format(
+                    node.ctx.start.line, node.ctx.start.column, symbol_name
+                ))
             sym = symbol_table.get_assigned_symbol(node.label, node.ctx.start)
             sym_type, stars = get_type_and_stars(sym.symbol_type)
             address = self.get_index_of_array(sym.current_register, self.format_dict[sym_type] + stars, sym.size,

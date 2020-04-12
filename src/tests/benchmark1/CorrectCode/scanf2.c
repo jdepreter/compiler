@@ -5,5 +5,5 @@ int main(){
     printf("Enter a 5-character string:");
 	scanf("%5s", &a);
 	printf("%s", a);
-	return 0;
+	return 1;
 }

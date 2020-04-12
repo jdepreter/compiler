@@ -1,10 +1,10 @@
 #include <stdio.h>
 
-// Should print the numbers 1 2 3
-
 int main(){
-    int a[2];
-    int a = 1;
-	printf("%d;%f;%c;", 10, 0.5, '%');
+    int x = 2;
+	char a[x=5];
+    printf("Enter a 5-character string:");
+	scanf("%5s", &a);
+	printf("%s", a);
 	return 0;
 }
