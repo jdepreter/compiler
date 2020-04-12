@@ -38,19 +38,20 @@ class SymbolType:
 
 
 class SymbolTable:
+    main_defined = False
     def __init__(self):
-        self.main_defined = False
+
         self.table_stack = []
         self.table_list = []
         self.current_register = 0
 
-        self.method_register = 4
+        self.method_register = 0
 
         self.strings = dict()
         self.restrings = dict()
         self.strings_nr = 0
 
-        outer_method_scope = dict()
+        # outer_method_scope = dict()
         # printf_int = MethodType('void', ['int'], False, 'printf', 0)
         # printf_int.internal_name = 'print_int'
         #
@@ -63,21 +64,21 @@ class SymbolTable:
         # main = MethodType('int', [], False, 'main', 3)
         # main.internal_name = 'main'
 
-        outer_method_scope['printf_int'] = MethodType('void', ['int'], False, 'printf', 0)
-        outer_method_scope['printf_int'].internal_name = 'print_int'
-        outer_method_scope['printf_char'] = MethodType('void', ['char'], False, 'printf', 1)
-        outer_method_scope['printf_char'].internal_name = 'print_char'
-        outer_method_scope['printf_float'] = MethodType('void', ['float'], False, 'printf', 2)
-        outer_method_scope['printf_float'].internal_name = 'print_float'
+        # outer_method_scope['printf_int'] = MethodType('void', ['int'], False, 'printf', 0)
+        # outer_method_scope['printf_int'].internal_name = 'print_int'
+        # outer_method_scope['printf_char'] = MethodType('void', ['char'], False, 'printf', 1)
+        # outer_method_scope['printf_char'].internal_name = 'print_char'
+        # outer_method_scope['printf_float'] = MethodType('void', ['float'], False, 'printf', 2)
+        # outer_method_scope['printf_float'].internal_name = 'print_float'
 
-        #
-        outer_method_scope['main'] = MethodType('int', [], False, 'main', 3)
-        outer_method_scope['main'].internal_name = 'main'
+        # #
+        # outer_method_scope['main'] = MethodType('int', [], False, 'main', 3)
+        # outer_method_scope['main'].internal_name = 'main'
         # outer_method_scope['printf'] = [printf_int, printf_char, printf_float]
         # outer_method_scope['main'] = [main]
 
-        self.method_stack = [outer_method_scope]
-        self.method_list = [outer_method_scope]
+        self.method_stack = []
+        self.method_list = []
         self.printf = None
 
     def warn_unused(self):
@@ -86,6 +87,11 @@ class SymbolTable:
                 if not table[key].used:
                     warn = "Warning: {} is unused".format(key)
                     print(warn)
+
+    def no_main(self):
+
+        if not SymbolTable.main_defined:
+            raise Exception("function main is not defined")
 
     def include_stdio(self):
         self.method_stack[0]["printf"] = MethodType('int', ['char*', ...], False, 'printf', 0)
@@ -152,7 +158,7 @@ class SymbolTable:
         return key
 
     def add_method(self, method, method_type, error, args, defined=True):
-        if len(self.method_stack) != 2:
+        if len(self.method_stack) != 1:
             if defined:
                 raise Exception('[Error] Line {}, Position {}: function definition is not allowed here'.format(
                     error.line, error.column
@@ -161,11 +167,6 @@ class SymbolTable:
                 raise Exception('[Error] Line {}, Position {}: function declaration is not allowed here'.format(
                     error.line, error.column
                 ))
-        if method == "main":
-            if self.main_defined:
-                raise Exception("multiple definitions of main")
-            self.main_defined = True
-            return
 
         if method in self.method_stack[0]:
             if self.method_stack[0][method].defined and defined:
@@ -179,6 +180,9 @@ class SymbolTable:
 
         else:
             self.method_stack[0][method] = MethodType(method_type, args, False, method, self.method_register, defined)
+            if method == "main" and len(self.method_stack) == 1:
+                self.method_stack[0]["main"].internal_name = "main"
+                SymbolTable.main_defined = True
             self.method_register += 1
 
     def get_method(self, method, arg_types, error):
@@ -219,7 +223,7 @@ class SymbolTable:
                     raise UndeclaredVariable("[Error] Line {}, Position {}: method {}({}) is undeclared"
                                              .format(error.line, error.column, method, ','.join(arg_types)))
 
-        raise UndeclaredVariable("[Error] Line {}, Position {}: method {}({}) is undeclared"
+        raise UndeclaredVariable("[Error] Line {}, Position {}: function {}({}) is undeclared"
                                  .format(error.line, error.column, method, ','.join(arg_types)))
 
     def add_string(self, string):

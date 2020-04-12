@@ -33,6 +33,7 @@ def to_llvm(filename, outputname):
     graph = printer.ast.render_dot()
     graph.save("{}-before".format(outputname), "trees")
     graph.render("{}-before".format(outputname))
+    visitor.startnode.symbol_table.no_main()
     visitor.startnode.symbol_table.warn_unused()
     visitor.clean_tree()
     visitor.fold_not()
@@ -41,6 +42,7 @@ def to_llvm(filename, outputname):
     visitor.unary_fold()
     visitor.maal()
     visitor.constant_folding()
+
     graph = printer.ast.render_dot()
     graph.save("{}".format(outputname), "trees")
     graph.render("{}".format(outputname))
@@ -48,6 +50,7 @@ def to_llvm(filename, outputname):
     converter = LLVM_Converter(visitor, f)
     converter.to_llvm()
     f.close()
+
 
     if platform.system() == 'Linux':
         result = ''
