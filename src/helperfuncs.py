@@ -3,6 +3,8 @@ from src.CustomExceptions import *
 
 
 def get_return_type(type1, type2):
+    if '*' in type1 or '*' in type2 or '&' in type1 or '&' in type2:
+        raise Exception('pointer type cannot be operated on')
     if type1 == "float" or type2 == "float":
         return 'float'
     elif type1 == "int" or type2 == "int":
@@ -10,7 +12,7 @@ def get_return_type(type1, type2):
     elif type1 == "char" or type2 == "char":
         return 'char'
     else:
-        raise Exception('false types')
+        raise Exception('nonexistent  types')
 
 
 def double_to_hex(f):

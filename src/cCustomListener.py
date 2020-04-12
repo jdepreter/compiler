@@ -534,7 +534,7 @@ class CASTGenerator(cListener):
         if ctx.CONST():
             const = True
 
-        self.symbol_table.add_symbol(indentifier, self.currentNode.children[0].label, ctx, True, const)
+        self.symbol_table.add_symbol(indentifier, self.currentNode.children[0].label, ctx.start, True, const)
 
         self.currentNode = self.currentNode.parent
 
