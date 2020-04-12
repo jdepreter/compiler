@@ -605,7 +605,7 @@ class LLVM_Converter:
         newreg = self.register
         self.register += 1
 
-        string = "%r{} = tail call i32 (i8*, ...) @printf(i8* {}".format(str(newreg), string_to_charptr( arg_reg[0], symbol_table))
+        string = "%r{} = call i32 (i8*, ...) @printf(i8* {}".format(str(newreg), string_to_charptr( arg_reg[0], symbol_table))
         if len(args) > 1:
             string += ",{}".format(','.join(arg_reg_types[1:]))
         string += ")\n"
@@ -639,7 +639,7 @@ class LLVM_Converter:
         newreg = self.register
         self.register += 1
 
-        string = "%r{} = tail call i32 (i8*, ...) @__isoc99_scanf(i8* {}".format(str(newreg),
+        string = "%r{} = call i32 (i8*, ...) @__isoc99_scanf(i8* {}".format(str(newreg),
                                                                 string_to_charptr(arg_reg[0], symbol_table))
         if len(args) > 1:
             string += ",{}".format(','.join(arg_reg_types[1:]))
@@ -955,6 +955,8 @@ class LLVM_Converter:
         return
 
     def return_node(self, node, symbol_table):
+        if len(self.function_stack) == 0:
+            raise Exception('Error at line: {} column :{} return statement outside of function '.format(node.ctx.start.line, node.ctx.start.column))
         if len(node.children) == 0:
             # return void
             if self.function_stack[0].symbol_type == 'void':
@@ -963,10 +965,10 @@ class LLVM_Converter:
                 self.write = False
                 return
             else:
-                raise Exception('niet void verdomme')
+                raise Exception('Error at line: {} column :{} non-void function should not return void '.format(node.ctx.start.line, node.ctx.start.column))
 
         if self.function_stack[0].symbol_type == 'void':
-            raise Exception('functie is void verdomme ')
+            raise Exception('Error at line: {} column :{} void function should not return value '.format(node.ctx.start.line, node.ctx.start.column))
         returnreg, return_type = self.solve_llvm_node(node.children[0], symbol_table)
         newtype = self.function_stack[0].symbol_type
         castedreg = self.cast_value(returnreg, return_type, newtype)
