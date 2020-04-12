@@ -537,9 +537,9 @@ class LLVM_Converter:
 
                 # string = "%r{} = ".format(str(reg))+ self.get_array_ptr(address, self.format_dict[sym_type]+stars, sym.size) +"\n"
                 # self.write_to_file(string)
-                reg, ltype = self.get_index_of_array(address, self.format_dict[sym_type]+stars, sym.size,0)
+                reg, ltype = self.get_fixed_index_of_array(address, self.format_dict[sym_type] + stars, 0, sym.size)
 
-                return reg, sym_type+stars+'*'
+                return reg, sym_type + stars + '*'
             else:
 
                 return self.load_instruction(reg, stars, sym_type, address), symbol_type_stars
@@ -595,8 +595,9 @@ class LLVM_Converter:
             arg_reg.append(reg)
             arg_types.append(symbol_type)
             val, stars = get_type_and_stars(symbol_type)
-            if symbol_type == "char*" and '%r' not in reg:
-                arg_reg_types.append('{} {}'.format(self.format_dict[val] + stars, string_to_charptr(reg, symbol_table)))
+            if symbol_type == "char*" and '%r' not in str(reg):
+                arg_reg_types.append(
+                    '{} {}'.format(self.format_dict[val] + stars, string_to_charptr(reg, symbol_table)))
             elif symbol_type == "float":
                 arg_reg_types.append('{} {}'.format("double", self.float_to_double(reg)))
             else:
@@ -980,9 +981,8 @@ class LLVM_Converter:
 
     def get_array_ptr(self, array_register, llvm_type, size):
         string = "getelementptr inbounds ([{} x {}], [{} x {}]* {}, i32 0, i32 0)" \
-            .format(size, llvm_type,size,llvm_type, array_register)
+            .format(size, llvm_type, size, llvm_type, array_register)
         return string
-
 
     def get_index_of_array(self, array_register, llvm_type, size, index_node, symbol_name, symbol_table, error):
         """
@@ -1009,10 +1009,13 @@ class LLVM_Converter:
                 index_node.ctx.start.line, index_node.ctx.start.column
             ))
 
+        return self.get_fixed_index_of_array(array_register, llvm_type, register, size)
+
+    def get_fixed_index_of_array(self, array_register, llvm_type, index, size):
         current_reg = self.register
         self.register += 1
         string = "%r{} = getelementptr inbounds [{} x {}], [{} x {}]* {}, i32 0, i32 {}\n".format(
-            current_reg, size, llvm_type, size, llvm_type, array_register, register
+            current_reg, size, llvm_type, size, llvm_type, array_register, index
         )
         self.write_to_file(string)
         return "%r" + str(current_reg), llvm_type
@@ -1029,7 +1032,6 @@ class LLVM_Converter:
             return all_strings[string]
         else:
             return None
-
 
     def define_strings(self, symbol_table):
         all_strings = symbol_table.get_strings()
