@@ -1,9 +1,9 @@
 #include <stdio.h>
 
-int main(){
-	char a[5];
-    printf("Enter a 5-character string:");
-	scanf("%5s", &a);
-	printf("%s", a);
-	return 1;
+
+int main() {
+    int a[2];
+    char c = 'c';
+    printf("%d", a[c]);
+    return 0;
 }

@@ -19,7 +19,7 @@ class Assignment1(unittest.TestCase):
         self.assertEqual(to_llvm("scope_nested.c", "scope_nested"), "23")
 
     def test_folding(self):
-        self.assertEqual(to_llvm("folding.c", "folding"), "40.00000013.000000")
+        self.assertEqual(to_llvm("folding.c", "folding"), "2440.00000013.00000013")
 
     def test_bool_folding(self):
         self.assertEqual(to_llvm("bool_testing.c", "bool_testing"), "6")
