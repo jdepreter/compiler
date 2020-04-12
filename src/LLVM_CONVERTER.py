@@ -502,10 +502,20 @@ class LLVM_Converter:
             sym_type, stars = get_type_and_stars(sym.symbol_type)
             address, symbol_type_stars = self.dereference(sym.current_register, stars, sym_type,
                                                           node.label.count('*'))
+
+            sym_type, stars = get_type_and_stars(symbol_type_stars)
             reg = self.register
             self.register += 1
-            sym_type, stars = get_type_and_stars(symbol_type_stars)
-            return self.load_instruction(reg, stars, sym_type, address), symbol_type_stars
+            if sym.size:
+
+                # string = "%r{} = ".format(str(reg))+ self.get_array_ptr(address, self.format_dict[sym_type]+stars, sym.size) +"\n"
+                # self.write_to_file(string)
+                reg, ltype = self.get_index_of_array(address, self.format_dict[sym_type]+stars, sym.size,0)
+
+                return reg, sym_type+stars+'*'
+            else:
+
+                return self.load_instruction(reg, stars, sym_type, address), symbol_type_stars
 
         elif node.node_type == 'array_element':
             sym = symbol_table.get_assigned_symbol(node.label, node.ctx.start)
@@ -557,7 +567,7 @@ class LLVM_Converter:
             arg_reg.append(reg)
             arg_types.append(symbol_type)
             val, stars = get_type_and_stars(symbol_type)
-            if symbol_type == "char*":
+            if symbol_type == "char*" and '%r' not in reg:
                 arg_reg_types.append('{} {}'.format(self.format_dict[val] + stars, string_to_charptr(reg, symbol_table)))
             elif symbol_type == "float":
                 arg_reg_types.append('{} {}'.format("double", self.float_to_double(reg)))
@@ -568,7 +578,7 @@ class LLVM_Converter:
         newreg = self.register
         self.register += 1
 
-        string = "%r{} = call i32 (i8*, ...) @printf(i8* {}".format(str(newreg), string_to_charptr( arg_reg[0], symbol_table))
+        string = "%r{} = tail call i32 (i8*, ...) @printf(i8* {}".format(str(newreg), string_to_charptr( arg_reg[0], symbol_table))
         if len(args) > 1:
             string += ",{}".format(','.join(arg_reg_types[1:]))
         string += ")\n"
@@ -582,20 +592,27 @@ class LLVM_Converter:
         arg_reg_types = []
         first = True
         for arg in args:
+            array = False
             if not first:
                 symbol = symbol_table.get_symbol(arg.label, arg.ctx.start)
                 symbol.written = True
+                array = symbol.size
             reg, symbol_type = self.solve_math(arg, symbol_table)
             arg_reg.append(reg)
             arg_types.append(symbol_type)
             val, stars = get_type_and_stars(symbol_type)
-            arg_reg_types.append('{} {}'.format(self.format_dict[val] + stars, reg))
+            val_type = self.format_dict[val] + stars
+            if array:
+                # reg = self.get_array_ptr(reg, self.format_dict[val], symbol.size)
+                val_type = "[{} x {}]{}".format(symbol.size, self.format_dict[val], stars)
+
+            arg_reg_types.append('{} {}'.format(val_type, reg))
             first = False
 
         newreg = self.register
         self.register += 1
 
-        string = "%r{} = call i32 (i8*, ...) @__isoc99_scanf(i8* {}".format(str(newreg),
+        string = "%r{} = tail call i32 (i8*, ...) @__isoc99_scanf(i8* {}".format(str(newreg),
                                                                 string_to_charptr(arg_reg[0], symbol_table))
         if len(args) > 1:
             string += ",{}".format(','.join(arg_reg_types[1:]))
@@ -932,6 +949,11 @@ class LLVM_Converter:
         self.write = False
         return
 
+    def get_array_ptr(self, array_register, llvm_type, size):
+        string = "getelementptr inbounds ([{} x {}], [{} x {}]* {}, i32 0, i32 0)" \
+            .format(size, llvm_type,size,llvm_type, array_register)
+        return string
+
     def get_index_of_array(self, array_register, llvm_type, size, index):
         """
         :param array_register: number of register
@@ -957,7 +979,11 @@ class LLVM_Converter:
         all_strings = symbol_table.get_strings()
         # write_string = '{} = private unnamed_addr constant [{} x i8] c"{}\\00", align 1\n'.format(all_strings[string], len(string[1:-1])+1,string[1:-1])
         # self.write_to_file(write_string)
-        return all_strings[string]
+        if string in all_strings:
+            return all_strings[string]
+        else:
+            return None
+
 
     def define_strings(self, symbol_table):
         all_strings = symbol_table.get_strings()
