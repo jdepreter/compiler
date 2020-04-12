@@ -1,11 +1,12 @@
 from src.helperfuncs import *
+import re
 
 
 def string_to_charptr(string, symbol_table):
     if not string in symbol_table.restrings:
         return string
     length = len(symbol_table.restrings[string]) + 1
-    string = "getelementptr inbounds ([{} x i8], [{} x i8]* {}, i32 0, i32 0)"\
+    string = "getelementptr inbounds ([{} x i8], [{} x i8]* {}, i32 0, i32 0)" \
         .format(length, length, string)
     return string
 
@@ -134,7 +135,8 @@ class LLVM_Converter:
         address = sym.current_register
         if node.node_type == 'array_element':
             address = self.get_index_of_array(sym.current_register, self.format_dict[sym_type] + stars, sym.size,
-                                              self.solve_math(node.children[1], symbol_table)[0])[0]
+                                              node.children[1], symbol_table, node.label,
+                                              node.ctx.start)[0]
 
         if node.label.count('*') > 0:
             address = self.dereference(address, stars, sym_type, node.label.count('*'))[0]
@@ -157,7 +159,7 @@ class LLVM_Converter:
             # Do funny xD llvm global stuff
             if node.node_type == 'array':
                 reg_nr = self.allocate_global_array(stars, self.format_dict[sym_type], symbol,
-                                             self.solve_math(node.children[1], symbol_table))[0]
+                                                    self.solve_math(node.children[1], symbol_table))[0]
                 return None, None
             value = 0
             if node.node_type == 'assignment2':
@@ -211,6 +213,7 @@ class LLVM_Converter:
         self.write_to_file(string)
         symbol.written = True
         symbol.size = size
+        symbol.assigned = True
         return self.register, '[{} x {}]'.format(size, llvm_type)
 
     def allocate_global_array(self, stars, llvm_type, symbol, size):
@@ -247,7 +250,8 @@ class LLVM_Converter:
             # We are dealing with an array index
             address, temp = self.get_index_of_array(
                 symbol.current_register, self.format_dict[symbol_type], symbol.size,
-                self.solve_math(node.children[0].children[1], symbol_table)[0]
+                node.children[0].children[1], symbol_table, node.label,
+                node.ctx.start
             )
 
         self.store_symbol(address, register, symbol.symbol_type, symbol_type, node.children[0].label.count('*'))
@@ -534,7 +538,8 @@ class LLVM_Converter:
             sym = symbol_table.get_assigned_symbol(node.label, node.ctx.start)
             sym_type, stars = get_type_and_stars(sym.symbol_type)
             address = self.get_index_of_array(sym.current_register, self.format_dict[sym_type] + stars, sym.size,
-                                              self.solve_math(node.children[1], symbol_table)[0])[0]
+                                              node.children[1], symbol_table, node.label,
+                                              node.ctx.start)[0]
             reg = self.register
             self.register += 1
             return self.load_instruction(reg, stars, sym_type, address), sym.symbol_type
@@ -581,7 +586,8 @@ class LLVM_Converter:
             arg_types.append(symbol_type)
             val, stars = get_type_and_stars(symbol_type)
             if symbol_type == "char*":
-                arg_reg_types.append('{} {}'.format(self.format_dict[val] + stars, string_to_charptr(reg, symbol_table)))
+                arg_reg_types.append(
+                    '{} {}'.format(self.format_dict[val] + stars, string_to_charptr(reg, symbol_table)))
             elif symbol_type == "float":
                 arg_reg_types.append('{} {}'.format("double", self.float_to_double(reg)))
             else:
@@ -590,7 +596,8 @@ class LLVM_Converter:
         newreg = self.register
         self.register += 1
 
-        string = "%r{} = call i32 (i8*, ...) @printf(i8* {}".format(str(newreg), string_to_charptr( arg_reg[0], symbol_table))
+        string = "%r{} = call i32 (i8*, ...) @printf(i8* {}".format(str(newreg),
+                                                                    string_to_charptr(arg_reg[0], symbol_table))
         if len(args) > 1:
             string += ",{}".format(','.join(arg_reg_types[1:]))
         string += ")\n"
@@ -618,7 +625,7 @@ class LLVM_Converter:
         self.register += 1
 
         string = "%r{} = call i32 (i8*, ...) @__isoc99_scanf(i8* {}".format(str(newreg),
-                                                                string_to_charptr(arg_reg[0], symbol_table))
+                                                                            string_to_charptr(arg_reg[0], symbol_table))
         if len(args) > 1:
             string += ",{}".format(','.join(arg_reg_types[1:]))
         string += ")\n"
@@ -954,19 +961,35 @@ class LLVM_Converter:
         self.write = False
         return
 
-    def get_index_of_array(self, array_register, llvm_type, size, index):
+    def get_index_of_array(self, array_register, llvm_type, size, index_node, symbol_name, symbol_table, error):
         """
         :param array_register: number of register
         :param llvm_type: i32 / float / i8 ...
         :param size: int
-        :param index: int
+        :param index_node: int
         :return: register, llvm_type + *
         """
         # register = size x type, size x type array_register, type 0, type index
+        if not size:
+            symbol_name = re.sub(r'\[]', '', symbol_name)
+            raise Exception("Error Line {}, Position {}: {} is not a array".format(
+                error.line, error.column, symbol_name
+            ))
+
+        register, symbol_type = self.solve_llvm_node(index_node, symbol_table)
+        if symbol_type == 'int':
+            ...
+        elif symbol_type == 'char':
+            register = self.cast_value(register, symbol_type, 'int')
+        else:
+            raise Exception("Error Line {}, Position {}: array subscript is not an integer".format(
+                index_node.ctx.start.line, index_node.ctx.start.column
+            ))
+
         current_reg = self.register
         self.register += 1
         string = "%r{} = getelementptr inbounds [{} x {}], [{} x {}]* {}, i32 0, i32 {}\n".format(
-            current_reg, size, llvm_type, size, llvm_type, array_register, index
+            current_reg, size, llvm_type, size, llvm_type, array_register, register
         )
         self.write_to_file(string)
         return "%r" + str(current_reg), llvm_type
@@ -994,9 +1017,9 @@ class LLVM_Converter:
 
     def float_to_double(self, float_reg):
         reg = self.register
-        self.register+=1
+        self.register += 1
 
-        string = "%r{} = fpext float {} to double".format(str(reg) , float_reg)
+        string = "%r{} = fpext float {} to double".format(str(reg), float_reg)
         self.write_to_file(string)
 
-        return "%r"+ str(reg)
+        return "%r" + str(reg)

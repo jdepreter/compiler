@@ -1,10 +1,9 @@
 #include <stdio.h>
 
-int a[2];
-int x;
 
 int main() {
-    a[0] = 1;
-    printf("%d", a[0]);
+    int a[2];
+    char c = 'c';
+    printf("%d", a[c]);
     return 0;
 }
