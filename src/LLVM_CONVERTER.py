@@ -623,6 +623,8 @@ class LLVM_Converter:
                     expected_args += ['float']
                 elif print_string[i + 1] == 'd':
                     expected_args += ['int']
+                elif print_string[i + 1] == 'c':
+                    expected_args += ['char']
                 elif print_string[i + 1] == 's':
                     expected_args += ['char*']
                 i += 1
