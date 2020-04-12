@@ -155,6 +155,10 @@ class LLVM_Converter:
 
         if symbol.is_global:
             # Do funny xD llvm global stuff
+            if node.node_type == 'array':
+                reg_nr = self.allocate_global_array(stars, self.format_dict[sym_type], symbol,
+                                             self.solve_math(node.children[1], symbol_table))[0]
+                return None, None
             value = 0
             if node.node_type == 'assignment2':
                 if node.children[1].node_type == 'rvalue':
@@ -202,6 +206,25 @@ class LLVM_Converter:
         size = size[0]
         reg_nr = symbol.current_register
         string = "{} = alloca [{} x {}]\n".format(
+            reg_nr, size, llvm_type + stars
+        )
+        self.write_to_file(string)
+        symbol.written = True
+        symbol.size = size
+        return self.register, '[{} x {}]'.format(size, llvm_type)
+
+    def allocate_global_array(self, stars, llvm_type, symbol, size):
+        """
+        Allocate Global Array
+        :param stars:
+        :param llvm_type:
+        :param symbol:
+        :param size:
+        :return:
+        """
+        size = size[0]
+        reg_nr = symbol.current_register
+        string = "{} = common global [{} x {}] zeroinitializer\n".format(
             reg_nr, size, llvm_type + stars
         )
         self.write_to_file(string)
@@ -563,7 +586,6 @@ class LLVM_Converter:
                 arg_reg_types.append('{} {}'.format("double", self.float_to_double(reg)))
             else:
                 arg_reg_types.append('{} {}'.format(self.format_dict[val] + stars, reg))
-
 
         newreg = self.register
         self.register += 1
