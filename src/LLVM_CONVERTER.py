@@ -611,6 +611,37 @@ class LLVM_Converter:
         arg_types = []
         arg_reg = []
         arg_reg_types = []
+        expected_args = []
+        i = 0
+        print_string = args[0].label
+        while i < len(print_string) - 1:
+            # print_string == printed string
+            if print_string[i] == '%':
+                if print_string[i + 1] == 'i':
+                    expected_args += ['int']
+                elif print_string[i + 1] == 'f':
+                    expected_args += ['float']
+                elif print_string[i + 1] == 'd':
+                    expected_args += ['int']
+                elif print_string[i + 1] == 's':
+                    expected_args += ['char*']
+                i += 1
+            i += 1
+
+        if len(expected_args) != len(args) - 1:
+            error = node.ctx.start
+            if len(expected_args) > len(args) - 1:
+                raise Exception(
+                    "[Error] Line {}, Position {}: Too few arguments for calling {} missing arg(s) with type(s): {}".format(
+                        error.line, error.column, 'printf', ', '.join(expected_args[len(args)-1:])
+                    ))
+
+            elif len(expected_args) < len(args) - 1:
+                raise Exception(
+                    "[Error] Line {}, Position {}: Too many arguments for calling {}".format(
+                        error.line, error.column, 'printf'
+                    ))
+
         for arg in args:
             reg, symbol_type = self.solve_math(arg, symbol_table)
             arg_reg.append(reg)
@@ -706,7 +737,7 @@ class LLVM_Converter:
                 error = node.ctx.start
             raise Exception(
                 "[Error] Line {}, Position {}: Too few arguments for calling {} missing arg(s) with type(s): {}".format(
-                    error.line, error.column, method_name, ','.join(method.arguments[len(args) - 1:])
+                    error.line, error.column, method_name, ', '.join(method.arguments[len(args):])
                 )
             )
 

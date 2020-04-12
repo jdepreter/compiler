@@ -152,11 +152,15 @@ class SymbolTable:
         return key
 
     def add_method(self, method, method_type, error, args, defined=True):
-        if len(self.method_stack) != 1:
+        if len(self.method_stack) != 2:
             if defined:
-                raise Exception('[Error] Line {}, Position {}: function definition is not allowed here')
+                raise Exception('[Error] Line {}, Position {}: function definition is not allowed here'.format(
+                    error.line, error.column
+                ))
             else:
-                raise Exception('[Error] Line {}, Position {}: function declaration is not allowed here')
+                raise Exception('[Error] Line {}, Position {}: function declaration is not allowed here'.format(
+                    error.line, error.column
+                ))
         if method == "main":
             if self.main_defined:
                 raise Exception("multiple definitions of main")
