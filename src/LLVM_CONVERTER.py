@@ -630,7 +630,7 @@ class LLVM_Converter:
             arg_types.append(symbol_type)
             val, stars = get_type_and_stars(symbol_type)
             val_type = self.format_dict[val] + stars
-            if array:
+            if array and "%r" not in str(reg):
                 # reg = self.get_array_ptr(reg, self.format_dict[val], symbol.size)
                 val_type = "[{} x {}]{}".format(symbol.size, self.format_dict[val], stars)
 
