@@ -2,6 +2,14 @@ import struct
 from src.CustomExceptions import *
 
 
+def raise_error(message: str, line: int, position: int):
+    raise Exception("[Error] Line {}, Postition {}: {}".format(line, position, message))
+
+
+def print_warning(message: str, line: int, position: int):
+    print("[Warning] Line {}, Position {}: {}", line, position, message)
+
+
 def get_return_type(type1, type2):
     if '*' in type1 or '*' in type2 or '&' in type1 or '&' in type2:
         raise Exception('pointer type cannot be operated on')
