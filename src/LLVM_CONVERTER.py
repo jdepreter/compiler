@@ -184,7 +184,7 @@ class LLVM_Converter:
                 register = self.assign_node(node.children[1], symbol_table)
             else:
                 register = self.solve_math(node.children[1], symbol_table)
-            self.store_symbol(reg_nr, register[0], symbol_type, register[1])
+            self.store_symbol(reg_nr, register[0], symbol_type, register[1], node)
 
         return reg_nr, symbol_type
 
@@ -209,7 +209,7 @@ class LLVM_Converter:
         if symbol_type == 'int':
             ...
         elif symbol_type == 'char':
-            register = self.cast_value(register, symbol_type, 'int')
+            register = self.cast_value(register, symbol_type, 'int',  index_node.ctx.start)
         else:
             raise Exception("Error Line {}, Position {}: array subscript is not an integer".format(
                 index_node.ctx.start.line, index_node.ctx.start.column
@@ -269,14 +269,14 @@ class LLVM_Converter:
                 node.ctx.start
             )
 
-        self.store_symbol(address, register, symbol.symbol_type, symbol_type, node.children[0].label.count('*'))
+        self.store_symbol(address, register, symbol.symbol_type, symbol_type,node ,node.children[0].label.count('*'))
         symbol.assigned = True
         return register, symbol.symbol_type
 
-    def not_value(self, register, symbol_type):
+    def not_value(self, register, symbol_type, node):
         reg = self.register
         self.register += 1
-        new = self.cast_value(register, symbol_type, 'bool')
+        new = self.cast_value(register, symbol_type, 'bool', node.ctx.start)
         string = "%r{} = add i1 {}, 1\n".format(reg, new)
         self.write_to_file(string)
         reg2 = self.register
@@ -355,7 +355,7 @@ class LLVM_Converter:
                     sol = self.solve_llvm_node(child, symbol_table)
             return sol
 
-    def cast_value(self, register, current_type, new_type):
+    def cast_value(self, register, current_type, new_type, error):
 
         current_sym_type, current_stars = get_type_and_stars(current_type)
         new_sym_type, new_stars = get_type_and_stars(new_type)
@@ -371,7 +371,7 @@ class LLVM_Converter:
             str(reg), casted_type, self.format_dict[current_sym_type], current_stars,
             register, self.format_dict[new_sym_type], new_stars
         )
-        print("[Warning] implicit cast from {} to {}".format(current_type, new_type))
+        print("[Warning] line {}: implicit cast from {} to {}".format(error.line,current_type, new_type))
         self.write_to_file(string)
         return '%r' + str(reg)
 
@@ -382,8 +382,8 @@ class LLVM_Converter:
             return self.cast_dict[current_sym_type][new_sym_type]
         return False
 
-    def store_symbol(self, address, value, address_symbol_type, value_symbol_type, dereference=0):
-        value_to_store = self.cast_value(value, value_symbol_type, address_symbol_type)
+    def store_symbol(self, address, value, address_symbol_type, value_symbol_type, node,dereference=0):
+        value_to_store = self.cast_value(value, value_symbol_type, address_symbol_type, node.ctx.start)
         address_sym_type, address_stars = get_type_and_stars(address_symbol_type)
         current_register = self.dereference(address, address_stars, address_sym_type, dereference)[0]
 
@@ -435,8 +435,8 @@ class LLVM_Converter:
             child2 = self.solve_math(node.children[1], symbol_table)
             allowed_operation(child1[1], child2[1], node.label, node.ctx.start)
             symbol_type = get_return_type(child1[1], child2[1])
-            child_1 = self.cast_value(child1[0], child1[1], symbol_type)
-            child_2 = self.cast_value(child2[0], child2[1], symbol_type)
+            child_1 = self.cast_value(child1[0], child1[1], symbol_type,  node.ctx.start)
+            child_2 = self.cast_value(child2[0], child2[1], symbol_type,  node.ctx.start)
             sym_type, stars = get_type_and_stars(symbol_type)
             if symbol_type == 'float' and node.label == '%':
                 raise Exception("Error: incompatible type %: float")
@@ -454,8 +454,8 @@ class LLVM_Converter:
             self.register += 1
             child1 = self.solve_math(node.children[0], symbol_table)
             child2 = self.solve_math(node.children[1], symbol_table)
-            child_1 = self.cast_value(child1[0], child1[1], 'int')
-            child_2 = self.cast_value(child2[0], child2[1], 'int')
+            child_1 = self.cast_value(child1[0], child1[1], 'int',  node.ctx.start)
+            child_2 = self.cast_value(child2[0], child2[1], 'int',  node.ctx.start)
             string = "%r{} = and i32 {}, {}\n".format(
                 str(reg), child_1, child_2
             )
@@ -466,8 +466,8 @@ class LLVM_Converter:
             self.register += 1
             child1 = self.solve_math(node.children[0], symbol_table)
             child2 = self.solve_math(node.children[1], symbol_table)
-            child_1 = self.cast_value(child1[0], child1[1], 'int')
-            child_2 = self.cast_value(child2[0], child2[1], 'int')
+            child_1 = self.cast_value(child1[0], child1[1], 'int',  node.ctx.start)
+            child_2 = self.cast_value(child2[0], child2[1], 'int',  node.ctx.start)
             string = "%r{} = or i32 {}, {}\n".format(
                 str(reg), child_1, child_2
             )
@@ -480,8 +480,8 @@ class LLVM_Converter:
             child1 = self.solve_math(node.children[0], symbol_table)
             child2 = self.solve_math(node.children[1], symbol_table)
             symbol_type = get_return_type(child1[1], child2[1])
-            child_1 = self.cast_value(child1[0], child1[1], symbol_type)
-            child_2 = self.cast_value(child2[0], child2[1], symbol_type)
+            child_1 = self.cast_value(child1[0], child1[1], symbol_type,  node.ctx.start)
+            child_2 = self.cast_value(child2[0], child2[1], symbol_type,  node.ctx.start)
             sym_type, stars = get_type_and_stars(symbol_type)
             string = '%r{} = {} {}{} {}, {} \n'.format(
                 str(reg), self.bool_dict[sym_type][node.label], self.format_dict[sym_type], stars,
@@ -500,7 +500,7 @@ class LLVM_Converter:
             address_register = self.get_address_register(node.children[0], symbol_table)
             reg, symbol_type = self.solve_llvm_node(node.children[0], symbol_table)
 
-            self.increment_register(reg, symbol_type, node.children[1].label, address_register)
+            self.increment_register(reg, symbol_type, node.children[1].label, address_register, node)
 
             return reg, symbol_type
 
@@ -508,7 +508,7 @@ class LLVM_Converter:
             address_register = self.get_address_register(node.children[1], symbol_table)
             reg, symbol_type = self.solve_llvm_node(node.children[1], symbol_table)
 
-            new_register = self.increment_register(reg, symbol_type, node.children[0].label, address_register)
+            new_register = self.increment_register(reg, symbol_type, node.children[0].label, address_register, node)
 
             return new_register, symbol_type
 
@@ -579,7 +579,7 @@ class LLVM_Converter:
         elif node.node_type == 'bool2' and node.children[0].label == '!':
 
             value = self.solve_math(node.children[1], symbol_table)
-            return self.not_value(value[0], value[1])
+            return self.not_value(value[0], value[1], node)
 
         return None, None
 
@@ -592,10 +592,10 @@ class LLVM_Converter:
             new_sym
         )
         self.write_to_file(string)
-        self.store_symbol(symbol.current_register, '%r' + str(reg), symbol_type, symbol_type)
+        self.store_symbol(symbol.current_register, '%r' + str(reg), symbol_type, symbol_type, node)
         return reg
 
-    def increment_register(self, register, symbol_type, plusplus, address):
+    def increment_register(self, register, symbol_type, plusplus, address, node):
         reg = self.register
         self.register += 1
         sym_type, stars = get_type_and_stars(symbol_type)
@@ -604,7 +604,7 @@ class LLVM_Converter:
             register
         )
         self.write_to_file(string)
-        self.store_symbol(address, '%r' + str(reg), symbol_type, symbol_type)
+        self.store_symbol(address, '%r' + str(reg), symbol_type, symbol_type, node)
         return "%r" + str(reg)
 
     def call_printf(self, node, symbol_table):
@@ -744,7 +744,7 @@ class LLVM_Converter:
 
         for i, arg_type in enumerate(arg_types):
             if arg_type != method.arguments[i]:
-                arg_reg[i] = self.cast_value(arg_reg[i], arg_type, method.arguments[i])
+                arg_reg[i] = self.cast_value(arg_reg[i], arg_type, method.arguments[i],  node.ctx.start)
                 if not arg_reg[i]:
                     error = args[i].ctx.start
                     raise Exception(
@@ -902,7 +902,7 @@ class LLVM_Converter:
         if not self.write:
             return
         switchval, switchtype = self.solve_math(node.children[0], symbol_table)
-        branchval = self.cast_value(switchval, switchtype, "int")
+        branchval = self.cast_value(switchval, switchtype, "int",  node.ctx.start)
 
         write = self.write
         breaks = self.breaks
@@ -1027,7 +1027,7 @@ class LLVM_Converter:
             raise Exception('Error at line: {} column :{} void function should not return value '.format(node.ctx.start.line, node.ctx.start.column))
         returnreg, return_type = self.solve_llvm_node(node.children[0], symbol_table)
         newtype = self.function_stack[0].symbol_type
-        castedreg = self.cast_value(returnreg, return_type, newtype)
+        castedreg = self.cast_value(returnreg, return_type, newtype, node.ctx.start)
 
         string = "ret {} {}\n".format(self.format_dict[newtype], castedreg)
         self.write_to_file(string)
@@ -1058,7 +1058,7 @@ class LLVM_Converter:
         if symbol_type == 'int':
             ...
         elif symbol_type == 'char':
-            register = self.cast_value(register, symbol_type, 'int')
+            register = self.cast_value(register, symbol_type, 'int', error)
         else:
             raise Exception("Error Line {}, Position {}: array subscript is not an integer".format(
                 index_node.ctx.start.line, index_node.ctx.start.column
