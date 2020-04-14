@@ -378,7 +378,8 @@ class LLVM_Converter:
             str(reg), casted_type, self.format_dict[current_sym_type], current_stars,
             register, self.format_dict[new_sym_type], new_stars
         )
-        print("[Warning] line {}: implicit cast from {} to {}".format(error.line, current_sym_type + current_stars,
+        if not((current_type=="char" and (new_type =="int" or new_type =="float")) or (current_type == "int" and new_type == "float" )):
+            print("[Warning] line {}: implicit cast from {} to {}".format(error.line, current_sym_type + current_stars,
                                                                       new_sym_type + new_stars))
         self.write_to_file(string)
         return '%r' + str(reg)
