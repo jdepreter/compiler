@@ -12,9 +12,11 @@ from src.cErrorListener import CErrorListener
 import platform
 from subprocess import check_output, CalledProcessError
 from pathlib import Path
+from src.symbolTables import SymbolTable
 
 
 def to_llvm(filename, outputname):
+    SymbolTable.main_defined = False
     Path("llvm").mkdir(parents=True, exist_ok=True)
     input_stream = FileStream(filename)
     lexer = cLexer(input_stream)
@@ -50,7 +52,6 @@ def to_llvm(filename, outputname):
     converter = LLVM_Converter(visitor, f)
     converter.to_llvm()
     f.close()
-
 
     if platform.system() == 'Linux':
         result = ''
