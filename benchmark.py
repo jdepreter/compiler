@@ -3,29 +3,29 @@ from src.compile import to_llvm
 import os
 
 expected_output_correct = {
-    'binaryOperations1.c': '10; 10; 10; 10; 10; 10; 10; 10; ',
+    'binaryOperations1.c': '10; 10.000000; 10; 10.000000; 10; 10.000000; 10; 10.000000; ',
     'binaryOperations2.c': '10; 10; 10; 10; ',
     'breakAndContinue.c': '0\n1\n2\n3\n4\n5\n',
     'comparisons1.c': '1; 0; 1; 0; 1; 0; ',
-    'comparisons2.c': '1; 0; 1; 0; 1;',
-    'dereferenceAssignment.c': '10; 11\n10; 11\n',
-    'fibonacciRecursive.c': '',
+    'comparisons2.c': '1; 0; 1; 0; 1; ',
+    'dereferenceAssignment.c': '10; 10\n11; 11\n',
+    'fibonacciRecursive.c': 'Enter a number:fib(2)\t= 1;\nfib(3)\t= 2;\nfib(4)\t= 3;\nfib(5)\t= 5;\nfib(6)\t= 8;\n',
     'floatToIntConversion.c': '',
     'for.c': '0\n1\n2\n3\n4\n5\n6\n7\n8\n9\n',
-    'forwardDeclaration.c': 'Hello world!\nHello world!\n',
+    'forwardDeclaration.c': 'Hello World\nHello World\n',
     'if.c': 'Hello world!\nHello world!\n',
     'ifElse.c': 'Hello world!\nHello world!\n',
     'intToFloatConversion.c': '',
     'modulo.c': '1\n',
-    'pointerArgument.c': '42;42\n43;43\n44;44\n45;45\n',
-    'prime.c': '',
+    'pointerArgument.c': '42; 42\n43; 43\n44; 44\n45; 45\n',
+    'prime.c': 'Enter the number of prime numbers required\nFirst 5 prime numbers are :\n2\n3\n5\n7\n11\n',
     'printf1.c': 'Hello World!\n',
     'printf2.c': 'Hello World!\n',
     'printf3.c': '100.500000%',
-    'scanf1.c': '',
-    'scanf2.c': '',
+    'scanf1.c': 'Enter two numbers:5; 6',
+    'scanf2.c': 'Enter a 5-character string:1234',
     'scoping.c': '10;20;30;40;',
-    'unaryOperations.c': '9; 10; 11; 12; 13; 14;',
+    'unaryOperations.c': '9; 10; 11; 12; 13; 14; ',
     'variables1.c': '5; 0.500000; c',
     'variables2.c': '5; 0.500000; c',
     'variables3.c': '10; 20; 30',
@@ -59,12 +59,12 @@ expected_output_semantic = {
     'functionRedefinition2.c': '[Error] Line 7, Position 0: Duplicate definition of method f ',
     'functionRedefinition3.c': '[Error] Line 7, Position 0: Duplicate definition of method f ',
     'incompatibleTypes1.c': '',
-    'incompatibleTypes2.c': '[Warning] line 4: implicit cast from char to int',  #
+    'incompatibleTypes2.c': '',  # '[Warning] line 4: implicit cast from char to int',  #
     'incompatibleTypes3.c': 'Can\'t cast void',
     'incompatibleTypes4.c': 'pointer type cannot be operated on',
     'incompatibleTypes5.c': '[Error] Line 3, Position 10: variable x is not initialised',
     'incompatibleTypes6.c': "Segmentation fault (core dumped)\nCommand 'clang ./llvm/incompatibleTypes6.ll -o ./llvm/incompatibleTypes6 && ./llvm/incompatibleTypes6' returned non-zero exit status 139.",
-    'incompatibleTypes7.c': '[Warning] line 5: implicit cast from char to int',
+    'incompatibleTypes7.c': '',  #'[Warning] line 5: implicit cast from char to int',
     'invalidIncludeError.c': '[Syntax Error] Line 1 Position 25: token recognition error at: \'.\'',  #
     'invalidLoopControlStatement.c': '[Error] Line 2 Position 1 continue statement not within loop',
     'invalidUnaryOperation.c': "[Syntax Error] Line 4 Position 24: no viable alternative at input 'printf(\"%d; \",9++'",
@@ -93,8 +93,14 @@ with os.scandir(base_path) as entries:
     for entry in entries:
         if entry.is_file():
             try:
+                if entry.name == '.DS_Store':
+                    continue
                 print(entry.name)
-                print(to_llvm('./src/tests/benchmark1/CorrectCode/' + entry.name, entry.name.split('.')[0]))
+                output = to_llvm('./src/tests/benchmark1/CorrectCode/' + entry.name, entry.name.split('.')[0])
+                if output != expected_output_correct[entry.name]:
+                    print("^", output)
+                    print("^", expected_output_correct[entry.name])
+                    # quit(1)
                 print(entry.name, 'compiled and executed without errors')
             except Exception as e:
                 print(e)
@@ -107,7 +113,11 @@ with os.scandir(base_path) as entries:
         if entry.is_file():
             try:
                 print(entry.name)
-                print(to_llvm('./src/tests/benchmark1/SemanticErrors/' + entry.name, entry.name.split('.')[0]))
+                output = to_llvm('./src/tests/benchmark1/SemanticErrors/' + entry.name, entry.name.split('.')[0])
+                if output != expected_output_semantic[entry.name]:
+                    print("^", output)
+                    print("^", expected_output_semantic[entry.name])
+                    # quit(1)
                 print(entry.name, 'compiled and executed without errors')
             except Exception as e:
                 print(e)
