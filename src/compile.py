@@ -61,6 +61,8 @@ def to_llvm(filename, outputname):
         except CalledProcessError as e:
             if e.returncode != 1:
                 raise e
+            else:
+                result = e.output.decode("utf-8")
         return result
 
 

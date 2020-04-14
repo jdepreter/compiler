@@ -122,8 +122,8 @@ class SymbolTable:
     def get_assigned_symbol(self, symbol_name, error):
         symbol_name = re.sub(r'\*', '', symbol_name)
         symbol_name = re.sub(r'\[]', '', symbol_name)
-        symbol = self.get_symbol(symbol_name, error)
-        if not symbol.assigned and symbol.written:
+        symbol = self.get_written_symbol(symbol_name, error)
+        if not (symbol.assigned and symbol.written):
             raise UninitializedVariable("[Error] Line {}, Position {}: variable {} is not initialised"
                                         .format(error.line, error.column, symbol_name))
 

@@ -124,6 +124,9 @@ class LLVM_Converter:
         # self.write_to_file("define i32 @main() {\n"
         #                 "start:\n")
         current_symbol_table = self.ast.startnode.symbol_table
+        self.write_to_file(
+            'target datalayout = "e-m:e-i64:64-f80:128-n8:16:32:64-S128"\ntarget triple = "x86_64-pc-linux-gnu"\n'
+        )
         self.define_strings(current_symbol_table)
         self.solve_llvm_node(self.ast.startnode, current_symbol_table)
 
