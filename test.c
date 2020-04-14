@@ -1,13 +1,14 @@
 #include <stdio.h>
 
 void f(float* i) {
-    *i = 85;
+    int z = *i;
+    printf("%d", z);
 }
 
 int main(){
-    float x = 2;
-    float * y = &x;
-    f(x);
-    printf("%d", *y);
+    int x = 'a';
+    char * y = &x;
+    f(y);
+    // printf("%c", *y);
 }
 

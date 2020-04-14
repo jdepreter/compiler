@@ -57,7 +57,7 @@ class LLVM_Converter:
 
         self.cast_dict = {
             'int*': {'int': 'ptrtoint'},
-            'int': {'float': 'sitofp', 'char': 'trunc', 'bool': 'trunc', 'int*': 'inttoptr'},
+            'int': {'float': 'sitofp', 'char': 'trunc', 'bool': 'trunc'},
             'float': {'int': 'fptosi', 'char': 'fptosi', 'bool': 'fptoui'},
             'char': {'int': 'zext', 'float': 'sitofp', 'bool': 'trunc'}
         }
@@ -210,7 +210,7 @@ class LLVM_Converter:
         if symbol_type == 'int':
             ...
         elif symbol_type == 'char':
-            register = self.cast_value(register, symbol_type, 'int',  index_node.ctx.start)
+            register = self.cast_value(register, symbol_type, 'int', index_node.ctx.start)
         else:
             raise Exception("Error Line {}, Position {}: array subscript is not an integer".format(
                 index_node.ctx.start.line, index_node.ctx.start.column
@@ -270,7 +270,7 @@ class LLVM_Converter:
                 node.ctx.start
             )
 
-        self.store_symbol(address, register, symbol.symbol_type, symbol_type,node ,node.children[0].label.count('*'))
+        self.store_symbol(address, register, symbol.symbol_type, symbol_type, node, node.children[0].label.count('*'))
         symbol.assigned = True
         return register, symbol.symbol_type
 
@@ -367,12 +367,16 @@ class LLVM_Converter:
 
         casted_type = self.cast_type(current_sym_type, new_sym_type, current_stars, new_stars)
         if not casted_type:
-            return False
+            raise_error(
+                "Can't implicitely cast {} to {}".format(current_sym_type + current_stars, new_sym_type + new_stars),
+                error.line, error.column
+            )
         string = "%r{} = {} {}{} {} to {}{}\n".format(
             str(reg), casted_type, self.format_dict[current_sym_type], current_stars,
             register, self.format_dict[new_sym_type], new_stars
         )
-        print("[Warning] line {}: implicit cast from {} to {}".format(error.line, current_type, new_type))
+        print("[Warning] line {}: implicit cast from {} to {}".format(error.line, current_sym_type + current_stars,
+                                                                      new_sym_type + new_stars))
         self.write_to_file(string)
         return '%r' + str(reg)
 
@@ -383,13 +387,18 @@ class LLVM_Converter:
             return 'bitcast'
         if len(current_stars) > 0:
             current_sym_type += '*'
+            if new_sym_type == 'int':
+                return 'ptrtoint'
         elif len(new_stars) > 0:
             new_sym_type += '*'
+            if current_sym_type == 'int' or current_sym_type == 'char':
+                return 'inttoptr'
+
         if current_sym_type in self.cast_dict and new_sym_type in self.cast_dict[current_sym_type]:
             return self.cast_dict[current_sym_type][new_sym_type]
         return False
 
-    def store_symbol(self, address, value, address_symbol_type, value_symbol_type, node,dereference=0):
+    def store_symbol(self, address, value, address_symbol_type, value_symbol_type, node, dereference=0):
         address_sym_type, address_stars = get_type_and_stars(address_symbol_type)
         current_register, current_type = self.dereference(address, address_stars, address_sym_type, dereference)
         value_to_store = self.cast_value(value, value_symbol_type, current_type, node.ctx.start)
@@ -442,8 +451,8 @@ class LLVM_Converter:
             child2 = self.solve_math(node.children[1], symbol_table)
             allowed_operation(child1[1], child2[1], node.label, node.ctx.start)
             symbol_type = get_return_type(child1[1], child2[1])
-            child_1 = self.cast_value(child1[0], child1[1], symbol_type,  node.ctx.start)
-            child_2 = self.cast_value(child2[0], child2[1], symbol_type,  node.ctx.start)
+            child_1 = self.cast_value(child1[0], child1[1], symbol_type, node.ctx.start)
+            child_2 = self.cast_value(child2[0], child2[1], symbol_type, node.ctx.start)
             sym_type, stars = get_type_and_stars(symbol_type)
             if symbol_type == 'float' and node.label == '%':
                 raise Exception("Error: incompatible type %: float")
@@ -461,8 +470,8 @@ class LLVM_Converter:
             self.register += 1
             child1 = self.solve_math(node.children[0], symbol_table)
             child2 = self.solve_math(node.children[1], symbol_table)
-            child_1 = self.cast_value(child1[0], child1[1], 'int',  node.ctx.start)
-            child_2 = self.cast_value(child2[0], child2[1], 'int',  node.ctx.start)
+            child_1 = self.cast_value(child1[0], child1[1], 'int', node.ctx.start)
+            child_2 = self.cast_value(child2[0], child2[1], 'int', node.ctx.start)
             string = "%r{} = and i32 {}, {}\n".format(
                 str(reg), child_1, child_2
             )
@@ -473,8 +482,8 @@ class LLVM_Converter:
             self.register += 1
             child1 = self.solve_math(node.children[0], symbol_table)
             child2 = self.solve_math(node.children[1], symbol_table)
-            child_1 = self.cast_value(child1[0], child1[1], 'int',  node.ctx.start)
-            child_2 = self.cast_value(child2[0], child2[1], 'int',  node.ctx.start)
+            child_1 = self.cast_value(child1[0], child1[1], 'int', node.ctx.start)
+            child_2 = self.cast_value(child2[0], child2[1], 'int', node.ctx.start)
             string = "%r{} = or i32 {}, {}\n".format(
                 str(reg), child_1, child_2
             )
@@ -487,8 +496,8 @@ class LLVM_Converter:
             child1 = self.solve_math(node.children[0], symbol_table)
             child2 = self.solve_math(node.children[1], symbol_table)
             symbol_type = get_return_type(child1[1], child2[1])
-            child_1 = self.cast_value(child1[0], child1[1], symbol_type,  node.ctx.start)
-            child_2 = self.cast_value(child2[0], child2[1], symbol_type,  node.ctx.start)
+            child_1 = self.cast_value(child1[0], child1[1], symbol_type, node.ctx.start)
+            child_2 = self.cast_value(child2[0], child2[1], symbol_type, node.ctx.start)
             sym_type, stars = get_type_and_stars(symbol_type)
             string = '%r{} = {} {}{} {}, {} \n'.format(
                 str(reg), self.bool_dict[sym_type][node.label], self.format_dict[sym_type], stars,
@@ -643,7 +652,7 @@ class LLVM_Converter:
             if len(expected_args) > len(args) - 1:
                 raise Exception(
                     "[Error] Line {}, Position {}: Too few arguments for calling {} missing arg(s) with type(s): {}".format(
-                        error.line, error.column, 'printf', ', '.join(expected_args[len(args)-1:])
+                        error.line, error.column, 'printf', ', '.join(expected_args[len(args) - 1:])
                     ))
 
             elif len(expected_args) < len(args) - 1:
@@ -668,7 +677,8 @@ class LLVM_Converter:
         newreg = self.register
         self.register += 1
 
-        string = "%r{} = call i32 (i8*, ...) @printf(i8* {}".format(str(newreg), string_to_charptr( arg_reg[0], symbol_table))
+        string = "%r{} = call i32 (i8*, ...) @printf(i8* {}".format(str(newreg),
+                                                                    string_to_charptr(arg_reg[0], symbol_table))
         if len(args) > 1:
             string += ",{}".format(','.join(arg_reg_types[1:]))
         string += ")\n"
@@ -703,7 +713,7 @@ class LLVM_Converter:
         self.register += 1
 
         string = "%r{} = call i32 (i8*, ...) @__isoc99_scanf(i8* {}".format(str(newreg),
-                                                                string_to_charptr(arg_reg[0], symbol_table))
+                                                                            string_to_charptr(arg_reg[0], symbol_table))
         if len(args) > 1:
             string += ",{}".format(','.join(arg_reg_types[1:]))
         string += ")\n"
@@ -751,7 +761,7 @@ class LLVM_Converter:
 
         for i, arg_type in enumerate(arg_types):
             if arg_type != method.arguments[i]:
-                arg_reg[i] = self.cast_value(arg_reg[i], arg_type, method.arguments[i],  node.ctx.start)
+                arg_reg[i] = self.cast_value(arg_reg[i], arg_type, method.arguments[i], node.ctx.start)
                 if not arg_reg[i]:
                     error = args[i].ctx.start
                     raise Exception(
@@ -909,7 +919,7 @@ class LLVM_Converter:
         if not self.write:
             return
         switchval, switchtype = self.solve_math(node.children[0], symbol_table)
-        branchval = self.cast_value(switchval, switchtype, "int",  node.ctx.start)
+        branchval = self.cast_value(switchval, switchtype, "int", node.ctx.start)
 
         write = self.write
         breaks = self.breaks
@@ -1019,7 +1029,9 @@ class LLVM_Converter:
 
     def return_node(self, node, symbol_table):
         if len(self.function_stack) == 0:
-            raise Exception('Error at line: {} column :{} return statement outside of function '.format(node.ctx.start.line, node.ctx.start.column))
+            raise Exception(
+                'Error at line: {} column :{} return statement outside of function '.format(node.ctx.start.line,
+                                                                                            node.ctx.start.column))
         if len(node.children) == 0:
             # return void
             if self.function_stack[0].symbol_type == 'void':
@@ -1028,10 +1040,14 @@ class LLVM_Converter:
                 self.write = False
                 return
             else:
-                raise Exception('Error at line: {} column :{} non-void function should not return void '.format(node.ctx.start.line, node.ctx.start.column))
+                raise Exception(
+                    'Error at line: {} column :{} non-void function should not return void '.format(node.ctx.start.line,
+                                                                                                    node.ctx.start.column))
 
         if self.function_stack[0].symbol_type == 'void':
-            raise Exception('Error at line: {} column :{} void function should not return value '.format(node.ctx.start.line, node.ctx.start.column))
+            raise Exception(
+                'Error at line: {} column :{} void function should not return value '.format(node.ctx.start.line,
+                                                                                             node.ctx.start.column))
         returnreg, return_type = self.solve_llvm_node(node.children[0], symbol_table)
         newtype = self.function_stack[0].symbol_type
         castedreg = self.cast_value(returnreg, return_type, newtype, node.ctx.start)
