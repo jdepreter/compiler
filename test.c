@@ -1,14 +1,8 @@
-#include <stdio.h>
-
-void f(float* i) {
-    int z = *i;
-    printf("%d", z);
-}
 
 int main(){
-    int x = 'a';
-    char * y = &x;
-    f(y);
-    // printf("%c", *y);
+int x = 2;
+        int* a =& x;
+        int* b = &x;
+        a + b;
+        return 1;
 }
-

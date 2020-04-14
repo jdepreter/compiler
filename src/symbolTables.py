@@ -170,7 +170,7 @@ class SymbolTable:
 
         if method in self.method_stack[0]:
             if self.method_stack[0][method].defined and defined:
-                raise DuplicateDeclaration("[Error] Line {}, Position {}: Duplicate declaration of method {} "
+                raise DuplicateDeclaration("[Error] Line {}, Position {}: Duplicate definition of method {} "
                                            .format(error.line, error.column, method))
             else:
                 if args != self.method_stack[0][method].arguments or method_type != self.method_stack[0][method].symbol_type:
