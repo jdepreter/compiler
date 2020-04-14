@@ -56,7 +56,8 @@ class LLVM_Converter:
         }
 
         self.cast_dict = {
-            'int': {'float': 'sitofp', 'char': 'trunc', 'bool': 'trunc'},
+            'int*': {'int': 'ptrtoint'},
+            'int': {'float': 'sitofp', 'char': 'trunc', 'bool': 'trunc', 'int*': 'inttoptr'},
             'float': {'int': 'fptosi', 'char': 'fptosi', 'bool': 'fptoui'},
             'char': {'int': 'zext', 'float': 'sitofp', 'bool': 'trunc'}
         }
@@ -359,33 +360,39 @@ class LLVM_Converter:
 
         current_sym_type, current_stars = get_type_and_stars(current_type)
         new_sym_type, new_stars = get_type_and_stars(new_type)
-        if current_sym_type == new_sym_type:
+        if current_sym_type + current_stars == new_sym_type + new_stars:  # anders werkt & niet
             return register
         reg = self.register
         self.register += 1
 
-        casted_type = self.cast_type(current_sym_type, new_sym_type)
+        casted_type = self.cast_type(current_sym_type, new_sym_type, current_stars, new_stars)
         if not casted_type:
             return False
         string = "%r{} = {} {}{} {} to {}{}\n".format(
             str(reg), casted_type, self.format_dict[current_sym_type], current_stars,
             register, self.format_dict[new_sym_type], new_stars
         )
-        print("[Warning] line {}: implicit cast from {} to {}".format(error.line,current_type, new_type))
+        print("[Warning] line {}: implicit cast from {} to {}".format(error.line, current_type, new_type))
         self.write_to_file(string)
         return '%r' + str(reg)
 
-    def cast_type(self, current_sym_type, new_sym_type):
+    def cast_type(self, current_sym_type, new_sym_type, current_stars, new_stars):
         if current_sym_type == 'void':
             raise Exception("Can't cast void")
+        if len(current_stars) > 0 and len(new_stars) > 0:
+            return 'bitcast'
+        if len(current_stars) > 0:
+            current_sym_type += '*'
+        elif len(new_stars) > 0:
+            new_sym_type += '*'
         if current_sym_type in self.cast_dict and new_sym_type in self.cast_dict[current_sym_type]:
             return self.cast_dict[current_sym_type][new_sym_type]
         return False
 
     def store_symbol(self, address, value, address_symbol_type, value_symbol_type, node,dereference=0):
-        value_to_store = self.cast_value(value, value_symbol_type, address_symbol_type, node.ctx.start)
         address_sym_type, address_stars = get_type_and_stars(address_symbol_type)
-        current_register = self.dereference(address, address_stars, address_sym_type, dereference)[0]
+        current_register, current_type = self.dereference(address, address_stars, address_sym_type, dereference)
+        value_to_store = self.cast_value(value, value_symbol_type, current_type, node.ctx.start)
 
         string = "store {}{} {}, {}*{} {}\n".format(
             self.format_dict[address_sym_type],
