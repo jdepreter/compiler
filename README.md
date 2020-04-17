@@ -82,8 +82,8 @@ This should create the ANTLR source files in `./ANTLR/LLVM`
 ### Compiling
 `python compile.py [inputfile] [outputname]`
 
-This generates `llvm-[outputname].ll` and a matching `[outputname]` binary.
-The AST Tree can be viewed in `./output/output-[outputname].png`
+This generates `llvm-[outputname].ll` and a matching `[outputname]` binary in `./llvm/`.
+The AST Tree can be viewed in `./trees/[outputname].png`
 
 It also compiles the `.ll` file using clang and runs the binary.
 (Files that contain errors are not compiled)
@@ -138,7 +138,6 @@ The expected output of these files can be found in `benchmark.py`
 
 | Folder  | ifelse |
 | ------------- | ------------- |
-
 | File  | Tests |
 | ------------- | ------------- |
 | false.c         | else part of each if-statement  |
