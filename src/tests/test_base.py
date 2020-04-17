@@ -80,6 +80,10 @@ class IfElse(unittest.TestCase):
         self.assertEqual(to_llvm("ifelse/fancy_if_false.c", "fancy_if_false"), "")
         self.assertEqual(to_llvm("ifelse/fancy_if_true.c", "fancy_if_true"), "2")
 
+    def test_switch(self):
+        self.assertEqual(to_llvm("ifelse/switch1.c", "switch1"), "3")
+        self.assertEqual(to_llvm("ifelse/switch2.c", "switch2"), "Default")
+
 
 class Loops(unittest.TestCase):
     def test_for_loop(self):
@@ -92,9 +96,17 @@ class Loops(unittest.TestCase):
     def test_for_return(self):
         self.assertEqual(clear_newlines(to_llvm("loops/loop_return.c", "loop_return")), "12341")
 
+    def test_do_while(self):
+        self.assertEqual(to_llvm("loops/do_while.c", "do_while"), "0")
+        self.assertEqual(to_llvm("loops/do_while_2.c", "do_while_2"), "012")
+
     def test_break_error(self):
         with self.assertRaises(src.CustomExceptions.BreakError):
             to_llvm("loops/break_error.c", "break_error")
+
+    def test_continue_error(self):
+        with self.assertRaises(src.CustomExceptions.BreakError):
+            to_llvm("loops/continue_error.c", "continue_error")
 
 
 class Function(unittest.TestCase):
@@ -111,6 +123,9 @@ class Function(unittest.TestCase):
 
     def test_forward_declaration(self):
         self.assertEqual(to_llvm("functions/definition_after.c", "definition_after"), "2")
+
+    def test_var_and_function(self):
+        self.assertEqual(to_llvm("functions/var_and_function.c", "var_and_function"), "10")
 
     def test_duplicate_definition(self):
         with self.assertRaises(Exception):
