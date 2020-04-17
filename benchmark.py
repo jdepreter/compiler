@@ -101,6 +101,8 @@ with os.scandir(base_path) as entries:
                     print("^", output)
                     print("^", expected_output_correct[entry.name])
                     # quit(1)
+                else:
+                    print(output)
                 print(entry.name, 'compiled and executed without errors')
             except Exception as e:
                 print(e)
@@ -118,6 +120,8 @@ with os.scandir(base_path) as entries:
                     print("^", output)
                     print("^", expected_output_semantic[entry.name])
                     # quit(1)
+                else:
+                    print(output)
                 print(entry.name, 'compiled and executed without errors')
             except Exception as e:
                 print(e)
