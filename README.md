@@ -1,6 +1,6 @@
 # C Compiler
 
-### Implemented Features (20/03/2020)
+### Implemented Features (17/04/2020)
 Assignment 1
 - Binary operations+,-,*, and / 
 - Binary operations >,<, and ==
