@@ -74,8 +74,8 @@ It also compiles the `.ll` file using clang and runs the binary.
 ### Testing
 `python run_tests.py` or `test.sh`
 
-NB: Om één of andere reden is na een enkele run van de tests soms `scope_1.txt` 
-en `char_casting.txt` volledig corrupt en dus niet meer leesbaar door ons programma. 
+NB: Om één of andere reden is na een enkele run van de tests soms `scope_1.c` 
+en `char_casting.c` volledig corrupt en dus niet meer leesbaar door ons programma. 
 Ondertussen kunnen we het niet meer reproduceren.
 
 The AST trees of the test files can be viewed at `./tests/output`. 
@@ -88,27 +88,53 @@ Also the `.ll` files are generated. They're compiled to binary using clang. And 
 
 | File  | Tests |
 | ------------- | ------------- |
-| assignment_to_r_value.txt         | definition, assignment to rvalue  |
-| basic_definition.txt              | definition  |
-| basic_declaration.txt             | declaration, assignment  |
-| bool_testing.txt                  | definition, boolean folding, print |
-| char_casting.txt                  | definition, boolean folding, print |
-| char_folding.txt                  | definition, char folding, print |
-| const_assignment_error.txt        | const definition, const assignment error |
-| duplicate_declaration_error.txt   | definition, duplicate declaration |
-| folding.txt                       | definition, assignment, folding ints and floats  |
-| incompatible_type_error.txt       | definition, pointers, pointer + pointer error |
-| modulo.txt                        | definition, assignment, modulo floats and ints, print |
-| not_testing.txt                   | definition, bool folding with not |
-| pointers.txt                      | definition, pointer  |
-| pointer_dereference.txt           | definition, pointer, & * unary operators, print  |
-| scope_1.txt                       | single scope test  |
-| scope_empty.txt                   | empty scope test  |
-| scope_nested.txt                  | Int addition, print(int), scopes  |
-| syntax_error.txt                  | Custom Syntax Error: `int;`   |
-| syntax_error_1.txt                | Custom Syntax Error: unfinished scope: `{` |
-| unary_++.txt                      | ++x, x++, print, definition  |
-| unary_--.txt                      | --x, x--, print, definition  |
-| unary_magic.txt                   | unary operators + and -  |
-| undeclared_var_error.txt          | not declared error  |
-| uninitialised_var_error.txt       | declaration, not initialised error  |
+| assignment_to_r_value.c         | definition, assignment to rvalue  |
+| basic_definition.c              | definition  |
+| basic_declaration.c             | declaration, assignment  |
+| bool_testing.c                  | definition, boolean folding, print |
+| char_casting.c                  | definition, boolean folding, print |
+| char_folding.c                  | definition, char folding, print |
+| const_assignment_error.c        | const definition, const assignment error |
+| duplicate_declaration_error.c   | definition, duplicate declaration |
+| folding.c                       | definition, assignment, folding ints and floats  |
+| incompatible_type_error.c       | definition, pointers, pointer + pointer error |
+| modulo.c                        | definition, assignment, modulo floats and ints, print |
+| not_testing.c                   | definition, bool folding with not |
+| pointers.c                      | definition, pointer  |
+| pointer_dereference.c           | definition, pointer, & * unary operators, print  |
+| scope_1.c                       | single scope test  |
+| scope_empty.c                   | empty scope test  |
+| scope_nested.c                  | Int addition, print(int), scopes  |
+| syntax_error.c                  | Custom Syntax Error: `int;`   |
+| syntax_error_1.c                | Custom Syntax Error: unfinished scope: `{` |
+| unary_++.c                      | ++x, x++, print, definition  |
+| unary_--.c                      | --x, x--, print, definition  |
+| unary_magic.c                   | unary operators + and -  |
+| undeclared_var_error.c          | not declared error  |
+| uninitialised_var_error.c       | declaration, not initialised error  |
+
+| Folder  | ifelse |
+| ------------- | ------------- |
+
+| File  | Tests |
+| ------------- | ------------- |
+| false.c         | else part of each if-statement  |
+| false_true.c         |  else part of first, if part of second if-statement  |
+| fancy_if_false.c         | put an assignmentline in the condition that is false  |
+| fancy_if_true.c         |  put an assignmentline in the condition that is true |
+| no_else.c         | if-statements without an else  |
+| true_false.c         | if_statement that has a true condition (false in unreached else)|
+| true_true.c         | if_statement that has a true condition  |
+
+| Folder  | functions |
+| ------------- | ------------- |
+
+| File  | Tests |
+| ------------- | ------------- |
+| declaration_1.c         | a declaration of a function before it's definition  |
+| declaration_2.c         | a declaration of a function after it's definition   |
+| declaration_multi.c         | a large amount of declarations before and after the definition  |
+| definition_after.c         | definition after main  |
+| definition_only.c         | definition before main without declaration  |
+| faculty.c         | the faculty function with 3 with unused arguments  |
+| mult_definition.c         | multiple definitions of the same function (Error) |
