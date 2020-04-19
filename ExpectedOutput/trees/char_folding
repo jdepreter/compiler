@@ -1,0 +1,58 @@
+digraph {
+	1 [label="C
+(None)"]
+	3 [label="include
+(None)"]
+	1 -> 3
+	5 [label="method_definition
+(None)"]
+	1 -> 5
+	7 [label="int
+(int)"]
+	5 -> 7
+	6 [label="main
+(None)"]
+	5 -> 6
+	8 [label="scope
+(None)"]
+	5 -> 8
+	10 [label="definition
+(None)"]
+	8 -> 10
+	11 [label="char
+(char)"]
+	10 -> 11
+	12 [label="assignment2
+(None)"]
+	10 -> 12
+	13 [label="c
+(None)"]
+	12 -> 13
+	22 [label="100
+(int)"]
+	12 -> 22
+	37 [label="method_call
+(None)"]
+	8 -> 37
+	38 [label="printf
+(None)"]
+	37 -> 38
+	39 [label="args
+(None)"]
+	37 -> 39
+	47 [label="%c
+(char*)"]
+	39 -> 47
+	55 [label="c
+(<src.symbolTables.SymbolType object at 0x7f9929d1ab00>)"]
+	39 -> 55
+	56 [label="empty arg
+(None)"]
+	37 -> 56
+	58 [label="return
+(None)"]
+	8 -> 58
+	66 [label="0
+(int)"]
+	58 -> 66
+}

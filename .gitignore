@@ -4,3 +4,8 @@ __pycache__
 *txt.png
 .pytest_cache
 /trees
+/llvm
+/src/tests/llvm
+*.out
+/src/tests/output
+/src/tests/trees

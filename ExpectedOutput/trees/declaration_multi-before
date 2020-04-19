@@ -1,0 +1,517 @@
+digraph {
+	1 [label="C
+(None)"]
+	2 [label="line
+(None)"]
+	1 -> 2
+	3 [label="include
+(None)"]
+	2 -> 3
+	4 [label="line
+(None)"]
+	1 -> 4
+	5 [label="method_declaration
+(None)"]
+	4 -> 5
+	7 [label="int
+(int)"]
+	5 -> 7
+	6 [label="f
+(None)"]
+	5 -> 6
+	8 [label="def_args
+(None)"]
+	5 -> 8
+	9 [label="Arg_definition
+(None)"]
+	8 -> 9
+	11 [label="int
+(int)"]
+	9 -> 11
+	10 [label="x
+(None)"]
+	9 -> 10
+	12 [label="line
+(None)"]
+	1 -> 12
+	13 [label="method_declaration
+(None)"]
+	12 -> 13
+	15 [label="int
+(int)"]
+	13 -> 15
+	14 [label="f
+(None)"]
+	13 -> 14
+	16 [label="def_args
+(None)"]
+	13 -> 16
+	17 [label="Arg_definition
+(None)"]
+	16 -> 17
+	19 [label="int
+(int)"]
+	17 -> 19
+	18 [label="x
+(None)"]
+	17 -> 18
+	20 [label="line
+(None)"]
+	1 -> 20
+	21 [label="method_declaration
+(None)"]
+	20 -> 21
+	23 [label="int
+(int)"]
+	21 -> 23
+	22 [label="f
+(None)"]
+	21 -> 22
+	24 [label="def_args
+(None)"]
+	21 -> 24
+	25 [label="Arg_definition
+(None)"]
+	24 -> 25
+	27 [label="int
+(int)"]
+	25 -> 27
+	26 [label="x
+(None)"]
+	25 -> 26
+	28 [label="line
+(None)"]
+	1 -> 28
+	29 [label="method_definition
+(None)"]
+	28 -> 29
+	31 [label="int
+(int)"]
+	29 -> 31
+	30 [label="f
+(None)"]
+	29 -> 30
+	32 [label="def_args
+(None)"]
+	29 -> 32
+	33 [label="Arg_definition
+(None)"]
+	32 -> 33
+	35 [label="int
+(int)"]
+	33 -> 35
+	34 [label="x
+(None)"]
+	33 -> 34
+	36 [label="scope
+(None)"]
+	29 -> 36
+	37 [label="line
+(None)"]
+	36 -> 37
+	38 [label="bool1
+(None)"]
+	37 -> 38
+	39 [label="bool2
+(None)"]
+	38 -> 39
+	40 [label="plus
+(None)"]
+	39 -> 40
+	41 [label="vm
+(None)"]
+	40 -> 41
+	42 [label="%
+(None)"]
+	41 -> 42
+	43 [label="vmsol
+(None)"]
+	42 -> 43
+	44 [label="value
+(None)"]
+	43 -> 44
+	45 [label="nothing
+()"]
+	44 -> 45
+	46 [label="method_call
+(None)"]
+	45 -> 46
+	47 [label="printf
+(None)"]
+	46 -> 47
+	48 [label="args
+(None)"]
+	46 -> 48
+	49 [label="bool1
+(None)"]
+	48 -> 49
+	50 [label="bool2
+(None)"]
+	49 -> 50
+	51 [label="plus
+(None)"]
+	50 -> 51
+	52 [label="vm
+(None)"]
+	51 -> 52
+	53 [label="%
+(None)"]
+	52 -> 53
+	54 [label="vmsol
+(None)"]
+	53 -> 54
+	55 [label="value
+(None)"]
+	54 -> 55
+	56 [label="%d
+(char*)"]
+	55 -> 56
+	57 [label="bool1
+(None)"]
+	48 -> 57
+	58 [label="bool2
+(None)"]
+	57 -> 58
+	59 [label="plus
+(None)"]
+	58 -> 59
+	60 [label="vm
+(None)"]
+	59 -> 60
+	61 [label="%
+(None)"]
+	60 -> 61
+	62 [label="vmsol
+(None)"]
+	61 -> 62
+	63 [label="value
+(None)"]
+	62 -> 63
+	64 [label="x
+(<src.symbolTables.SymbolType object at 0x7f9929b20f28>)"]
+	63 -> 64
+	65 [label="empty arg
+(None)"]
+	46 -> 65
+	66 [label="line
+(None)"]
+	36 -> 66
+	67 [label="return
+(None)"]
+	66 -> 67
+	68 [label="bool1
+(None)"]
+	67 -> 68
+	69 [label="bool2
+(None)"]
+	68 -> 69
+	70 [label="plus
+(None)"]
+	69 -> 70
+	71 [label="vm
+(None)"]
+	70 -> 71
+	72 [label="%
+(None)"]
+	71 -> 72
+	73 [label="vmsol
+(None)"]
+	72 -> 73
+	74 [label="value
+(None)"]
+	73 -> 74
+	75 [label="x
+(<src.symbolTables.SymbolType object at 0x7f9929b20f28>)"]
+	74 -> 75
+	76 [label="line
+(None)"]
+	1 -> 76
+	77 [label="method_declaration
+(None)"]
+	76 -> 77
+	79 [label="int
+(int)"]
+	77 -> 79
+	78 [label="f
+(None)"]
+	77 -> 78
+	80 [label="def_args
+(None)"]
+	77 -> 80
+	81 [label="Arg_definition
+(None)"]
+	80 -> 81
+	83 [label="int
+(int)"]
+	81 -> 83
+	82 [label="x
+(None)"]
+	81 -> 82
+	84 [label="line
+(None)"]
+	1 -> 84
+	85 [label="method_declaration
+(None)"]
+	84 -> 85
+	87 [label="int
+(int)"]
+	85 -> 87
+	86 [label="f
+(None)"]
+	85 -> 86
+	88 [label="def_args
+(None)"]
+	85 -> 88
+	89 [label="Arg_definition
+(None)"]
+	88 -> 89
+	91 [label="int
+(int)"]
+	89 -> 91
+	90 [label="x
+(None)"]
+	89 -> 90
+	92 [label="line
+(None)"]
+	1 -> 92
+	93 [label="method_declaration
+(None)"]
+	92 -> 93
+	95 [label="int
+(int)"]
+	93 -> 95
+	94 [label="f
+(None)"]
+	93 -> 94
+	96 [label="def_args
+(None)"]
+	93 -> 96
+	97 [label="Arg_definition
+(None)"]
+	96 -> 97
+	99 [label="int
+(int)"]
+	97 -> 99
+	98 [label="x
+(None)"]
+	97 -> 98
+	100 [label="line
+(None)"]
+	1 -> 100
+	101 [label="method_definition
+(None)"]
+	100 -> 101
+	103 [label="int
+(int)"]
+	101 -> 103
+	102 [label="main
+(None)"]
+	101 -> 102
+	104 [label="scope
+(None)"]
+	101 -> 104
+	105 [label="line
+(None)"]
+	104 -> 105
+	106 [label="definition
+(None)"]
+	105 -> 106
+	107 [label="int
+(int)"]
+	106 -> 107
+	108 [label="assignment2
+(None)"]
+	106 -> 108
+	109 [label="c
+(None)"]
+	108 -> 109
+	110 [label="bool1
+(None)"]
+	108 -> 110
+	111 [label="bool2
+(None)"]
+	110 -> 111
+	112 [label="plus
+(None)"]
+	111 -> 112
+	113 [label="vm
+(None)"]
+	112 -> 113
+	114 [label="%
+(None)"]
+	113 -> 114
+	115 [label="vmsol
+(None)"]
+	114 -> 115
+	116 [label="value
+(None)"]
+	115 -> 116
+	117 [label="2
+(int)"]
+	116 -> 117
+	118 [label="line
+(None)"]
+	104 -> 118
+	119 [label="bool1
+(None)"]
+	118 -> 119
+	120 [label="bool2
+(None)"]
+	119 -> 120
+	121 [label="plus
+(None)"]
+	120 -> 121
+	122 [label="vm
+(None)"]
+	121 -> 122
+	123 [label="%
+(None)"]
+	122 -> 123
+	124 [label="vmsol
+(None)"]
+	123 -> 124
+	125 [label="value
+(None)"]
+	124 -> 125
+	126 [label="nothing
+()"]
+	125 -> 126
+	127 [label="method_call
+(None)"]
+	126 -> 127
+	128 [label="f
+(None)"]
+	127 -> 128
+	129 [label="args
+(None)"]
+	127 -> 129
+	130 [label="bool1
+(None)"]
+	129 -> 130
+	131 [label="bool2
+(None)"]
+	130 -> 131
+	132 [label="plus
+(None)"]
+	131 -> 132
+	133 [label="vm
+(None)"]
+	132 -> 133
+	134 [label="%
+(None)"]
+	133 -> 134
+	135 [label="vmsol
+(None)"]
+	134 -> 135
+	136 [label="value
+(None)"]
+	135 -> 136
+	137 [label="c
+(<src.symbolTables.SymbolType object at 0x7f9929b2f208>)"]
+	136 -> 137
+	138 [label="empty arg
+(None)"]
+	127 -> 138
+	139 [label="line
+(None)"]
+	104 -> 139
+	140 [label="return
+(None)"]
+	139 -> 140
+	141 [label="bool1
+(None)"]
+	140 -> 141
+	142 [label="bool2
+(None)"]
+	141 -> 142
+	143 [label="plus
+(None)"]
+	142 -> 143
+	144 [label="vm
+(None)"]
+	143 -> 144
+	145 [label="%
+(None)"]
+	144 -> 145
+	146 [label="vmsol
+(None)"]
+	145 -> 146
+	147 [label="value
+(None)"]
+	146 -> 147
+	148 [label="0
+(int)"]
+	147 -> 148
+	149 [label="line
+(None)"]
+	1 -> 149
+	150 [label="method_declaration
+(None)"]
+	149 -> 150
+	152 [label="int
+(int)"]
+	150 -> 152
+	151 [label="f
+(None)"]
+	150 -> 151
+	153 [label="def_args
+(None)"]
+	150 -> 153
+	154 [label="Arg_definition
+(None)"]
+	153 -> 154
+	156 [label="int
+(int)"]
+	154 -> 156
+	155 [label="x
+(None)"]
+	154 -> 155
+	157 [label="line
+(None)"]
+	1 -> 157
+	158 [label="method_declaration
+(None)"]
+	157 -> 158
+	160 [label="int
+(int)"]
+	158 -> 160
+	159 [label="f
+(None)"]
+	158 -> 159
+	161 [label="def_args
+(None)"]
+	158 -> 161
+	162 [label="Arg_definition
+(None)"]
+	161 -> 162
+	164 [label="int
+(int)"]
+	162 -> 164
+	163 [label="x
+(None)"]
+	162 -> 163
+	165 [label="line
+(None)"]
+	1 -> 165
+	166 [label="method_declaration
+(None)"]
+	165 -> 166
+	168 [label="int
+(int)"]
+	166 -> 168
+	167 [label="f
+(None)"]
+	166 -> 167
+	169 [label="def_args
+(None)"]
+	166 -> 169
+	170 [label="Arg_definition
+(None)"]
+	169 -> 170
+	172 [label="int
+(int)"]
+	170 -> 172
+	171 [label="x
+(None)"]
+	170 -> 171
+}

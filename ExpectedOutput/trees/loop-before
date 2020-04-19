@@ -1,0 +1,541 @@
+digraph {
+	1 [label="C
+(None)"]
+	2 [label="line
+(None)"]
+	1 -> 2
+	3 [label="include
+(None)"]
+	2 -> 3
+	4 [label="line
+(None)"]
+	1 -> 4
+	5 [label="method_definition
+(None)"]
+	4 -> 5
+	7 [label="int
+(int)"]
+	5 -> 7
+	6 [label="main
+(None)"]
+	5 -> 6
+	8 [label="scope
+(None)"]
+	5 -> 8
+	9 [label="line
+(None)"]
+	8 -> 9
+	10 [label="for
+(None)"]
+	9 -> 10
+	11 [label="for initial
+(None)"]
+	10 -> 11
+	12 [label="definition
+(None)"]
+	11 -> 12
+	13 [label="int
+(int)"]
+	12 -> 13
+	14 [label="assignment2
+(None)"]
+	12 -> 14
+	15 [label="x
+(None)"]
+	14 -> 15
+	16 [label="bool1
+(None)"]
+	14 -> 16
+	17 [label="bool2
+(None)"]
+	16 -> 17
+	18 [label="plus
+(None)"]
+	17 -> 18
+	19 [label="vm
+(None)"]
+	18 -> 19
+	20 [label="%
+(None)"]
+	19 -> 20
+	21 [label="vmsol
+(None)"]
+	20 -> 21
+	22 [label="value
+(None)"]
+	21 -> 22
+	23 [label="1
+(int)"]
+	22 -> 23
+	24 [label="condition
+(None)"]
+	10 -> 24
+	25 [label="bool1
+(None)"]
+	24 -> 25
+	26 [label="<
+(None)"]
+	25 -> 26
+	27 [label="plus
+(None)"]
+	26 -> 27
+	28 [label="vm
+(None)"]
+	27 -> 28
+	29 [label="%
+(None)"]
+	28 -> 29
+	30 [label="vmsol
+(None)"]
+	29 -> 30
+	31 [label="value
+(None)"]
+	30 -> 31
+	32 [label="x
+(<src.symbolTables.SymbolType object at 0x7f9929ba2c18>)"]
+	31 -> 32
+	33 [label="plus
+(None)"]
+	26 -> 33
+	34 [label="vm
+(None)"]
+	33 -> 34
+	35 [label="%
+(None)"]
+	34 -> 35
+	36 [label="vmsol
+(None)"]
+	35 -> 36
+	37 [label="value
+(None)"]
+	36 -> 37
+	38 [label="10
+(int)"]
+	37 -> 38
+	39 [label="for update
+(None)"]
+	10 -> 39
+	40 [label="bool1
+(None)"]
+	39 -> 40
+	41 [label="bool2
+(None)"]
+	40 -> 41
+	42 [label="plus
+(None)"]
+	41 -> 42
+	43 [label="vm
+(None)"]
+	42 -> 43
+	44 [label="%
+(None)"]
+	43 -> 44
+	45 [label="vmsol
+(None)"]
+	44 -> 45
+	46 [label="value
+(None)"]
+	45 -> 46
+	47 [label="increment
+(None)"]
+	46 -> 47
+	48 [label="Increment_var
+(None)"]
+	47 -> 48
+	49 [label="x
+(<src.symbolTables.SymbolType object at 0x7f9929ba2c18>)"]
+	48 -> 49
+	50 [label="++
+(None)"]
+	48 -> 50
+	51 [label="scope
+(None)"]
+	10 -> 51
+	52 [label="line
+(None)"]
+	51 -> 52
+	53 [label="bool1
+(None)"]
+	52 -> 53
+	54 [label="bool2
+(None)"]
+	53 -> 54
+	55 [label="plus
+(None)"]
+	54 -> 55
+	56 [label="vm
+(None)"]
+	55 -> 56
+	57 [label="%
+(None)"]
+	56 -> 57
+	58 [label="vmsol
+(None)"]
+	57 -> 58
+	59 [label="value
+(None)"]
+	58 -> 59
+	60 [label="nothing
+()"]
+	59 -> 60
+	61 [label="method_call
+(None)"]
+	60 -> 61
+	62 [label="printf
+(None)"]
+	61 -> 62
+	63 [label="args
+(None)"]
+	61 -> 63
+	64 [label="bool1
+(None)"]
+	63 -> 64
+	65 [label="bool2
+(None)"]
+	64 -> 65
+	66 [label="plus
+(None)"]
+	65 -> 66
+	67 [label="vm
+(None)"]
+	66 -> 67
+	68 [label="%
+(None)"]
+	67 -> 68
+	69 [label="vmsol
+(None)"]
+	68 -> 69
+	70 [label="value
+(None)"]
+	69 -> 70
+	71 [label="%d
+(char*)"]
+	70 -> 71
+	72 [label="bool1
+(None)"]
+	63 -> 72
+	73 [label="bool2
+(None)"]
+	72 -> 73
+	74 [label="plus
+(None)"]
+	73 -> 74
+	75 [label="vm
+(None)"]
+	74 -> 75
+	76 [label="%
+(None)"]
+	75 -> 76
+	77 [label="vmsol
+(None)"]
+	76 -> 77
+	78 [label="value
+(None)"]
+	77 -> 78
+	79 [label="x
+(<src.symbolTables.SymbolType object at 0x7f9929ba2c18>)"]
+	78 -> 79
+	80 [label="empty arg
+(None)"]
+	61 -> 80
+	81 [label="line
+(None)"]
+	51 -> 81
+	82 [label="ifelse
+(None)"]
+	81 -> 82
+	83 [label="condition
+(None)"]
+	82 -> 83
+	84 [label="bool1
+(None)"]
+	83 -> 84
+	85 [label="==
+(None)"]
+	84 -> 85
+	86 [label="plus
+(None)"]
+	85 -> 86
+	87 [label="vm
+(None)"]
+	86 -> 87
+	88 [label="%
+(None)"]
+	87 -> 88
+	89 [label="vmsol
+(None)"]
+	88 -> 89
+	90 [label="value
+(None)"]
+	89 -> 90
+	91 [label="x
+(<src.symbolTables.SymbolType object at 0x7f9929ba2c18>)"]
+	90 -> 91
+	92 [label="plus
+(None)"]
+	85 -> 92
+	93 [label="vm
+(None)"]
+	92 -> 93
+	94 [label="%
+(None)"]
+	93 -> 94
+	95 [label="vmsol
+(None)"]
+	94 -> 95
+	96 [label="value
+(None)"]
+	95 -> 96
+	97 [label="4
+(int)"]
+	96 -> 97
+	98 [label="for break
+(None)"]
+	82 -> 98
+	99 [label="line
+(None)"]
+	8 -> 99
+	100 [label="definition
+(None)"]
+	99 -> 100
+	101 [label="int
+(int)"]
+	100 -> 101
+	102 [label="assignment2
+(None)"]
+	100 -> 102
+	103 [label="x
+(None)"]
+	102 -> 103
+	104 [label="bool1
+(None)"]
+	102 -> 104
+	105 [label="bool2
+(None)"]
+	104 -> 105
+	106 [label="plus
+(None)"]
+	105 -> 106
+	107 [label="vm
+(None)"]
+	106 -> 107
+	108 [label="%
+(None)"]
+	107 -> 108
+	109 [label="vmsol
+(None)"]
+	108 -> 109
+	110 [label="value
+(None)"]
+	109 -> 110
+	111 [label="1
+(int)"]
+	110 -> 111
+	112 [label="line
+(None)"]
+	8 -> 112
+	113 [label="for
+(None)"]
+	112 -> 113
+	114 [label="condition
+(None)"]
+	113 -> 114
+	115 [label="bool1
+(None)"]
+	114 -> 115
+	116 [label="<
+(None)"]
+	115 -> 116
+	117 [label="plus
+(None)"]
+	116 -> 117
+	118 [label="vm
+(None)"]
+	117 -> 118
+	119 [label="%
+(None)"]
+	118 -> 119
+	120 [label="vmsol
+(None)"]
+	119 -> 120
+	121 [label="value
+(None)"]
+	120 -> 121
+	122 [label="x
+(<src.symbolTables.SymbolType object at 0x7f9929b3c198>)"]
+	121 -> 122
+	123 [label="plus
+(None)"]
+	116 -> 123
+	124 [label="vm
+(None)"]
+	123 -> 124
+	125 [label="%
+(None)"]
+	124 -> 125
+	126 [label="vmsol
+(None)"]
+	125 -> 126
+	127 [label="value
+(None)"]
+	126 -> 127
+	128 [label="3
+(int)"]
+	127 -> 128
+	129 [label="scope
+(None)"]
+	113 -> 129
+	130 [label="line
+(None)"]
+	129 -> 130
+	131 [label="bool1
+(None)"]
+	130 -> 131
+	132 [label="bool2
+(None)"]
+	131 -> 132
+	133 [label="plus
+(None)"]
+	132 -> 133
+	134 [label="vm
+(None)"]
+	133 -> 134
+	135 [label="%
+(None)"]
+	134 -> 135
+	136 [label="vmsol
+(None)"]
+	135 -> 136
+	137 [label="value
+(None)"]
+	136 -> 137
+	138 [label="nothing
+()"]
+	137 -> 138
+	139 [label="method_call
+(None)"]
+	138 -> 139
+	140 [label="printf
+(None)"]
+	139 -> 140
+	141 [label="args
+(None)"]
+	139 -> 141
+	142 [label="bool1
+(None)"]
+	141 -> 142
+	143 [label="bool2
+(None)"]
+	142 -> 143
+	144 [label="plus
+(None)"]
+	143 -> 144
+	145 [label="vm
+(None)"]
+	144 -> 145
+	146 [label="%
+(None)"]
+	145 -> 146
+	147 [label="vmsol
+(None)"]
+	146 -> 147
+	148 [label="value
+(None)"]
+	147 -> 148
+	149 [label="%d
+(char*)"]
+	148 -> 149
+	150 [label="bool1
+(None)"]
+	141 -> 150
+	151 [label="bool2
+(None)"]
+	150 -> 151
+	152 [label="plus
+(None)"]
+	151 -> 152
+	153 [label="vm
+(None)"]
+	152 -> 153
+	154 [label="%
+(None)"]
+	153 -> 154
+	155 [label="vmsol
+(None)"]
+	154 -> 155
+	156 [label="value
+(None)"]
+	155 -> 156
+	157 [label="x
+(<src.symbolTables.SymbolType object at 0x7f9929b3c198>)"]
+	156 -> 157
+	158 [label="empty arg
+(None)"]
+	139 -> 158
+	159 [label="line
+(None)"]
+	129 -> 159
+	160 [label="bool1
+(None)"]
+	159 -> 160
+	161 [label="bool2
+(None)"]
+	160 -> 161
+	162 [label="plus
+(None)"]
+	161 -> 162
+	163 [label="vm
+(None)"]
+	162 -> 163
+	164 [label="%
+(None)"]
+	163 -> 164
+	165 [label="vmsol
+(None)"]
+	164 -> 165
+	166 [label="value
+(None)"]
+	165 -> 166
+	167 [label="increment
+(None)"]
+	166 -> 167
+	168 [label="Increment_var
+(None)"]
+	167 -> 168
+	171 [label="x
+(<src.symbolTables.SymbolType object at 0x7f9929b3c198>)"]
+	168 -> 171
+	172 [label="++
+(None)"]
+	168 -> 172
+	173 [label="line
+(None)"]
+	8 -> 173
+	174 [label="return
+(None)"]
+	173 -> 174
+	175 [label="bool1
+(None)"]
+	174 -> 175
+	176 [label="bool2
+(None)"]
+	175 -> 176
+	177 [label="plus
+(None)"]
+	176 -> 177
+	178 [label="vm
+(None)"]
+	177 -> 178
+	179 [label="%
+(None)"]
+	178 -> 179
+	180 [label="vmsol
+(None)"]
+	179 -> 180
+	181 [label="value
+(None)"]
+	180 -> 181
+	182 [label="0
+(int)"]
+	181 -> 182
+}

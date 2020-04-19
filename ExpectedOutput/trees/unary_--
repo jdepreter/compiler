@@ -1,0 +1,115 @@
+digraph {
+	1 [label="C
+(None)"]
+	3 [label="include
+(None)"]
+	1 -> 3
+	5 [label="method_definition
+(None)"]
+	1 -> 5
+	7 [label="int
+(int)"]
+	5 -> 7
+	6 [label="main
+(None)"]
+	5 -> 6
+	8 [label="scope
+(None)"]
+	5 -> 8
+	10 [label="definition
+(None)"]
+	8 -> 10
+	11 [label="int
+(int)"]
+	10 -> 11
+	12 [label="assignment2
+(None)"]
+	10 -> 12
+	13 [label="x
+(None)"]
+	12 -> 13
+	21 [label="6
+(int)"]
+	12 -> 21
+	31 [label="Increment_var
+(None)"]
+	8 -> 31
+	32 [label="x
+(<src.symbolTables.SymbolType object at 0x7f9929ca7c50>)"]
+	31 -> 32
+	33 [label="--
+(None)"]
+	31 -> 33
+	43 [label="method_call
+(None)"]
+	8 -> 43
+	44 [label="printf
+(None)"]
+	43 -> 44
+	45 [label="args
+(None)"]
+	43 -> 45
+	53 [label="%d
+(char*)"]
+	45 -> 53
+	62 [label="Increment_var
+(None)"]
+	45 -> 62
+	63 [label="x
+(<src.symbolTables.SymbolType object at 0x7f9929ca7c50>)"]
+	62 -> 63
+	64 [label="--
+(None)"]
+	62 -> 64
+	65 [label="empty arg
+(None)"]
+	43 -> 65
+	75 [label="method_call
+(None)"]
+	8 -> 75
+	76 [label="printf
+(None)"]
+	75 -> 76
+	77 [label="args
+(None)"]
+	75 -> 77
+	85 [label="%d
+(char*)"]
+	77 -> 85
+	94 [label="Increment_op
+(None)"]
+	77 -> 94
+	95 [label="--
+(None)"]
+	94 -> 95
+	96 [label="x
+(<src.symbolTables.SymbolType object at 0x7f9929ca7c50>)"]
+	94 -> 96
+	97 [label="empty arg
+(None)"]
+	75 -> 97
+	107 [label="method_call
+(None)"]
+	8 -> 107
+	108 [label="printf
+(None)"]
+	107 -> 108
+	109 [label="args
+(None)"]
+	107 -> 109
+	117 [label="%d
+(char*)"]
+	109 -> 117
+	125 [label="x
+(<src.symbolTables.SymbolType object at 0x7f9929ca7c50>)"]
+	109 -> 125
+	126 [label="empty arg
+(None)"]
+	107 -> 126
+	128 [label="return
+(None)"]
+	8 -> 128
+	136 [label="0
+(int)"]
+	128 -> 136
+}

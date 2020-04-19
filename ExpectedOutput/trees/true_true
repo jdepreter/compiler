@@ -1,0 +1,169 @@
+digraph {
+	1 [label="C
+(None)"]
+	3 [label="include
+(None)"]
+	1 -> 3
+	5 [label="method_definition
+(None)"]
+	1 -> 5
+	7 [label="int
+(int)"]
+	5 -> 7
+	6 [label="main
+(None)"]
+	5 -> 6
+	8 [label="scope
+(None)"]
+	5 -> 8
+	10 [label="definition
+(None)"]
+	8 -> 10
+	11 [label="int
+(int)"]
+	10 -> 11
+	12 [label="assignment2
+(None)"]
+	10 -> 12
+	13 [label="y
+(None)"]
+	12 -> 13
+	21 [label="1
+(int)"]
+	12 -> 21
+	23 [label="definition
+(None)"]
+	8 -> 23
+	24 [label="int
+(int)"]
+	23 -> 24
+	25 [label="assignment2
+(None)"]
+	23 -> 25
+	26 [label="x
+(None)"]
+	25 -> 26
+	34 [label="8
+(int)"]
+	25 -> 34
+	36 [label="ifelse
+(None)"]
+	8 -> 36
+	37 [label="condition
+(None)"]
+	36 -> 37
+	39 [label="==
+(None)"]
+	37 -> 39
+	45 [label="x
+(<src.symbolTables.SymbolType object at 0x7f9929c19978>)"]
+	39 -> 45
+	51 [label="8
+(int)"]
+	39 -> 51
+	62 [label="method_call
+(None)"]
+	36 -> 62
+	63 [label="printf
+(None)"]
+	62 -> 63
+	64 [label="args
+(None)"]
+	62 -> 64
+	72 [label="%d
+(char*)"]
+	64 -> 72
+	80 [label="x
+(<src.symbolTables.SymbolType object at 0x7f9929c19978>)"]
+	64 -> 80
+	81 [label="empty arg
+(None)"]
+	62 -> 81
+	82 [label="scope
+(None)"]
+	36 -> 82
+	84 [label="ifelse
+(None)"]
+	82 -> 84
+	85 [label="condition
+(None)"]
+	84 -> 85
+	93 [label="y
+(<src.symbolTables.SymbolType object at 0x7f9929c19860>)"]
+	85 -> 93
+	104 [label="method_call
+(None)"]
+	84 -> 104
+	105 [label="printf
+(None)"]
+	104 -> 105
+	106 [label="args
+(None)"]
+	104 -> 106
+	114 [label="t
+(char*)"]
+	106 -> 114
+	115 [label="empty arg
+(None)"]
+	104 -> 115
+	126 [label="method_call
+(None)"]
+	84 -> 126
+	127 [label="printf
+(None)"]
+	126 -> 127
+	128 [label="args
+(None)"]
+	126 -> 128
+	136 [label="f
+(char*)"]
+	128 -> 136
+	137 [label="empty arg
+(None)"]
+	126 -> 137
+	147 [label="method_call
+(None)"]
+	82 -> 147
+	148 [label="printf
+(None)"]
+	147 -> 148
+	149 [label="args
+(None)"]
+	147 -> 149
+	157 [label="f
+(char*)"]
+	149 -> 157
+	158 [label="empty arg
+(None)"]
+	147 -> 158
+	168 [label="method_call
+(None)"]
+	8 -> 168
+	169 [label="printf
+(None)"]
+	168 -> 169
+	170 [label="args
+(None)"]
+	168 -> 170
+	178 [label="%d
+(char*)"]
+	170 -> 178
+	187 [label="+
+(None)"]
+	170 -> 187
+	186 [label="x
+(<src.symbolTables.SymbolType object at 0x7f9929c19978>)"]
+	187 -> 186
+	192 [label="1
+(int)"]
+	187 -> 192
+	193 [label="empty arg
+(None)"]
+	168 -> 193
+	195 [label="return
+(None)"]
+	8 -> 195
+	203 [label="0
+(int)"]
+	195 -> 203
+}

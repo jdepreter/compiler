@@ -1,0 +1,55 @@
+digraph {
+	1 [label="C
+(None)"]
+	2 [label="line
+(None)"]
+	1 -> 2
+	3 [label="method_definition
+(None)"]
+	2 -> 3
+	5 [label="int
+(int)"]
+	3 -> 5
+	4 [label="main
+(None)"]
+	3 -> 4
+	6 [label="scope
+(None)"]
+	3 -> 6
+	7 [label="line
+(None)"]
+	6 -> 7
+	8 [label="scope
+(None)"]
+	7 -> 8
+	9 [label="line
+(None)"]
+	6 -> 9
+	10 [label="return
+(None)"]
+	9 -> 10
+	11 [label="bool1
+(None)"]
+	10 -> 11
+	12 [label="bool2
+(None)"]
+	11 -> 12
+	13 [label="plus
+(None)"]
+	12 -> 13
+	14 [label="vm
+(None)"]
+	13 -> 14
+	15 [label="%
+(None)"]
+	14 -> 15
+	16 [label="vmsol
+(None)"]
+	15 -> 16
+	17 [label="value
+(None)"]
+	16 -> 17
+	18 [label="0
+(int)"]
+	17 -> 18
+}

@@ -1,0 +1,127 @@
+digraph {
+	1 [label="C
+(None)"]
+	3 [label="include
+(None)"]
+	1 -> 3
+	5 [label="method_definition
+(None)"]
+	1 -> 5
+	7 [label="int
+(int)"]
+	5 -> 7
+	6 [label="main
+(None)"]
+	5 -> 6
+	8 [label="scope
+(None)"]
+	5 -> 8
+	10 [label="scope
+(None)"]
+	8 -> 10
+	12 [label="definition
+(None)"]
+	10 -> 12
+	13 [label="int
+(int)"]
+	12 -> 13
+	14 [label="assignment2
+(None)"]
+	12 -> 14
+	15 [label="c
+(None)"]
+	14 -> 15
+	23 [label="1
+(int)"]
+	14 -> 23
+	25 [label="scope
+(None)"]
+	10 -> 25
+	27 [label="definition
+(None)"]
+	25 -> 27
+	28 [label="int
+(int)"]
+	27 -> 28
+	29 [label="assignment2
+(None)"]
+	27 -> 29
+	30 [label="c
+(None)"]
+	29 -> 30
+	38 [label="1
+(int)"]
+	29 -> 38
+	40 [label="assignment
+(None)"]
+	25 -> 40
+	41 [label="c
+(<src.symbolTables.SymbolType object at 0x7f9929ca71d0>)"]
+	40 -> 41
+	50 [label="+
+(None)"]
+	40 -> 50
+	49 [label="c
+(<src.symbolTables.SymbolType object at 0x7f9929ca71d0>)"]
+	50 -> 49
+	55 [label="1
+(int)"]
+	50 -> 55
+	65 [label="method_call
+(None)"]
+	25 -> 65
+	66 [label="printf
+(None)"]
+	65 -> 66
+	67 [label="args
+(None)"]
+	65 -> 67
+	75 [label="%d
+(char*)"]
+	67 -> 75
+	83 [label="c
+(<src.symbolTables.SymbolType object at 0x7f9929ca71d0>)"]
+	67 -> 83
+	84 [label="empty arg
+(None)"]
+	65 -> 84
+	86 [label="assignment
+(None)"]
+	10 -> 86
+	87 [label="c
+(<src.symbolTables.SymbolType object at 0x7f9929c898d0>)"]
+	86 -> 87
+	96 [label="+
+(None)"]
+	86 -> 96
+	95 [label="c
+(<src.symbolTables.SymbolType object at 0x7f9929c898d0>)"]
+	96 -> 95
+	101 [label="2
+(int)"]
+	96 -> 101
+	111 [label="method_call
+(None)"]
+	10 -> 111
+	112 [label="printf
+(None)"]
+	111 -> 112
+	113 [label="args
+(None)"]
+	111 -> 113
+	121 [label="%d
+(char*)"]
+	113 -> 121
+	129 [label="c
+(<src.symbolTables.SymbolType object at 0x7f9929c898d0>)"]
+	113 -> 129
+	130 [label="empty arg
+(None)"]
+	111 -> 130
+	132 [label="return
+(None)"]
+	8 -> 132
+	140 [label="0
+(int)"]
+	132 -> 140
+}

@@ -1,0 +1,316 @@
+digraph {
+	1 [label="C
+(None)"]
+	2 [label="line
+(None)"]
+	1 -> 2
+	3 [label="include
+(None)"]
+	2 -> 3
+	4 [label="line
+(None)"]
+	1 -> 4
+	5 [label="method_definition
+(None)"]
+	4 -> 5
+	7 [label="int
+(int)"]
+	5 -> 7
+	6 [label="main
+(None)"]
+	5 -> 6
+	8 [label="scope
+(None)"]
+	5 -> 8
+	9 [label="line
+(None)"]
+	8 -> 9
+	10 [label="definition
+(None)"]
+	9 -> 10
+	11 [label="float
+(float)"]
+	10 -> 11
+	12 [label="assignment2
+(None)"]
+	10 -> 12
+	13 [label="x
+(None)"]
+	12 -> 13
+	14 [label="bool1
+(None)"]
+	12 -> 14
+	15 [label="bool2
+(None)"]
+	14 -> 15
+	16 [label="plus
+(None)"]
+	15 -> 16
+	17 [label="vm
+(None)"]
+	16 -> 17
+	18 [label="%
+(None)"]
+	17 -> 18
+	19 [label="vmsol
+(None)"]
+	18 -> 19
+	20 [label="value
+(None)"]
+	19 -> 20
+	21 [label="1.25
+(float)"]
+	20 -> 21
+	22 [label="line
+(None)"]
+	8 -> 22
+	23 [label="definition
+(None)"]
+	22 -> 23
+	24 [label="int
+(int)"]
+	23 -> 24
+	25 [label="assignment2
+(None)"]
+	23 -> 25
+	26 [label="c
+(None)"]
+	25 -> 26
+	27 [label="bool1
+(None)"]
+	25 -> 27
+	28 [label="bool2
+(None)"]
+	27 -> 28
+	29 [label="plus
+(None)"]
+	28 -> 29
+	30 [label="vm
+(None)"]
+	29 -> 30
+	31 [label="%
+(None)"]
+	30 -> 31
+	32 [label="vmsol
+(None)"]
+	31 -> 32
+	33 [label="value
+(None)"]
+	32 -> 33
+	34 [label="5
+(int)"]
+	33 -> 34
+	35 [label="+
+(None)"]
+	29 -> 35
+	36 [label="vm
+(None)"]
+	29 -> 36
+	37 [label="%
+(None)"]
+	36 -> 37
+	38 [label="vmsol
+(None)"]
+	37 -> 38
+	39 [label="bool1
+(None)"]
+	38 -> 39
+	40 [label="==
+(None)"]
+	39 -> 40
+	41 [label="plus
+(None)"]
+	40 -> 41
+	42 [label="vm
+(None)"]
+	41 -> 42
+	43 [label="%
+(None)"]
+	42 -> 43
+	44 [label="vmsol
+(None)"]
+	43 -> 44
+	45 [label="value
+(None)"]
+	44 -> 45
+	46 [label="1
+(int)"]
+	45 -> 46
+	47 [label="plus
+(None)"]
+	40 -> 47
+	48 [label="vm
+(None)"]
+	47 -> 48
+	49 [label="%
+(None)"]
+	48 -> 49
+	50 [label="vmsol
+(None)"]
+	49 -> 50
+	51 [label="value
+(None)"]
+	50 -> 51
+	52 [label="1
+(int)"]
+	51 -> 52
+	53 [label="||
+(None)"]
+	39 -> 53
+	54 [label="==
+(None)"]
+	39 -> 54
+	55 [label="plus
+(None)"]
+	54 -> 55
+	56 [label="vm
+(None)"]
+	55 -> 56
+	57 [label="%
+(None)"]
+	56 -> 57
+	58 [label="vmsol
+(None)"]
+	57 -> 58
+	59 [label="value
+(None)"]
+	58 -> 59
+	60 [label="x
+(<src.symbolTables.SymbolType object at 0x7f9929d153c8>)"]
+	59 -> 60
+	61 [label="plus
+(None)"]
+	54 -> 61
+	62 [label="vm
+(None)"]
+	61 -> 62
+	63 [label="%
+(None)"]
+	62 -> 63
+	64 [label="vmsol
+(None)"]
+	63 -> 64
+	65 [label="value
+(None)"]
+	64 -> 65
+	66 [label="1.25
+(float)"]
+	65 -> 66
+	67 [label="line
+(None)"]
+	8 -> 67
+	68 [label="bool1
+(None)"]
+	67 -> 68
+	69 [label="bool2
+(None)"]
+	68 -> 69
+	70 [label="plus
+(None)"]
+	69 -> 70
+	71 [label="vm
+(None)"]
+	70 -> 71
+	72 [label="%
+(None)"]
+	71 -> 72
+	73 [label="vmsol
+(None)"]
+	72 -> 73
+	74 [label="value
+(None)"]
+	73 -> 74
+	75 [label="nothing
+()"]
+	74 -> 75
+	76 [label="method_call
+(None)"]
+	75 -> 76
+	77 [label="printf
+(None)"]
+	76 -> 77
+	78 [label="args
+(None)"]
+	76 -> 78
+	79 [label="bool1
+(None)"]
+	78 -> 79
+	80 [label="bool2
+(None)"]
+	79 -> 80
+	81 [label="plus
+(None)"]
+	80 -> 81
+	82 [label="vm
+(None)"]
+	81 -> 82
+	83 [label="%
+(None)"]
+	82 -> 83
+	84 [label="vmsol
+(None)"]
+	83 -> 84
+	85 [label="value
+(None)"]
+	84 -> 85
+	86 [label="%i
+(char*)"]
+	85 -> 86
+	87 [label="bool1
+(None)"]
+	78 -> 87
+	88 [label="bool2
+(None)"]
+	87 -> 88
+	89 [label="plus
+(None)"]
+	88 -> 89
+	90 [label="vm
+(None)"]
+	89 -> 90
+	91 [label="%
+(None)"]
+	90 -> 91
+	92 [label="vmsol
+(None)"]
+	91 -> 92
+	93 [label="value
+(None)"]
+	92 -> 93
+	94 [label="c
+(<src.symbolTables.SymbolType object at 0x7f9929d83e80>)"]
+	93 -> 94
+	95 [label="empty arg
+(None)"]
+	76 -> 95
+	96 [label="line
+(None)"]
+	8 -> 96
+	97 [label="return
+(None)"]
+	96 -> 97
+	98 [label="bool1
+(None)"]
+	97 -> 98
+	99 [label="bool2
+(None)"]
+	98 -> 99
+	100 [label="plus
+(None)"]
+	99 -> 100
+	101 [label="vm
+(None)"]
+	100 -> 101
+	102 [label="%
+(None)"]
+	101 -> 102
+	103 [label="vmsol
+(None)"]
+	102 -> 103
+	104 [label="value
+(None)"]
+	103 -> 104
+	105 [label="0
+(int)"]
+	104 -> 105
+}

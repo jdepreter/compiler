@@ -1,5 +1,0 @@
-digraph {
-	1 [label=C]
-	3 [label=scope]
-	1 -> 3
-}

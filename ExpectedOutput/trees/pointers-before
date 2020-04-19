@@ -1,0 +1,283 @@
+digraph {
+	1 [label="C
+(None)"]
+	2 [label="line
+(None)"]
+	1 -> 2
+	3 [label="method_definition
+(None)"]
+	2 -> 3
+	5 [label="int
+(int)"]
+	3 -> 5
+	4 [label="main
+(None)"]
+	3 -> 4
+	6 [label="scope
+(None)"]
+	3 -> 6
+	7 [label="line
+(None)"]
+	6 -> 7
+	8 [label="definition
+(None)"]
+	7 -> 8
+	9 [label="int
+(int)"]
+	8 -> 9
+	10 [label="assignment2
+(None)"]
+	8 -> 10
+	11 [label="x
+(None)"]
+	10 -> 11
+	12 [label="bool1
+(None)"]
+	10 -> 12
+	13 [label="bool2
+(None)"]
+	12 -> 13
+	14 [label="plus
+(None)"]
+	13 -> 14
+	15 [label="vm
+(None)"]
+	14 -> 15
+	16 [label="%
+(None)"]
+	15 -> 16
+	17 [label="vmsol
+(None)"]
+	16 -> 17
+	18 [label="value
+(None)"]
+	17 -> 18
+	19 [label="5
+(int)"]
+	18 -> 19
+	20 [label="line
+(None)"]
+	6 -> 20
+	21 [label="definition
+(None)"]
+	20 -> 21
+	23 [label="int*
+(int*)"]
+	21 -> 23
+	24 [label="assignment2
+(None)"]
+	21 -> 24
+	25 [label="y
+(None)"]
+	24 -> 25
+	26 [label="bool1
+(None)"]
+	24 -> 26
+	27 [label="bool2
+(None)"]
+	26 -> 27
+	28 [label="plus
+(None)"]
+	27 -> 28
+	29 [label="vm
+(None)"]
+	28 -> 29
+	30 [label="%
+(None)"]
+	29 -> 30
+	31 [label="vmsol
+(None)"]
+	30 -> 31
+	32 [label="value
+(None)"]
+	31 -> 32
+	33 [label="x
+(&int)"]
+	32 -> 33
+	34 [label="line
+(None)"]
+	6 -> 34
+	35 [label="definition
+(None)"]
+	34 -> 35
+	36 [label="float
+(float)"]
+	35 -> 36
+	37 [label="assignment2
+(None)"]
+	35 -> 37
+	38 [label="a
+(None)"]
+	37 -> 38
+	39 [label="bool1
+(None)"]
+	37 -> 39
+	40 [label="bool2
+(None)"]
+	39 -> 40
+	41 [label="plus
+(None)"]
+	40 -> 41
+	42 [label="vm
+(None)"]
+	41 -> 42
+	43 [label="%
+(None)"]
+	42 -> 43
+	44 [label="vmsol
+(None)"]
+	43 -> 44
+	45 [label="value
+(None)"]
+	44 -> 45
+	46 [label="6.0
+(float)"]
+	45 -> 46
+	47 [label="line
+(None)"]
+	6 -> 47
+	48 [label="definition
+(None)"]
+	47 -> 48
+	50 [label="float*
+(float*)"]
+	48 -> 50
+	51 [label="assignment2
+(None)"]
+	48 -> 51
+	52 [label="b
+(None)"]
+	51 -> 52
+	53 [label="bool1
+(None)"]
+	51 -> 53
+	54 [label="bool2
+(None)"]
+	53 -> 54
+	55 [label="plus
+(None)"]
+	54 -> 55
+	56 [label="vm
+(None)"]
+	55 -> 56
+	57 [label="%
+(None)"]
+	56 -> 57
+	58 [label="vmsol
+(None)"]
+	57 -> 58
+	59 [label="value
+(None)"]
+	58 -> 59
+	60 [label="a
+(&float)"]
+	59 -> 60
+	61 [label="line
+(None)"]
+	6 -> 61
+	62 [label="definition
+(None)"]
+	61 -> 62
+	63 [label="char
+(char)"]
+	62 -> 63
+	64 [label="assignment2
+(None)"]
+	62 -> 64
+	65 [label="c
+(None)"]
+	64 -> 65
+	66 [label="bool1
+(None)"]
+	64 -> 66
+	67 [label="bool2
+(None)"]
+	66 -> 67
+	68 [label="plus
+(None)"]
+	67 -> 68
+	69 [label="vm
+(None)"]
+	68 -> 69
+	70 [label="%
+(None)"]
+	69 -> 70
+	71 [label="vmsol
+(None)"]
+	70 -> 71
+	72 [label="value
+(None)"]
+	71 -> 72
+	73 [label="32
+(char)"]
+	72 -> 73
+	74 [label="line
+(None)"]
+	6 -> 74
+	75 [label="definition
+(None)"]
+	74 -> 75
+	77 [label="char*
+(char*)"]
+	75 -> 77
+	78 [label="assignment2
+(None)"]
+	75 -> 78
+	79 [label="d
+(None)"]
+	78 -> 79
+	80 [label="bool1
+(None)"]
+	78 -> 80
+	81 [label="bool2
+(None)"]
+	80 -> 81
+	82 [label="plus
+(None)"]
+	81 -> 82
+	83 [label="vm
+(None)"]
+	82 -> 83
+	84 [label="%
+(None)"]
+	83 -> 84
+	85 [label="vmsol
+(None)"]
+	84 -> 85
+	86 [label="value
+(None)"]
+	85 -> 86
+	87 [label="c
+(&char)"]
+	86 -> 87
+	88 [label="line
+(None)"]
+	6 -> 88
+	89 [label="return
+(None)"]
+	88 -> 89
+	90 [label="bool1
+(None)"]
+	89 -> 90
+	91 [label="bool2
+(None)"]
+	90 -> 91
+	92 [label="plus
+(None)"]
+	91 -> 92
+	93 [label="vm
+(None)"]
+	92 -> 93
+	94 [label="%
+(None)"]
+	93 -> 94
+	95 [label="vmsol
+(None)"]
+	94 -> 95
+	96 [label="value
+(None)"]
+	95 -> 96
+	97 [label="0
+(int)"]
+	96 -> 97
+}
