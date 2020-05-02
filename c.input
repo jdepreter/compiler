@@ -1,6 +1,5 @@
+#include <stdio.h>
+
 int main(){
-    int z = 1;
-    int* x = &z;
-    'a' + *x;
-    return 1;
+    printf("Hello World!\n");
 }

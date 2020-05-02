@@ -48,6 +48,7 @@ class SymbolTable:
         self.method_register = 0
 
         self.strings = dict()
+        self.mips_strings = dict()
         self.restrings = dict()
         self.strings_nr = 0
 
@@ -230,11 +231,17 @@ class SymbolTable:
         if string not in self.strings:
             val = '@.str.{}'.format(str(self.strings_nr))
             self.strings[string] = val
-            self.strings_nr += 1
             self.restrings[val] = string
+
+            mips_val = "str.{}".format(str(self.strings_nr))
+            self.mips_strings[string] = mips_val
+            self.strings_nr += 1
 
     def get_strings(self):
         return self.strings
+
+    def get_mips_strings(self):
+        return self.mips_strings
 
     def get_current_scope(self):
         s = SymbolTable()
@@ -245,4 +252,5 @@ class SymbolTable:
         s.printf = self.printf
         s.strings = self.strings
         s.restrings = self.restrings
+        s.mips_strings = self.mips_strings
         return s

@@ -1,3 +1,4 @@
+import re
 
 
 class MIPS_Converter:
@@ -39,4 +40,25 @@ class MIPS_Converter:
         """
         indent = "".join([" " for i in range(indentation)])
         if self.write:
-            self.file.write(indent + string + "\n")
+            self.instruction_section += indent + string + "\n"
+
+    def define_strings(self, symbol_table):
+        all_strings = symbol_table.get_mips_strings()
+        for string_value, var_name in all_strings.items():
+            string_value = string_value.replace("@.", "")
+            self.write_to_data('%s: .asciiz "%s"' % (var_name, string_value))
+
+        return
+
+    def to_mips(self):
+        """
+        Generate MIPS Assembly
+        :return:
+        """
+        current_symbol_table = self.ast.startnode.symbol_table
+        self.define_strings(current_symbol_table)
+
+        self.write_to_file(self.data_section)
+        self.write_to_file(self.instruction_section)
+        # self.solve_llvm_node(self.ast.startnode, current_symbol_table)
+

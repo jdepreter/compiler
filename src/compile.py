@@ -6,6 +6,7 @@ from ANTLR.LLVM.cParser import cParser
 from src.cCustomListener import CASTGenerator
 from src.AST import ASTVisitor
 from src.LLVM_CONVERTER import LLVM_Converter
+from src.MIPS_CONVERTER import MIPS_Converter
 
 from src.cErrorListener import CErrorListener
 
@@ -49,22 +50,22 @@ def to_llvm(filename, outputname):
     graph.save("{}".format(outputname), "trees")
     graph.render("{}".format(outputname))
     f = open('./llvm/{}.ll'.format(outputname), 'w')
-    converter = LLVM_Converter(visitor, f)
-    converter.to_llvm()
+    converter = MIPS_Converter(visitor, f)
+    converter.to_mips()
     f.close()
 
-    if platform.system() == 'Linux':
-        result = ''
-        try:
-            result = check_output(
-                "clang ./llvm/{}.ll -o ./llvm/{} && ./llvm/{}".format(outputname, outputname, outputname),
-                shell=True).decode("utf-8")
-        except CalledProcessError as e:
-            if e.returncode != 1:
-                raise e
-            else:
-                result = e.output.decode("utf-8")
-        return result
+    # if platform.system() == 'Linux':
+    #     result = ''
+    #     try:
+    #         result = check_output(
+    #             "clang ./llvm/{}.ll -o ./llvm/{} && ./llvm/{}".format(outputname, outputname, outputname),
+    #             shell=True).decode("utf-8")
+    #     except CalledProcessError as e:
+    #         if e.returncode != 1:
+    #             raise e
+    #         else:
+    #             result = e.output.decode("utf-8")
+    #     return result
 
 
 def double_to_hex(f):
