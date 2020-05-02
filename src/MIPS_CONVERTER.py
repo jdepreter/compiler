@@ -177,7 +177,7 @@ class MIPS_Converter:
         #                                  node.children[1], symbol_table)[0]
         # else:
         #     reg_nr = self.alloc_instruction(stars, sym_type, symbol)
-            
+
         self.allocate_mem(symbol, symbol_table)  # Remove L8er
 
         if node.node_type == 'assignment2':
@@ -224,3 +224,29 @@ class MIPS_Converter:
         pass
 
 
+    def go_to_label(self, label):
+        """
+        go to a label
+        :param label:
+        :return:
+        """
+        string = "j label{}\n".format(label)
+        self.write_to_instruction(string)
+
+    def go_to_label_linked(self, label):
+        """
+        jumps to a label and stores current pc in $ra
+        :param label:
+        :return:
+        """
+        string = "jal label{}".format(label)
+        self.write_to_instruction(string)
+
+    def go_to_register(self, reg):
+        """
+        jumps to the number in a given register (mainly used for $ra)
+        :param reg:
+        :return:
+        """
+        string = "jr {}".format(reg)
+        self.write_to_instruction(string)
