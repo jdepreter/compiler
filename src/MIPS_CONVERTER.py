@@ -55,6 +55,64 @@ class MIPS_Converter:
 
         return
 
+    def allocate_mem(self, symbol, symbol_table):
+        """
+        Create space for variable
+        Stack grows downwards
+        to use this mem spot access ($sp)
+        to use previous mem spot 4($sp)
+        :return:
+        """
+        string = "addiu $sp, $sp, -4"   # Reserve word on stack
+        self.write_to_instruction(string, 2)
+        # Increase offset of previous variables in stack (offset can never be < 0)
+        symbol_table.increase_offset(4)
+        symbol.written = True
+
+    def deallocate_mem(self, amount, symbol_table):
+        """
+        When closing scope, deallocate space used in this scope
+        :param amount: amount of variables in this scope
+        :return:
+        """
+        string = "addiu $sp, $sp, %d" % amount * 4  # Reserve word on stack
+        self.write_to_instruction(string, 2)
+        # Decrease offset of previous variables in stack
+        symbol_table.decrease_offset(amount * 4)
+
+    def store_symbol(self, value, symbol):
+        offset = "" if symbol.offset == 0 else str(symbol.offset)
+        string = "li %s($fp), %s" % (offset, str(value))
+        self.write_to_instruction(string, 2)
+
+    # JUMPS
+    def go_to_label(self, label):
+        """
+        go to a label
+        :param label:
+        :return:
+        """
+        string = "j label{}\n".format(label)
+        self.write_to_instruction(string)
+
+    def go_to_label_linked(self, label):
+        """
+        jumps to a label and stores current pc in $ra
+        :param label:
+        :return:
+        """
+        string = "jal label{}".format(label)
+        self.write_to_instruction(string)
+
+    def go_to_register(self, reg):
+        """
+        jumps to the number in a given register (mainly used for $ra)
+        :param reg:
+        :return:
+        """
+        string = "jr {}".format(reg)
+        self.write_to_instruction(string)
+
     def to_mips(self):
         """
         Generate MIPS Assembly
@@ -190,63 +248,8 @@ class MIPS_Converter:
 
         return symbol, symbol_type
 
-    def allocate_mem(self, symbol, symbol_table):
-        """
-        Create space for variable
-        Stack grows downwards
-        to use this mem spot access ($sp)
-        to use previous mem spot 4($sp)
-        :return:
-        """
-        string = "addiu $sp, $sp, -4"   # Reserve word on stack
-        self.write_to_instruction(string, 2)
-        # Increase offset of previous variables in stack (offset can never be < 0)
-        symbol_table.increase_offset(4)
-        symbol.written = True
 
-    def deallocate_mem(self, amount, symbol_table):
-        """
-        When closing scope, deallocate space used in this scope
-        :param amount: amount of variables in this scope
-        :return:
-        """
-        string = "addiu $sp, $sp, %d" % amount * 4  # Reserve word on stack
-        self.write_to_instruction(string, 2)
-        # Decrease offset of previous variables in stack
-        symbol_table.decrease_offset(amount * 4)
-
-    def store_symbol(self, value, symbol):
-        offset = "" if symbol.offset == 0 else str(symbol.offset)
-        string = "li %s($fp), %s" % (offset, str(value))
-        self.write_to_instruction(string, 2)
 
     def assign_node(self, node, symbol_table):
         pass
 
-
-    def go_to_label(self, label):
-        """
-        go to a label
-        :param label:
-        :return:
-        """
-        string = "j label{}\n".format(label)
-        self.write_to_instruction(string)
-
-    def go_to_label_linked(self, label):
-        """
-        jumps to a label and stores current pc in $ra
-        :param label:
-        :return:
-        """
-        string = "jal label{}".format(label)
-        self.write_to_instruction(string)
-
-    def go_to_register(self, reg):
-        """
-        jumps to the number in a given register (mainly used for $ra)
-        :param reg:
-        :return:
-        """
-        string = "jr {}".format(reg)
-        self.write_to_instruction(string)
