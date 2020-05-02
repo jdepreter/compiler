@@ -306,7 +306,8 @@ class MIPS_Converter:
             value = self.assign_node(node.children[1], symbol_table)
         else:
             value = self.solve_math(node.children[1], symbol_table)
-            self.store_symbol(value, symbol)
+            self.load_word("$t0", value)
+            self.store_symbol("$t0", symbol)
             self.deallocate_mem(4, symbol_table)
 
         # if '[]' in str(node.children[0].label):
@@ -349,7 +350,7 @@ class MIPS_Converter:
             self.deallocate_mem(4, symbol_table)    # Delete one
             self.store("$t0", "0($sp)")              # Overwrite the other
 
-            return "$sp"
+            return "0($sp)"
 
         elif node.label in ["/", "%"]:
             ...
@@ -445,13 +446,13 @@ class MIPS_Converter:
             self.load_immediate(value, "$t0")
             self.store("$t0", "0($sp)")
 
-            return "$sp"
+            return "0($sp)"
 
         elif node.node_type == 'lvalue':
             # TODO Check array, check address
             symbol = symbol_table.get_assigned_symbol(node.label, node.ctx.start)
             self.load_symbol(symbol, symbol_table)
-            return "$sp"
+            return "0($sp)"
 
         # elif node.node_type == 'array_element':
         #     sym = symbol_table.get_symbol(node.label, node.ctx.start)
