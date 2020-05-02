@@ -15,20 +15,25 @@ class MethodType:
 
 
 class SymbolType:
-    def __init__(self, symbol_type, assigned, const, current_register, _global=False, array_size_node=None):
+    def __init__(self, symbol_type, assigned, const, current_register, offset=0, _global=False, array_size_node=None):
         self.symbol_type = symbol_type
         self.assigned = assigned
         self.const = const
-        self.reg = current_register
-        if _global:
-            self.current_register = '@x_' + str(current_register)
-        else:
-            self.current_register = '%a' + str(current_register)
         self.used = False
         self.is_global = _global
         self.array_size_node = array_size_node
         self.size = array_size_node is not None
         self.written = False
+
+        # LLVM
+        self.reg = current_register
+        if _global:
+            self.current_register = '@x_' + str(current_register)
+        else:
+            self.current_register = '%a' + str(current_register)
+
+        # MIPS
+        self.offset = offset
 
     def set_reg(self, current_register):
         self.current_register = current_register
@@ -43,7 +48,7 @@ class SymbolTable:
 
         self.table_stack = []
         self.table_list = []
-        self.current_register = 0
+        self.var_counter = 0
 
         self.method_register = 0
 
@@ -117,8 +122,8 @@ class SymbolTable:
                                        .format(error.line, error.column, symbol))
         _global = len(self.table_stack) == 1
         assinged = assinged or _global
-        self.table_stack[0][symbol] = SymbolType(symbol_type, assinged, const, self.current_register, _global)
-        self.current_register += 1
+        self.table_stack[0][symbol] = SymbolType(symbol_type, assinged, const, self.var_counter, _global)
+        self.var_counter += 1
 
     def get_assigned_symbol(self, symbol_name, error):
         symbol_name = re.sub(r'\*', '', symbol_name)
@@ -240,8 +245,21 @@ class SymbolTable:
     def get_strings(self):
         return self.strings
 
+    # MIPS
     def get_mips_strings(self):
         return self.mips_strings
+
+    def increase_offset(self, amount):
+        for scope in self.table_stack:
+            for key, val in scope.items():
+                if val.written:
+                    val.offset += amount
+
+    def decrease_offset(self, amount):
+        for scope in self.table_stack:
+            for key, val in scope.items():
+                if val.written:
+                    val.offset -= amount
 
     def get_current_scope(self):
         s = SymbolTable()
