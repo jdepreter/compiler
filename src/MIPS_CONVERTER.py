@@ -62,3 +62,29 @@ class MIPS_Converter:
         self.write_to_file(self.instruction_section)
         # self.solve_llvm_node(self.ast.startnode, current_symbol_table)
 
+    def go_to_label(self, label):
+        """
+        go to a label
+        :param label:
+        :return:
+        """
+        string = "j label{}\n".format(label)
+        self.write_to_instruction(string)
+
+    def go_to_label_linked(self, label):
+        """
+        jumps to a label and stores current pc in $ra
+        :param label:
+        :return:
+        """
+        string = "jal label{}".format(label)
+        self.write_to_instruction(string)
+
+    def go_to_register(self, reg):
+        """
+        jumps to the number in a given register (mainly used for $ra)
+        :param reg:
+        :return:
+        """
+        string = "jr {}".format(reg)
+        self.write_to_instruction(string)
