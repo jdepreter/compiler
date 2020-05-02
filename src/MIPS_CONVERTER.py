@@ -100,6 +100,10 @@ class MIPS_Converter:
         string = "lw $sp, %s($sp)" % offset
         self.write_to_instruction(string, 2)
 
+    def load_word(self, left, right):
+        string = "lw %s, %s" % (left, right)
+        self.write_to_instruction(string, 2)
+
     def store_symbol(self, value, symbol):
         """
         Store register in frame pointer
@@ -338,12 +342,14 @@ class MIPS_Converter:
             # child_1 = self.cast_value(child1[0], child1[1], symbol_type, node.ctx.start)
             # child_2 = self.cast_value(child2[0], child2[1], symbol_type, node.ctx.start)
 
-            string = "%s $t0, 4($sp), 0($sp)" % self.optype['int']['+']
+            self.load_word("$t0", "0($sp)")
+            self.load_word("$t1", "4($sp)")
+            string = "%s $t0, $t1, $t0" % self.optype['int']['+']
             self.write_to_instruction(string, 2)
             self.deallocate_mem(4, symbol_table)    # Delete one
             self.store("$t0", "0($sp)")              # Overwrite the other
 
-            return None
+            return "$sp"
 
         elif node.label in ["/", "%"]:
             ...
@@ -445,7 +451,7 @@ class MIPS_Converter:
             # TODO Check array, check address
             symbol = symbol_table.get_assigned_symbol(node.label, node.ctx.start)
             self.load_symbol(symbol, symbol_table)
-            return
+            return "$sp"
 
         # elif node.node_type == 'array_element':
         #     sym = symbol_table.get_symbol(node.label, node.ctx.start)
