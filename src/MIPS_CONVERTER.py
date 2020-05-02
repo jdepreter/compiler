@@ -1,5 +1,6 @@
 from src.CustomExceptions import *
-from src.helperfuncs import get_type_and_stars
+from src.helperfuncs import get_type_and_stars, get_return_type, allowed_operation
+from src.MIPS_Operations import *
 
 
 class MIPS_Converter:
@@ -13,6 +14,9 @@ class MIPS_Converter:
         self.break_stack = []
         self.continue_stack = []
         self.file = file
+        self.optype = optype
+        self.bool_dict = bool_dict
+        self.temp_used_registers = []
 
         self.data_section = ".data\n"
         self.instruction_section = ".text\n"
@@ -55,34 +59,66 @@ class MIPS_Converter:
 
         return
 
-    def allocate_mem(self, symbol, symbol_table):
+    def allocate_mem(self, amount, symbol_table):
         """
         Create space for variable
         Stack grows downwards
-        to use this mem spot access ($sp)
+        to use this mem spot access 0($sp)
         to use previous mem spot 4($sp)
         :return:
         """
-        string = "addiu $sp, $sp, -4"   # Reserve word on stack
+        string = "addiu $sp, $sp, -%d" % amount   # Reserve word on stack
         self.write_to_instruction(string, 2)
         # Increase offset of previous variables in stack (offset can never be < 0)
-        symbol_table.increase_offset(4)
-        symbol.written = True
+        symbol_table.increase_offset(amount)
 
     def deallocate_mem(self, amount, symbol_table):
         """
         When closing scope, deallocate space used in this scope
+        Also used when calculating expressions
         :param amount: amount of variables in this scope
         :return:
         """
-        string = "addiu $sp, $sp, %d" % amount * 4  # Reserve word on stack
+        string = "addiu $sp, $sp, %d" % amount  # Reserve word on stack
         self.write_to_instruction(string, 2)
         # Decrease offset of previous variables in stack
-        symbol_table.decrease_offset(amount * 4)
+        symbol_table.decrease_offset(amount)
+
+    def load_immediate(self, value, destination):
+        """
+        Load Immediate Instruction
+        :param value:
+        :param destination:
+        :return:
+        """
+        string = "li %s, %s" % (destination, value)
+        self.write_to_instruction(string, 2)
+
+    def load_symbol(self, symbol, symbol_table):
+        self.allocate_mem(4, symbol_table)
+        offset = str(symbol.offset)
+        string = "lw $sp, %s($sp)" % offset
+        self.write_to_instruction(string, 2)
 
     def store_symbol(self, value, symbol):
-        offset = "" if symbol.offset == 0 else str(symbol.offset)
-        string = "li %s($fp), %s" % (offset, str(value))
+        """
+        Store register in frame pointer
+        :param value: register
+        :param symbol:
+        :return:
+        """
+        offset = str(symbol.offset)
+        string = "sw %s, %s($sp)" % (str(value), offset)
+        self.write_to_instruction(string, 2)
+
+    def store(self, source, destination):
+        """
+        Load Word instruction
+        :param source:
+        :param destination:
+        :return:
+        """
+        string = "sw %s, %s" % (source, destination)
         self.write_to_instruction(string, 2)
 
     # JUMPS
@@ -127,6 +163,16 @@ class MIPS_Converter:
         self.write_to_file(self.instruction_section)
         # self.solve_llvm_node(self.ast.startnode, current_symbol_table)
 
+    def allocate_symbol(self, symbol, symbol_table):
+        """
+        Allocate space for a variable
+        :param symbol:
+        :param symbol_table:
+        :return:
+        """
+        self.allocate_mem(4, symbol_table)
+        symbol.written = True
+
     def solve_node(self, node, symbol_table):
         if node.symbol_table is not None:
             symbol_table = node.symbol_table
@@ -139,7 +185,7 @@ class MIPS_Converter:
                 varstart = 2
             for i in range(varstart, len(node.children)):
                 # address, symbol_type = self.allocate_node(node.children[i], symbol_table, typing.label)
-                self.allocate_node(node.children[i], symbol_table, typing.label)
+                self.allocate_node(node.children[i], symbol_table)
             # return address, symbol_type
         else:
             for child in node.children:
@@ -202,7 +248,7 @@ class MIPS_Converter:
         #             sol = self.solve_llvm_node(child, symbol_table)
         #     return sol
 
-    def allocate_node(self, node, symbol_table, symbol_type):
+    def allocate_node(self, node, symbol_table):
         variable = node.label
         if node.node_type in ['assignment2', 'array']:
             variable = node.children[0].label
@@ -211,7 +257,6 @@ class MIPS_Converter:
         #     variable = node.children[1].label
 
         symbol = symbol_table.get_symbol(variable, node.ctx.start)
-        sym_type, stars = get_type_and_stars(symbol_type)
 
         # if symbol.is_global:
         #     # Do funny xD llvm global stuff
@@ -236,12 +281,12 @@ class MIPS_Converter:
         # else:
         #     reg_nr = self.alloc_instruction(stars, sym_type, symbol)
 
-        self.allocate_mem(symbol, symbol_table)  # Remove L8er
+        self.allocate_symbol(symbol, symbol_table)  # Remove L8er
 
         if node.node_type == 'assignment2':
             self.assign_node(node, symbol_table)
 
-        return symbol, symbol_type
+        return symbol
 
     def assign_node(self, node, symbol_table):
         """
@@ -257,6 +302,8 @@ class MIPS_Converter:
             value = self.assign_node(node.children[1], symbol_table)
         else:
             value = self.solve_math(node.children[1], symbol_table)
+            self.store_symbol(value, symbol)
+            self.deallocate_mem(4, symbol_table)
 
         # if '[]' in str(node.children[0].label):
         #     # We are dealing with an array index
@@ -265,34 +312,41 @@ class MIPS_Converter:
         #         node.children[0].children[1], symbol_table, node.label,
         #         node.ctx.start
         #     )
-
-        self.store_symbol(value, symbol)
         symbol.assigned = True
         return value
 
     def solve_math(self, node, symbol_table):
+        """
+        load vars in temp register,
+        store result on stack,
+        deallocate when used
+        :param node:
+        :param symbol_table:
+        :return:
+        """
         string = ''
-        if node.label in ['+', '-', '*', '/', '%']:
-            reg = self.register
-            self.register += 1
+        if node.label in ['+', '-', '*']:
+            # Calculate values and store on stack
             child1 = self.solve_math(node.children[0], symbol_table)
             child2 = self.solve_math(node.children[1], symbol_table)
-            allowed_operation(child1[1], child2[1], node.label, node.ctx.start)
-            symbol_type = get_return_type(child1[1], child2[1])
-            child_1 = self.cast_value(child1[0], child1[1], symbol_type, node.ctx.start)
-            child_2 = self.cast_value(child2[0], child2[1], symbol_type, node.ctx.start)
-            sym_type, stars = get_type_and_stars(symbol_type)
-            if symbol_type == 'float' and node.label == '%':
-                raise Exception("Error: incompatible type %: float")
 
-            string = '%r{} = {} {}{} {}, {}\n'.format(
-                str(reg), self.optype[symbol_type][node.label], self.format_dict[sym_type], stars,
-                child_1,
-                child_2
-            )
-            self.write_to_file(string)
-            return '%r' + str(reg), symbol_type
+            # # Check if current op is allowed
+            # allowed_operation(child1[1], child2[1], node.label, node.ctx.start)
+            # symbol_type = get_return_type(child1[1], child2[1])
+            #
+            # # Cast if required
+            # child_1 = self.cast_value(child1[0], child1[1], symbol_type, node.ctx.start)
+            # child_2 = self.cast_value(child2[0], child2[1], symbol_type, node.ctx.start)
 
+            string = "%s $t0, 4($sp), 0($sp)" % self.optype['int']['+']
+            self.write_to_instruction(string, 2)
+            self.deallocate_mem(4, symbol_table)    # Delete one
+            self.store("$t0", "0($sp)")              # Overwrite the other
+
+            return None
+
+        elif node.label in ["/", "%"]:
+            ...
         elif node.label == '&&':
             reg = self.register
             self.register += 1
@@ -369,56 +423,45 @@ class MIPS_Converter:
             self.write_to_file(string)
             return '%r' + str(reg), value[1]
 
-        elif node.node_type == 'method_call':
-            return self.call_method(node, symbol_table)
+        # elif node.node_type == 'method_call':
+        #     return self.call_method(node, symbol_table)
 
         elif node.node_type == 'rvalue':
             value = str(node.label)
+            # if str(node.symbol_type) == "float":
+            #     value = self.store_float(float(node.label))
+            # if str(node.symbol_type) == "char*":
+            #     return self.make_string(str(node.label), symbol_table), "char*"
+            #
+            # if str(node.symbol_type)[0] == '&':
+            #     value = symbol_table.get_written_symbol(value, node.ctx.start).var_counter
+            self.allocate_mem(4, symbol_table)
+            self.load_immediate(value, "$t0")
+            self.store("$t0", "0($sp)")
 
-            if str(node.symbol_type) == "float":
-                value = self.store_float(float(node.label))
-            if str(node.symbol_type) == "char*":
-                return self.make_string(str(node.label), symbol_table), "char*"
-
-            if str(node.symbol_type)[0] == '&':
-                value = symbol_table.get_written_symbol(value, node.ctx.start).var_counter
-            return value, str(node.symbol_type)
+            return "$sp"
 
         elif node.node_type == 'lvalue':
-            sym = symbol_table.get_assigned_symbol(node.label, node.ctx.start)
-            sym_type, stars = get_type_and_stars(sym.symbol_type)
-            address, symbol_type_stars = self.dereference(sym.var_counter, stars, sym_type,
-                                                          node.label.count('*'))
+            # TODO Check array, check address
+            symbol = symbol_table.get_assigned_symbol(node.label, node.ctx.start)
+            self.load_symbol(symbol, symbol_table)
+            return
 
-            sym_type, stars = get_type_and_stars(symbol_type_stars)
-            reg = self.register
-            self.register += 1
-            if sym.size:
-
-                # string = "%r{} = ".format(str(reg))+ self.get_array_ptr(address, self.format_dict[sym_type]+stars, sym.size) +"\n"
-                # self.write_to_file(string)
-                reg, ltype = self.get_fixed_index_of_array(address, self.format_dict[sym_type] + stars, 0, sym.size)
-
-                return reg, sym_type + stars + '*'
-            else:
-
-                return self.load_instruction(reg, stars, sym_type, address), symbol_type_stars
-
-        elif node.node_type == 'array_element':
-            sym = symbol_table.get_symbol(node.label, node.ctx.start)
-            if not sym.size:
-                symbol_name = re.sub(r'\[]', '', node.label)
-                raise Exception("Error Line {}, Position {}: {} is not an array".format(
-                    node.ctx.start.line, node.ctx.start.column, symbol_name
-                ))
-            sym = symbol_table.get_assigned_symbol(node.label, node.ctx.start)
-            sym_type, stars = get_type_and_stars(sym.symbol_type)
-            address = self.get_index_of_array(sym.var_counter, self.format_dict[sym_type] + stars, sym.size,
-                                              node.children[1], symbol_table, node.label,
-                                              node.ctx.start)[0]
-            reg = self.register
-            self.register += 1
-            return self.load_instruction(reg, stars, sym_type, address), sym.symbol_type
+        # elif node.node_type == 'array_element':
+        #     sym = symbol_table.get_symbol(node.label, node.ctx.start)
+        #     if not sym.size:
+        #         symbol_name = re.sub(r'\[]', '', node.label)
+        #         raise Exception("Error Line {}, Position {}: {} is not an array".format(
+        #             node.ctx.start.line, node.ctx.start.column, symbol_name
+        #         ))
+        #     sym = symbol_table.get_assigned_symbol(node.label, node.ctx.start)
+        #     sym_type, stars = get_type_and_stars(sym.symbol_type)
+        #     address = self.get_index_of_array(sym.var_counter, self.format_dict[sym_type] + stars, sym.size,
+        #                                       node.children[1], symbol_table, node.label,
+        #                                       node.ctx.start)[0]
+        #     reg = self.register
+        #     self.register += 1
+        #     return self.load_instruction(reg, stars, sym_type, address), sym.symbol_type
 
         elif node.node_type == 'bool2' and node.children[0].label == '!':
 
