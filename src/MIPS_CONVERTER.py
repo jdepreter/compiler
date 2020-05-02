@@ -97,7 +97,9 @@ class MIPS_Converter:
     def load_symbol(self, symbol, symbol_table):
         self.allocate_mem(4, symbol_table)
         offset = str(symbol.offset)
-        string = "lw $sp, %s($sp)" % offset
+        string = "lw $t0, %s($sp)" % offset
+        self.write_to_instruction(string, 2)
+        string = "sw $t0 0($sp)"
         self.write_to_instruction(string, 2)
 
     def load_word(self, left, right):
