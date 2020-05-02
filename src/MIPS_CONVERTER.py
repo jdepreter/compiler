@@ -239,17 +239,191 @@ class MIPS_Converter:
         self.allocate_mem(symbol, symbol_table)  # Remove L8er
 
         if node.node_type == 'assignment2':
-            value = None
-            if node.children[1].node_type == 'assignment':
-                register = self.assign_node(node.children[1], symbol_table)
-            else:
-                register = self.solve_math(node.children[1], symbol_table)
-            self.store_symbol(symbol, value)
+            self.assign_node(node, symbol_table)
 
         return symbol, symbol_type
 
-
-
     def assign_node(self, node, symbol_table):
-        pass
+        """
+        Assign a value to the symbol in node: node
+        :param node: node containing symbol
+        :param symbol_table: scope of node
+        :return:
+        """
+        symbol_string = str(node.children[0].label)
+        symbol = symbol_table.get_written_symbol(symbol_string, node.ctx.start)
+
+        if node.children[1].node_type == 'assignment':
+            value = self.assign_node(node.children[1], symbol_table)
+        else:
+            value = self.solve_math(node.children[1], symbol_table)
+
+        # if '[]' in str(node.children[0].label):
+        #     # We are dealing with an array index
+        #     address, temp = self.get_index_of_array(
+        #         symbol.var_counter, self.format_dict[symbol_type], symbol.size,
+        #         node.children[0].children[1], symbol_table, node.label,
+        #         node.ctx.start
+        #     )
+
+        self.store_symbol(value, symbol)
+        symbol.assigned = True
+        return value
+
+    def solve_math(self, node, symbol_table):
+        string = ''
+        if node.label in ['+', '-', '*', '/', '%']:
+            reg = self.register
+            self.register += 1
+            child1 = self.solve_math(node.children[0], symbol_table)
+            child2 = self.solve_math(node.children[1], symbol_table)
+            allowed_operation(child1[1], child2[1], node.label, node.ctx.start)
+            symbol_type = get_return_type(child1[1], child2[1])
+            child_1 = self.cast_value(child1[0], child1[1], symbol_type, node.ctx.start)
+            child_2 = self.cast_value(child2[0], child2[1], symbol_type, node.ctx.start)
+            sym_type, stars = get_type_and_stars(symbol_type)
+            if symbol_type == 'float' and node.label == '%':
+                raise Exception("Error: incompatible type %: float")
+
+            string = '%r{} = {} {}{} {}, {}\n'.format(
+                str(reg), self.optype[symbol_type][node.label], self.format_dict[sym_type], stars,
+                child_1,
+                child_2
+            )
+            self.write_to_file(string)
+            return '%r' + str(reg), symbol_type
+
+        elif node.label == '&&':
+            reg = self.register
+            self.register += 1
+            child1 = self.solve_math(node.children[0], symbol_table)
+            child2 = self.solve_math(node.children[1], symbol_table)
+            child_1 = self.cast_value(child1[0], child1[1], 'int', node.ctx.start)
+            child_2 = self.cast_value(child2[0], child2[1], 'int', node.ctx.start)
+            string = "%r{} = and i32 {}, {}\n".format(
+                str(reg), child_1, child_2
+            )
+            self.write_to_file(string)
+            return '%r' + str(reg), "int"
+        elif node.label == '||':
+            reg = self.register
+            self.register += 1
+            child1 = self.solve_math(node.children[0], symbol_table)
+            child2 = self.solve_math(node.children[1], symbol_table)
+            child_1 = self.cast_value(child1[0], child1[1], 'int', node.ctx.start)
+            child_2 = self.cast_value(child2[0], child2[1], 'int', node.ctx.start)
+            string = "%r{} = or i32 {}, {}\n".format(
+                str(reg), child_1, child_2
+            )
+            self.write_to_file(string)
+            return '%r' + str(reg), "int"
+
+        elif node.label in ['==', '!=', '<', '>', '<=', '>=']:
+            reg = self.register
+            self.register += 1
+            child1 = self.solve_math(node.children[0], symbol_table)
+            child2 = self.solve_math(node.children[1], symbol_table)
+            symbol_type = get_return_type(child1[1], child2[1])
+            child_1 = self.cast_value(child1[0], child1[1], symbol_type, node.ctx.start)
+            child_2 = self.cast_value(child2[0], child2[1], symbol_type, node.ctx.start)
+            sym_type, stars = get_type_and_stars(symbol_type)
+            string = '%r{} = {} {}{} {}, {} \n'.format(
+                str(reg), self.bool_dict[sym_type][node.label], self.format_dict[sym_type], stars,
+                child_1,
+                child_2
+            )
+            self.write_to_file(string)
+            reg2 = self.register
+            self.register += 1
+            string2 = '%r{} = zext i1 %r{} to i32\n'.format(str(reg2), str(reg))
+            self.write_to_file(string2)
+
+            return '%r' + str(reg2), 'int'
+
+        elif node.node_type == 'Increment_var':
+            address_register = self.get_address_register(node.children[0], symbol_table)
+            reg, symbol_type = self.solve_llvm_node(node.children[0], symbol_table)
+
+            self.increment_register(reg, symbol_type, node.children[1].label, address_register, node)
+
+            return reg, symbol_type
+
+        elif node.node_type == 'Increment_op':
+            address_register = self.get_address_register(node.children[1], symbol_table)
+            reg, symbol_type = self.solve_llvm_node(node.children[1], symbol_table)
+
+            new_register = self.increment_register(reg, symbol_type, node.children[0].label, address_register, node)
+
+            return new_register, symbol_type
+
+        elif node.node_type == 'unary plus':
+            return self.solve_math(node.children[1], symbol_table)
+
+        elif node.node_type == 'unary min':
+            value = self.solve_math(node.children[1], symbol_table)
+            reg = self.register
+            self.register += 1
+            string = "%r{} = {} {} {}, {}\n".format(
+                reg, self.optype[value[1]]['-'], self.format_dict[value[1]], self.null[value[1]], value[0]
+            )
+            self.write_to_file(string)
+            return '%r' + str(reg), value[1]
+
+        elif node.node_type == 'method_call':
+            return self.call_method(node, symbol_table)
+
+        elif node.node_type == 'rvalue':
+            value = str(node.label)
+
+            if str(node.symbol_type) == "float":
+                value = self.store_float(float(node.label))
+            if str(node.symbol_type) == "char*":
+                return self.make_string(str(node.label), symbol_table), "char*"
+
+            if str(node.symbol_type)[0] == '&':
+                value = symbol_table.get_written_symbol(value, node.ctx.start).var_counter
+            return value, str(node.symbol_type)
+
+        elif node.node_type == 'lvalue':
+            sym = symbol_table.get_assigned_symbol(node.label, node.ctx.start)
+            sym_type, stars = get_type_and_stars(sym.symbol_type)
+            address, symbol_type_stars = self.dereference(sym.var_counter, stars, sym_type,
+                                                          node.label.count('*'))
+
+            sym_type, stars = get_type_and_stars(symbol_type_stars)
+            reg = self.register
+            self.register += 1
+            if sym.size:
+
+                # string = "%r{} = ".format(str(reg))+ self.get_array_ptr(address, self.format_dict[sym_type]+stars, sym.size) +"\n"
+                # self.write_to_file(string)
+                reg, ltype = self.get_fixed_index_of_array(address, self.format_dict[sym_type] + stars, 0, sym.size)
+
+                return reg, sym_type + stars + '*'
+            else:
+
+                return self.load_instruction(reg, stars, sym_type, address), symbol_type_stars
+
+        elif node.node_type == 'array_element':
+            sym = symbol_table.get_symbol(node.label, node.ctx.start)
+            if not sym.size:
+                symbol_name = re.sub(r'\[]', '', node.label)
+                raise Exception("Error Line {}, Position {}: {} is not an array".format(
+                    node.ctx.start.line, node.ctx.start.column, symbol_name
+                ))
+            sym = symbol_table.get_assigned_symbol(node.label, node.ctx.start)
+            sym_type, stars = get_type_and_stars(sym.symbol_type)
+            address = self.get_index_of_array(sym.var_counter, self.format_dict[sym_type] + stars, sym.size,
+                                              node.children[1], symbol_table, node.label,
+                                              node.ctx.start)[0]
+            reg = self.register
+            self.register += 1
+            return self.load_instruction(reg, stars, sym_type, address), sym.symbol_type
+
+        elif node.node_type == 'bool2' and node.children[0].label == '!':
+
+            value = self.solve_math(node.children[1], symbol_table)
+            return self.not_value(value[0], value[1], node)
+
+        return None, None
 
