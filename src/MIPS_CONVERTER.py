@@ -19,7 +19,7 @@ class MIPS_Converter:
         self.temp_used_registers = []
 
         self.data_section = ".data\n"
-        self.instruction_section = ".text\n"
+        self.instruction_section = ".text\nmain:\n"
 
     def write_to_file(self, string: str):
         """
@@ -95,6 +95,7 @@ class MIPS_Converter:
         self.write_to_instruction(string, 2)
 
     def load_symbol(self, symbol, symbol_table):
+        # TODO maak dit efficient
         self.allocate_mem(4, symbol_table)
         offset = str(symbol.offset)
         reg = register_dict(symbol.symbol_type,0)
@@ -186,6 +187,51 @@ class MIPS_Converter:
         """
         string = "jr {}".format(reg)
         self.write_to_instruction(string)
+
+    # Prints
+    def print_int(self, reg):
+        """
+        move $a0, $t0
+        li $v0, 1
+        syscall
+        :param reg: register to print
+        :return:
+        """
+        if '(' in reg:
+            self.load_word("$t0", reg)
+            reg = "$t0"
+        self.write_to_instruction("move $a0, %s" % reg, 2)
+        self.write_to_instruction("li $v0, 1", 2)
+        self.write_to_instruction("syscall", 2)
+
+    def print_string(self, reg):
+        if '(' in reg:
+            self.load_word("$t0", reg)
+            reg = "$t0"
+        self.write_to_instruction("move $a0, %s" % reg, 2)
+        self.write_to_instruction("li $v0, 4", 2)
+        self.write_to_instruction("syscall", 2)
+
+    def print_float(self, reg):
+        """
+        :param reg: Should be $f0-11
+        :return:
+        """
+        self.write_to_instruction("mov.s $f12, %s" % reg, 2)
+        self.write_to_instruction("li $v0, 2", 2)
+        self.write_to_instruction("syscall", 2)
+
+    def print_char(self, reg):
+        """
+        :param reg:
+        :return:
+        """
+        if '(' in reg:
+            self.load_word("$t0", reg)
+            reg = "$t0"
+        self.write_to_instruction("move $a0, %s" % reg, 2)
+        self.write_to_instruction("li $v0, 11", 2)
+        self.write_to_instruction("syscall", 2)
 
     def to_mips(self):
         """
@@ -443,53 +489,45 @@ class MIPS_Converter:
 
             return "0($sp)", symbol_type
 
-
-        elif node.label == '&&':
-            reg = self.register
-            self.register += 1
+        elif node.label in ['&&', '||']:
+            # Calculate values and store on stack
             child1 = self.solve_math(node.children[0], symbol_table)
             child2 = self.solve_math(node.children[1], symbol_table)
-            child_1 = self.cast_value(child1[0], child1[1], 'int', node.ctx.start)
-            child_2 = self.cast_value(child2[0], child2[1], 'int', node.ctx.start)
-            string = "%r{} = and i32 {}, {}\n".format(
-                str(reg), child_1, child_2
-            )
-            self.write_to_file(string)
-            return '%r' + str(reg), "int"
-        elif node.label == '||':
-            reg = self.register
-            self.register += 1
-            child1 = self.solve_math(node.children[0], symbol_table)
-            child2 = self.solve_math(node.children[1], symbol_table)
-            child_1 = self.cast_value(child1[0], child1[1], 'int', node.ctx.start)
-            child_2 = self.cast_value(child2[0], child2[1], 'int', node.ctx.start)
-            string = "%r{} = or i32 {}, {}\n".format(
-                str(reg), child_1, child_2
-            )
-            self.write_to_file(string)
-            return '%r' + str(reg), "int"
+            # No cast because bitwise
+            self.load_word("$t0", "0($sp)")
+            self.load_word("$t1", "4($sp)")
+            instruction = "and" if node.label == "&&" else "or"
+            string = "%s $t0, $t1, $t0" % instruction
+            self.write_to_instruction(string, 2)
+            self.deallocate_mem(4, symbol_table)  # Delete one
+            self.store("$t0", "0($sp)")  # Overwrite the other
+            # self.print_int('$t0')
+            return "0($sp)"
 
         elif node.label in ['==', '!=', '<', '>', '<=', '>=']:
-            reg = self.register
-            self.register += 1
+            # Move values on stack
             child1 = self.solve_math(node.children[0], symbol_table)
             child2 = self.solve_math(node.children[1], symbol_table)
-            symbol_type = get_return_type(child1[1], child2[1])
-            child_1 = self.cast_value(child1[0], child1[1], symbol_type, node.ctx.start)
-            child_2 = self.cast_value(child2[0], child2[1], symbol_type, node.ctx.start)
-            sym_type, stars = get_type_and_stars(symbol_type)
-            string = '%r{} = {} {}{} {}, {} \n'.format(
-                str(reg), self.bool_dict[sym_type][node.label], self.format_dict[sym_type], stars,
-                child_1,
-                child_2
-            )
-            self.write_to_file(string)
-            reg2 = self.register
-            self.register += 1
-            string2 = '%r{} = zext i1 %r{} to i32\n'.format(str(reg2), str(reg))
-            self.write_to_file(string2)
+            # TODO return symbol type after solve math
+            # TODO Float detection
+            # symbol_type = get_return_type(child1[1], child2[1])
+            # Cast Values
+            # TODO Cast
+            # child_1 = self.cast_value(child1[0], child1[1], symbol_type, node.ctx.start)
+            # child_2 = self.cast_value(child2[0], child2[1], symbol_type, node.ctx.start)
+            # sym_type, stars = get_type_and_stars(symbol_type)
 
-            return '%r' + str(reg2), 'int'
+            # Instruction
+            self.load_word("$t0", "0($sp)")
+            self.load_word("$t1", "4($sp)")
+            string = "%s $t0, $t1, $t0" % self.bool_dict['int'][node.label]
+            self.write_to_instruction(string, 2)
+
+            # Store value
+            self.deallocate_mem(4, symbol_table)  # Delete one
+            self.store("$t0", "0($sp)")  # Overwrite the other
+            self.print_int('$t0')
+            return '0($sp)'
 
         elif node.node_type == 'Increment_var':
             address_register = self.get_address_register(node.children[0], symbol_table)

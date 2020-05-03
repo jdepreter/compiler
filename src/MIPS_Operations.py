@@ -30,7 +30,7 @@ optype = {
 bool_dict = {
     'int': {
         '==': 'seq',
-        '!=': 'sge',
+        '!=': 'sne',
         '>': 'sgt',
         '<': 'slt',
         '>=': 'sge',
@@ -46,10 +46,10 @@ bool_dict = {
     },
     'float': {
         '==': 'c.eq.s',
-        '!=': 'c.eq.s',
-        '>': 'c.le.s',
+        '!=': 'c.ne.s',
+        '>': 'c.gt.s',
         '<': 'c.lt.s',
-        '>=': 'c.lt.s',
+        '>=': 'c.ge.s',
         '<=': 'c.le.s'
     }
 }
