@@ -84,26 +84,27 @@ class MIPS_Converter:
         # Decrease offset of previous variables in stack
         symbol_table.decrease_offset(amount)
 
-    def load_immediate(self, value, destination):
+    def load_immediate(self, value, destination, symbol_type):
         """
         Load Immediate Instruction
         :param value:
         :param destination:
         :return:
         """
-        string = "li %s, %s" % (destination, value)
+        string = "%s %s, %s" % (mips_operators[symbol_type]['li'],destination, value)
         self.write_to_instruction(string, 2)
 
     def load_symbol(self, symbol, symbol_table):
         self.allocate_mem(4, symbol_table)
         offset = str(symbol.offset)
-        string = "lw $t0, %s($sp)" % offset
+        reg = register_dict(symbol.symbol_type,0)
+        string = "%s %s, %s($sp)" % (mips_operators[symbol.symbol_type]['lw'], reg,offset)
         self.write_to_instruction(string, 2)
-        string = "sw $t0 0($sp)"
+        string = "%s %s 0($sp)" % (mips_operators[symbol.symbol_type]['sw'], reg)
         self.write_to_instruction(string, 2)
 
-    def load_word(self, left, right):
-        string = "lw %s, %s" % (left, right)
+    def load_word(self, left, right, symbol_type):
+        string = "%s %s, %s" % ( mips_operators[symbol_type]['sw'], left, right)
         self.write_to_instruction(string, 2)
 
     def store_symbol(self, value, symbol):
@@ -114,17 +115,17 @@ class MIPS_Converter:
         :return:
         """
         offset = str(symbol.offset)
-        string = "sw %s, %s($sp)" % (str(value), offset)
+        string = "%s %s, %s($sp)" % (mips_operators[symbol.symbol_type]['lw'],str(value), offset)
         self.write_to_instruction(string, 2)
 
-    def store(self, source, destination):
+    def store(self, source, destination, symbol_type):
         """
         Load Word instruction
         :param source:
         :param destination:
         :return:
         """
-        string = "sw %s, %s" % (source, destination)
+        string = "%s %s, %s" % (mips_operators[symbol_type]['sw'],source, destination)
         self.write_to_instruction(string, 2)
 
     def cast_value(self, current_reg, current_type, new_type, error):
@@ -150,9 +151,9 @@ class MIPS_Converter:
             self.write_to_instruction(string, 2)
 
         elif current_type == "float" and new_type == 'int':
-            string = "cvt.w.s %s, %s" % (current_type, current_type)
+            string = "cvt.w.s %s, %s" % (current_reg, current_reg)
             self.write_to_instruction(string, 2)
-            string = "mfc1 %s, %s" % (current_reg, newreg)
+            string = "mfc1 %s, %s" % ( newreg, current_reg)
             self.write_to_instruction(string, 2)
         else:
             raise Exception("uninstated conversion")
@@ -340,7 +341,7 @@ class MIPS_Converter:
         else:
             value = self.solve_math(node.children[1], symbol_table)
             reg = register_dict(value[1], 0)
-            self.load_word(reg, value[0])
+            self.load_word(reg, value[0], value[1])
             reg = self.cast_value(reg, value[1], symbol.symbol_type, node.ctx.start)
             self.store_symbol(reg, symbol)
             self.deallocate_mem(4, symbol_table)
@@ -374,17 +375,17 @@ class MIPS_Converter:
             symbol_type = get_return_type(child1[1], child2[1])
             #
             # # Cast if required
-            self.load_word(register_dict(child2[1], 0), "0($sp)")
-            self.load_word(register_dict(child1[1], 1), "4($sp)")
+            self.load_word(register_dict(child2[1], 0), "0($sp)", child2[1])
+            self.load_word(register_dict(child1[1], 1), "4($sp)", child1[1])
 
             child_1 = self.cast_value(register_dict(child1[1], 1), child1[1], symbol_type, node.ctx.start)
             child_2 = self.cast_value(register_dict(child2[1], 0), child2[1], symbol_type, node.ctx.start)
 
 
-            string = "%s %s, %s, %s" % (self.optype[symbol_type][node.label], child2, child1, child2)
+            string = "%s %s, %s, %s" % (self.optype[symbol_type][node.label], child_2, child_1, child_2)
             self.write_to_instruction(string, 2)
             self.deallocate_mem(4, symbol_table)    # Delete one
-            self.store(child2, "0($sp)")              # Overwrite the other
+            self.store(child_2, "0($sp)", symbol_type)              # Overwrite the other
 
             return "0($sp)", symbol_type
 
@@ -397,8 +398,8 @@ class MIPS_Converter:
             symbol_type = get_return_type(child1[1], child2[1])
             #
             # # Cast if required
-            self.load_word(register_dict(child2[1], 0), "0($sp)")
-            self.load_word(register_dict(child1[1], 1), "4($sp)")
+            self.load_word(register_dict(child2[1], 0), "0($sp)", child2[1])
+            self.load_word(register_dict(child1[1], 1), "4($sp)", child1[1])
 
             child_1 = self.cast_value(register_dict(child1[1], 1), child1[1], symbol_type, node.ctx.start)
             child_2 = self.cast_value(register_dict(child2[1], 0), child2[1], symbol_type, node.ctx.start)
@@ -407,14 +408,14 @@ class MIPS_Converter:
                 string = "div.s %s, %s, %s" % (child_2, child_1, child_2)
                 self.write_to_instruction(string, 2)
                 self.deallocate_mem(4, symbol_table)  # Delete one
-                self.store(child2, "0($sp)")  # Overwrite the other
+                self.store(child_2, "0($sp)", symbol_type)  # Overwrite the other
             else:
                 string = "%s %s, %s" % (self.optype['int'][node.label], child_1, child_2)
                 self.write_to_instruction(string, 2)
                 string = "mflo $t0"
                 self.write_to_instruction(string, 2)
                 self.deallocate_mem(4, symbol_table)  # Delete one
-                self.store("$t0", "0($sp)")  # Overwrite the other
+                self.store("$t0", "0($sp)",symbol_type)  # Overwrite the other
 
             return "0($sp)", symbol_type
         elif node.label == "%":
@@ -426,8 +427,8 @@ class MIPS_Converter:
             symbol_type = get_return_type(child1[1], child2[1])
             #
             # # Cast if required
-            self.load_word(register_dict(child2[1], 0), "0($sp)")
-            self.load_word(register_dict(child1[1], 1), "4($sp)")
+            self.load_word(register_dict(child2[1], 0), "0($sp)", child2[1])
+            self.load_word(register_dict(child1[1], 1), "4($sp)", child2[1])
 
             child_1 = self.cast_value(register_dict(child1[1], 1), child1[1], symbol_type, node.ctx.start)
             child_2 = self.cast_value(register_dict(child2[1], 0), child2[1], symbol_type, node.ctx.start)
@@ -438,7 +439,7 @@ class MIPS_Converter:
             string = "mfhi $t0"
             self.write_to_instruction(string, 2)
             self.deallocate_mem(4, symbol_table)  # Delete one
-            self.store("$t0", "0($sp)")  # Overwrite the other
+            self.store("$t0", "0($sp)", symbol_type)  # Overwrite the other
 
             return "0($sp)", symbol_type
 
@@ -532,8 +533,9 @@ class MIPS_Converter:
             # if str(node.symbol_type)[0] == '&':
             #     value = symbol_table.get_written_symbol(value, node.ctx.start).var_counter
             self.allocate_mem(4, symbol_table)
-            self.load_immediate(value, "$t0")
-            self.store("$t0", "0($sp)")
+            reg = register_dict(str(node.symbol_type), 0)
+            self.load_immediate(value, reg, str(node.symbol_type))
+            self.store(reg, "0($sp)", str(node.symbol_type))
 
             return "0($sp)", str(node.symbol_type)
 

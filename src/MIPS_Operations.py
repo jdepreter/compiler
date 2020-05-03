@@ -36,6 +36,14 @@ bool_dict = {
         '>=': 'sge',
         '<=': 'sle'
     },
+    'char': {
+        '==': 'seq',
+        '!=': 'sge',
+        '>': 'sgt',
+        '<': 'slt',
+        '>=': 'sge',
+        '<=': 'sle'
+    },
     'float': {
         '==': 'c.eq.s',
         '!=': 'c.eq.s',
@@ -44,6 +52,26 @@ bool_dict = {
         '>=': 'c.lt.s',
         '<=': 'c.le.s'
     }
+}
+
+mips_operators ={
+    'int': {
+        'li': 'li',
+        'lw': 'lw',
+        'sw': 'sw'
+    },
+    'char': {
+        'li': 'li',
+        'lw': 'lw',
+        'sw': 'sw'
+    },
+    'float': {
+        'li': 'li.s',
+        'lw': 'lwc1',
+        'sw': 'swc1'
+    }
+
+
 }
 
 
