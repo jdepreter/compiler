@@ -19,7 +19,7 @@ class MIPS_Converter:
         self.temp_used_registers = []
 
         self.data_section = ".data\n"
-        self.instruction_section = ".text\n"
+        self.instruction_section = ".text\nmain:\n"
 
     def write_to_file(self, string: str):
         """
@@ -95,6 +95,7 @@ class MIPS_Converter:
         self.write_to_instruction(string, 2)
 
     def load_symbol(self, symbol, symbol_table):
+        # TODO maak dit efficient
         self.allocate_mem(4, symbol_table)
         offset = str(symbol.offset)
         string = "lw $t0, %s($sp)" % offset
@@ -154,6 +155,51 @@ class MIPS_Converter:
         """
         string = "jr {}".format(reg)
         self.write_to_instruction(string)
+
+    # Prints
+    def print_int(self, reg):
+        """
+        move $a0, $t0
+        li $v0, 1
+        syscall
+        :param reg: register to print
+        :return:
+        """
+        if '(' in reg:
+            self.load_word("$t0", reg)
+            reg = "$t0"
+        self.write_to_instruction("move $a0, %s" % reg, 2)
+        self.write_to_instruction("li $v0, 1", 2)
+        self.write_to_instruction("syscall", 2)
+
+    def print_string(self, reg):
+        if '(' in reg:
+            self.load_word("$t0", reg)
+            reg = "$t0"
+        self.write_to_instruction("move $a0, %s" % reg, 2)
+        self.write_to_instruction("li $v0, 4", 2)
+        self.write_to_instruction("syscall", 2)
+
+    def print_float(self, reg):
+        """
+        :param reg: Should be $f0-11
+        :return:
+        """
+        self.write_to_instruction("mov.s $f12, %s" % reg, 2)
+        self.write_to_instruction("li $v0, 2", 2)
+        self.write_to_instruction("syscall", 2)
+
+    def print_char(self, reg):
+        """
+        :param reg:
+        :return:
+        """
+        if '(' in reg:
+            self.load_word("$t0", reg)
+            reg = "$t0"
+        self.write_to_instruction("move $a0, %s" % reg, 2)
+        self.write_to_instruction("li $v0, 11", 2)
+        self.write_to_instruction("syscall", 2)
 
     def to_mips(self):
         """
@@ -350,7 +396,8 @@ class MIPS_Converter:
             string = "%s $t0, $t1, $t0" % self.optype['int']['+']
             self.write_to_instruction(string, 2)
             self.deallocate_mem(4, symbol_table)    # Delete one
-            self.store("$t0", "0($sp)")              # Overwrite the other
+            self.store("$t0", "0($sp)")             # Overwrite the other
+            # self.print_int("$t0")
 
             return "0($sp)"
 
