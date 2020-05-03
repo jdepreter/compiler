@@ -519,14 +519,9 @@ class MIPS_Converter:
 
             child_1 = self.cast_value(register_dict(child1[1], 1), child1[1], symbol_type, node.ctx.start)
             child_2 = self.cast_value(register_dict(child2[1], 0), child2[1], symbol_type, node.ctx.start)
-            # TODO return symbol type after solve math
             # TODO Float detection
-            # symbol_type = get_return_type(child1[1], child2[1])
-            # Cast Values
-            # TODO Cast
-            # child_1 = self.cast_value(child1[0], child1[1], symbol_type, node.ctx.start)
-            # child_2 = self.cast_value(child2[0], child2[1], symbol_type, node.ctx.start)
-            # sym_type, stars = get_type_and_stars(symbol_type)
+            # TODO floats mee werken
+
             if symbol_type == 'int':
                 string = "%s $t0, $t1, $t0" % self.bool_dict['int'][node.label]
                 self.write_to_instruction(string, 2)
@@ -538,20 +533,34 @@ class MIPS_Converter:
                 return '0($sp)', "int"
 
         elif node.node_type == 'Increment_var':
-            address_register = self.get_address_register(node.children[0], symbol_table)
-            reg, symbol_type = self.solve_llvm_node(node.children[0], symbol_table)
+            reg, symbol_type = self.solve_math(node.children[0], symbol_table)
 
-            self.increment_register(reg, symbol_type, node.children[1].label, address_register, node)
+            reg = register_dict(symbol_type, 0)
 
+            string = "%s %s, %s, 1" % (self.optype[symbol_type][node.children[1].label], reg, reg)
+
+            self.write_to_instruction(string, 2)
+
+            sym = symbol_table.get_written_symbol(node.children[0].label, node.ctx.start)
+            self.store_symbol(reg, sym)
             return reg, symbol_type
 
         elif node.node_type == 'Increment_op':
             address_register = self.get_address_register(node.children[1], symbol_table)
-            reg, symbol_type = self.solve_llvm_node(node.children[1], symbol_table)
+            reg, symbol_type = self.solve_math(node.children[0], symbol_table)
 
-            new_register = self.increment_register(reg, symbol_type, node.children[0].label, address_register, node)
+            reg = register_dict(symbol_type, 0)
 
-            return new_register, symbol_type
+            string = "%s %s, %s, 1" % (self.optype[symbol_type][node.children[1].label], reg, reg)
+
+            self.write_to_instruction(string, 2)
+
+            sym = symbol_table.get_written_symbol(node.children[0].label, node.ctx.start)
+            self.store_symbol(reg, sym)
+
+            self.store(reg, '0(*sp)', symbol_type)
+
+            return reg, symbol_type
 
         elif node.node_type == 'unary plus':
             return self.solve_math(node.children[1], symbol_table)

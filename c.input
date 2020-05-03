@@ -3,6 +3,6 @@
 int main() {
     int x = 2;
     int y = 3;
+    x++;
     int z = x != y;
-    printf("Hello World!");
 }
