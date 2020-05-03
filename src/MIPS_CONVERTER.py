@@ -494,20 +494,31 @@ class MIPS_Converter:
             child1 = self.solve_math(node.children[0], symbol_table)
             child2 = self.solve_math(node.children[1], symbol_table)
             # No cast because bitwise
-            self.load_word("$t0", "0($sp)")
-            self.load_word("$t1", "4($sp)")
+            self.load_word("$t0", "0($sp)", 'int')
+            self.load_word("$t1", "4($sp)", 'int')
             instruction = "and" if node.label == "&&" else "or"
             string = "%s $t0, $t1, $t0" % instruction
             self.write_to_instruction(string, 2)
             self.deallocate_mem(4, symbol_table)  # Delete one
-            self.store("$t0", "0($sp)")  # Overwrite the other
+            self.store("$t0", "0($sp)", 'int')  # Overwrite the other
             # self.print_int('$t0')
-            return "0($sp)"
+            return "0($sp)", 'int'
 
         elif node.label in ['==', '!=', '<', '>', '<=', '>=']:
             # Move values on stack
             child1 = self.solve_math(node.children[0], symbol_table)
             child2 = self.solve_math(node.children[1], symbol_table)
+
+            # # Check if current op is allowed
+            allowed_operation(child1[1], child2[1], node.label, node.ctx.start)
+            symbol_type = get_return_type(child1[1], child2[1])
+            #
+            # # Cast if required
+            self.load_word(register_dict(child2[1], 0), "0($sp)", child2[1])
+            self.load_word(register_dict(child1[1], 1), "4($sp)", child1[1])
+
+            child_1 = self.cast_value(register_dict(child1[1], 1), child1[1], symbol_type, node.ctx.start)
+            child_2 = self.cast_value(register_dict(child2[1], 0), child2[1], symbol_type, node.ctx.start)
             # TODO return symbol type after solve math
             # TODO Float detection
             # symbol_type = get_return_type(child1[1], child2[1])
@@ -516,18 +527,15 @@ class MIPS_Converter:
             # child_1 = self.cast_value(child1[0], child1[1], symbol_type, node.ctx.start)
             # child_2 = self.cast_value(child2[0], child2[1], symbol_type, node.ctx.start)
             # sym_type, stars = get_type_and_stars(symbol_type)
+            if symbol_type == 'int':
+                string = "%s $t0, $t1, $t0" % self.bool_dict['int'][node.label]
+                self.write_to_instruction(string, 2)
 
-            # Instruction
-            self.load_word("$t0", "0($sp)")
-            self.load_word("$t1", "4($sp)")
-            string = "%s $t0, $t1, $t0" % self.bool_dict['int'][node.label]
-            self.write_to_instruction(string, 2)
-
-            # Store value
-            self.deallocate_mem(4, symbol_table)  # Delete one
-            self.store("$t0", "0($sp)")  # Overwrite the other
-            self.print_int('$t0')
-            return '0($sp)'
+                # Store value
+                self.deallocate_mem(4, symbol_table)  # Delete one
+                self.store("$t0", "0($sp)", 'int')  # Overwrite the other
+                self.print_int('$t0')
+                return '0($sp)', "int"
 
         elif node.node_type == 'Increment_var':
             address_register = self.get_address_register(node.children[0], symbol_table)
