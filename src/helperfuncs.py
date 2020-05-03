@@ -58,3 +58,9 @@ def allowed_operation(symbol_type1, symbol_type2, operation, ctx):
                 ctx.line, ctx.column,
                 symbol_type1, operation, symbol_type2
             ))
+
+    if (symbol_type1=="float" or symbol_type2 == "float") and operation == "%":
+        raise IncompatibleType("[Error] Line {} Position {}: Incompatible Operation {} {} {}".format(
+            ctx.line, ctx.column,
+            symbol_type1, operation, symbol_type2
+        ))

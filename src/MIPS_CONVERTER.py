@@ -127,6 +127,37 @@ class MIPS_Converter:
         string = "sw %s, %s" % (source, destination)
         self.write_to_instruction(string, 2)
 
+    def cast_value(self, current_reg, current_type, new_type, error):
+        """
+        casqt a value in a register to a new register of the proper typing
+        :param register:
+        :param current_type:
+        :param new_type:
+        :param error:
+        :return:
+        """
+        current_sym_type, current_stars = get_type_and_stars(current_type)
+        new_sym_type, new_stars = get_type_and_stars(new_type)
+        if current_sym_type + current_stars == new_sym_type + new_stars:  # anders werkt & niet
+            return current_reg
+
+        newreg = register_dict(new_type, int(current_reg[-1]))
+
+        if current_type == "int" and new_type == 'float':
+            string = "mtc1 %s, %s" % (current_reg, newreg)
+            self.write_to_instruction(string, 2)
+            string = "cvt.s.w %s, %s" % (newreg, newreg)
+            self.write_to_instruction(string, 2)
+
+        elif current_type == "float" and new_type == 'int':
+            string = "cvt.w.s %s, %s" % (current_type, current_type)
+            self.write_to_instruction(string, 2)
+            string = "mfc1 %s, %s" % (current_reg, newreg)
+            self.write_to_instruction(string, 2)
+        else:
+            raise Exception("uninstated conversion")
+        return newreg
+
     # JUMPS
     def go_to_label(self, label):
         """
@@ -308,8 +339,10 @@ class MIPS_Converter:
             value = self.assign_node(node.children[1], symbol_table)
         else:
             value = self.solve_math(node.children[1], symbol_table)
-            self.load_word("$t0", value)
-            self.store_symbol("$t0", symbol)
+            reg = register_dict(value[1], 0)
+            self.load_word(reg, value[0])
+            reg = self.cast_value(reg, value[1], symbol.symbol_type, node.ctx.start)
+            self.store_symbol(reg, symbol)
             self.deallocate_mem(4, symbol_table)
 
         # if '[]' in str(node.children[0].label):
@@ -333,29 +366,83 @@ class MIPS_Converter:
         """
         string = ''
         if node.label in ['+', '-', '*']:
-            # Calculate values and store on stack
             child1 = self.solve_math(node.children[0], symbol_table)
             child2 = self.solve_math(node.children[1], symbol_table)
 
             # # Check if current op is allowed
-            # allowed_operation(child1[1], child2[1], node.label, node.ctx.start)
-            # symbol_type = get_return_type(child1[1], child2[1])
+            allowed_operation(child1[1], child2[1], node.label, node.ctx.start)
+            symbol_type = get_return_type(child1[1], child2[1])
             #
             # # Cast if required
-            # child_1 = self.cast_value(child1[0], child1[1], symbol_type, node.ctx.start)
-            # child_2 = self.cast_value(child2[0], child2[1], symbol_type, node.ctx.start)
+            self.load_word(register_dict(child2[1], 0), "0($sp)")
+            self.load_word(register_dict(child1[1], 1), "4($sp)")
 
-            self.load_word("$t0", "0($sp)")
-            self.load_word("$t1", "4($sp)")
-            string = "%s $t0, $t1, $t0" % self.optype['int']['+']
+            child_1 = self.cast_value(register_dict(child1[1], 1), child1[1], symbol_type, node.ctx.start)
+            child_2 = self.cast_value(register_dict(child2[1], 0), child2[1], symbol_type, node.ctx.start)
+
+
+            string = "%s %s, %s, %s" % (self.optype[symbol_type][node.label], child2, child1, child2)
             self.write_to_instruction(string, 2)
             self.deallocate_mem(4, symbol_table)    # Delete one
-            self.store("$t0", "0($sp)")              # Overwrite the other
+            self.store(child2, "0($sp)")              # Overwrite the other
 
-            return "0($sp)"
+            return "0($sp)", symbol_type
 
-        elif node.label in ["/", "%"]:
-            ...
+        elif node.label == "/":
+            child1 = self.solve_math(node.children[0], symbol_table)
+            child2 = self.solve_math(node.children[1], symbol_table)
+
+            # # Check if current op is allowed
+            allowed_operation(child1[1], child2[1], node.label, node.ctx.start)
+            symbol_type = get_return_type(child1[1], child2[1])
+            #
+            # # Cast if required
+            self.load_word(register_dict(child2[1], 0), "0($sp)")
+            self.load_word(register_dict(child1[1], 1), "4($sp)")
+
+            child_1 = self.cast_value(register_dict(child1[1], 1), child1[1], symbol_type, node.ctx.start)
+            child_2 = self.cast_value(register_dict(child2[1], 0), child2[1], symbol_type, node.ctx.start)
+
+            if symbol_type == "float" :
+                string = "div.s %s, %s, %s" % (child_2, child_1, child_2)
+                self.write_to_instruction(string, 2)
+                self.deallocate_mem(4, symbol_table)  # Delete one
+                self.store(child2, "0($sp)")  # Overwrite the other
+            else:
+                string = "%s %s, %s" % (self.optype['int'][node.label], child_1, child_2)
+                self.write_to_instruction(string, 2)
+                string = "mflo $t0"
+                self.write_to_instruction(string, 2)
+                self.deallocate_mem(4, symbol_table)  # Delete one
+                self.store("$t0", "0($sp)")  # Overwrite the other
+
+            return "0($sp)", symbol_type
+        elif node.label == "%":
+            child1 = self.solve_math(node.children[0], symbol_table)
+            child2 = self.solve_math(node.children[1], symbol_table)
+
+            # # Check if current op is allowed
+            allowed_operation(child1[1], child2[1], node.label, node.ctx.start)
+            symbol_type = get_return_type(child1[1], child2[1])
+            #
+            # # Cast if required
+            self.load_word(register_dict(child2[1], 0), "0($sp)")
+            self.load_word(register_dict(child1[1], 1), "4($sp)")
+
+            child_1 = self.cast_value(register_dict(child1[1], 1), child1[1], symbol_type, node.ctx.start)
+            child_2 = self.cast_value(register_dict(child2[1], 0), child2[1], symbol_type, node.ctx.start)
+
+
+            string = "%s %s, %s" % (self.optype[symbol_type][node.label], child_1, child_2)
+            self.write_to_instruction(string, 2)
+            string = "mfhi $t0"
+            self.write_to_instruction(string, 2)
+            self.deallocate_mem(4, symbol_table)  # Delete one
+            self.store("$t0", "0($sp)")  # Overwrite the other
+
+            return "0($sp)", symbol_type
+
+
         elif node.label == '&&':
             reg = self.register
             self.register += 1
@@ -448,13 +535,13 @@ class MIPS_Converter:
             self.load_immediate(value, "$t0")
             self.store("$t0", "0($sp)")
 
-            return "0($sp)"
+            return "0($sp)", str(node.symbol_type)
 
         elif node.node_type == 'lvalue':
             # TODO Check array, check address
             symbol = symbol_table.get_assigned_symbol(node.label, node.ctx.start)
             self.load_symbol(symbol, symbol_table)
-            return "0($sp)"
+            return "0($sp)", str(symbol.symbol_type)
 
         # elif node.node_type == 'array_element':
         #     sym = symbol_table.get_symbol(node.label, node.ctx.start)

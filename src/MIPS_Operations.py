@@ -45,3 +45,10 @@ bool_dict = {
         '<=': 'c.le.s'
     }
 }
+
+
+def register_dict(symbol_type, regnr):
+    sym = 't'
+    if symbol_type == "float":
+        sym = 'f'
+    return '$%s%d' % (sym, regnr)

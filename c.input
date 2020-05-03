@@ -3,6 +3,7 @@
 int main() {
     int x = 2;
     int y = 3;
-    int z = x + y;
+    int z = y / x;
+    int z2 = y % x;
     printf("Hello World!");
 }
