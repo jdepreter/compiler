@@ -411,7 +411,7 @@ class MIPS_Converter:
             self.load_word("$t0", "0($sp)")
             self.load_word("$t1", "4($sp)")
             instruction = "and" if node.label == "&&" else "or"
-            string = "%s $t0, $t0, $t1" % instruction
+            string = "%s $t0, $t1, $t0" % instruction
             self.write_to_instruction(string, 2)
             self.deallocate_mem(4, symbol_table)  # Delete one
             self.store("$t0", "0($sp)")  # Overwrite the other
@@ -419,26 +419,29 @@ class MIPS_Converter:
             return "0($sp)"
 
         elif node.label in ['==', '!=', '<', '>', '<=', '>=']:
-            reg = self.register
-            self.register += 1
+            # Move values on stack
             child1 = self.solve_math(node.children[0], symbol_table)
             child2 = self.solve_math(node.children[1], symbol_table)
-            symbol_type = get_return_type(child1[1], child2[1])
-            child_1 = self.cast_value(child1[0], child1[1], symbol_type, node.ctx.start)
-            child_2 = self.cast_value(child2[0], child2[1], symbol_type, node.ctx.start)
-            sym_type, stars = get_type_and_stars(symbol_type)
-            string = '%r{} = {} {}{} {}, {} \n'.format(
-                str(reg), self.bool_dict[sym_type][node.label], self.format_dict[sym_type], stars,
-                child_1,
-                child_2
-            )
-            self.write_to_file(string)
-            reg2 = self.register
-            self.register += 1
-            string2 = '%r{} = zext i1 %r{} to i32\n'.format(str(reg2), str(reg))
-            self.write_to_file(string2)
+            # TODO return symbol type after solve math
+            # TODO Float detection
+            # symbol_type = get_return_type(child1[1], child2[1])
+            # Cast Values
+            # TODO Cast
+            # child_1 = self.cast_value(child1[0], child1[1], symbol_type, node.ctx.start)
+            # child_2 = self.cast_value(child2[0], child2[1], symbol_type, node.ctx.start)
+            # sym_type, stars = get_type_and_stars(symbol_type)
 
-            return '%r' + str(reg2), 'int'
+            # Instruction
+            self.load_word("$t0", "0($sp)")
+            self.load_word("$t1", "4($sp)")
+            string = "%s $t0, $t1, $t0" % self.bool_dict['int'][node.label]
+            self.write_to_instruction(string, 2)
+
+            # Store value
+            self.deallocate_mem(4, symbol_table)  # Delete one
+            self.store("$t0", "0($sp)")  # Overwrite the other
+            self.print_int('$t0')
+            return '0($sp)'
 
         elif node.node_type == 'Increment_var':
             address_register = self.get_address_register(node.children[0], symbol_table)
