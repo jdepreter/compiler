@@ -403,30 +403,20 @@ class MIPS_Converter:
 
         elif node.label in ["/", "%"]:
             ...
-        elif node.label == '&&':
-            reg = self.register
-            self.register += 1
+        elif node.label in ['&&', '||']:
+            # Calculate values and store on stack
             child1 = self.solve_math(node.children[0], symbol_table)
             child2 = self.solve_math(node.children[1], symbol_table)
-            child_1 = self.cast_value(child1[0], child1[1], 'int', node.ctx.start)
-            child_2 = self.cast_value(child2[0], child2[1], 'int', node.ctx.start)
-            string = "%r{} = and i32 {}, {}\n".format(
-                str(reg), child_1, child_2
-            )
-            self.write_to_file(string)
-            return '%r' + str(reg), "int"
-        elif node.label == '||':
-            reg = self.register
-            self.register += 1
-            child1 = self.solve_math(node.children[0], symbol_table)
-            child2 = self.solve_math(node.children[1], symbol_table)
-            child_1 = self.cast_value(child1[0], child1[1], 'int', node.ctx.start)
-            child_2 = self.cast_value(child2[0], child2[1], 'int', node.ctx.start)
-            string = "%r{} = or i32 {}, {}\n".format(
-                str(reg), child_1, child_2
-            )
-            self.write_to_file(string)
-            return '%r' + str(reg), "int"
+            # No cast because bitwise
+            self.load_word("$t0", "0($sp)")
+            self.load_word("$t1", "4($sp)")
+            instruction = "and" if node.label == "&&" else "or"
+            string = "%s $t0, $t0, $t1" % instruction
+            self.write_to_instruction(string, 2)
+            self.deallocate_mem(4, symbol_table)  # Delete one
+            self.store("$t0", "0($sp)")  # Overwrite the other
+            # self.print_int('$t0')
+            return "0($sp)"
 
         elif node.label in ['==', '!=', '<', '>', '<=', '>=']:
             reg = self.register
