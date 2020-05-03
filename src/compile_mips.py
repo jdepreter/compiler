@@ -49,16 +49,16 @@ def to_llvm(filename, outputname):
     graph = printer.ast.render_dot()
     graph.save("{}".format(outputname), "trees")
     graph.render("{}".format(outputname))
-    f = open('./llvm/{}.ll'.format(outputname), 'w')
-    converter = LLVM_Converter(visitor, f)
-    converter.to_llvm()
+    f = open('./asm/{}.asm'.format(outputname), 'w')
+    converter = MIPS_Converter(visitor, f)
+    converter.to_mips()
     f.close()
 
     if platform.system() == 'Linux':
         result = ''
         try:
             result = check_output(
-                "clang ./llvm/{}.ll -o ./llvm/{} && ./llvm/{}".format(outputname, outputname, outputname),
+                "spim -file ./asm/{}.asm ".format(outputname, outputname, outputname),
                 shell=True).decode("utf-8")
         except CalledProcessError as e:
             if e.returncode != 1:

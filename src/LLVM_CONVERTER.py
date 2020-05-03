@@ -1,5 +1,6 @@
 from src.helperfuncs import *
 import re
+from src.symbolTables import *
 
 
 def string_to_charptr(string, symbol_table):
@@ -136,9 +137,9 @@ class LLVM_Converter:
     def get_address_register(self, node, symbol_table):
         sym = symbol_table.get_assigned_symbol(node.label, node.ctx.start)
         sym_type, stars = get_type_and_stars(sym.symbol_type)
-        address = sym.var_counter
+        address = sym.current_register
         if node.node_type == 'array_element':
-            address = self.get_index_of_array(sym.var_counter, self.format_dict[sym_type] + stars, sym.size,
+            address = self.get_index_of_array(sym.current_register, self.format_dict[sym_type] + stars, sym.size,
                                               node.children[1], symbol_table, node.label,
                                               node.ctx.start)[0]
 
@@ -172,7 +173,7 @@ class LLVM_Converter:
                 else:
                     raise Exception("Initializer element is not constant")
 
-            self.write_to_file("{} = global {} {}\n".format(symbol.var_counter, self.format_dict[sym_type], value))
+            self.write_to_file("{} = global {} {}\n".format(symbol.current_register, self.format_dict[sym_type], value))
             symbol.written = True
             return None, None
 
@@ -192,8 +193,8 @@ class LLVM_Converter:
 
         return reg_nr, symbol_type
 
-    def alloc_instruction(self, stars, sym_type, symbol):
-        reg_nr = symbol.var_counter
+    def alloc_instruction(self, stars, sym_type, symbol: SymbolType):
+        reg_nr = symbol.current_register
         string = "{} = alloca {}{} \n".format(
             reg_nr,
             self.format_dict[sym_type], stars
@@ -225,7 +226,7 @@ class LLVM_Converter:
                 index_node.ctx.start.line, index_node.ctx.start.column,
             ))
         size = register
-        reg_nr = symbol.var_counter
+        reg_nr = symbol.current_register
         string = "{} = alloca [{} x {}]\n".format(
             reg_nr, register, llvm_type + stars
         )
@@ -245,7 +246,7 @@ class LLVM_Converter:
         :return:
         """
         size = size[0]
-        reg_nr = symbol.var_counter
+        reg_nr = symbol.current_register
         string = "{} = common global [{} x {}] zeroinitializer\n".format(
             reg_nr, size, llvm_type + stars
         )
@@ -259,7 +260,7 @@ class LLVM_Converter:
         symbol_string = str(node.children[0].label)
 
         symbol = symbol_table.get_written_symbol(symbol_string, node.ctx.start)
-        address = symbol.var_counter
+        address = symbol.current_register
         if node.children[1].node_type == 'assignment':
             register, symbol_type = self.assign_node(expression, symbol_table)
         else:
@@ -268,7 +269,7 @@ class LLVM_Converter:
         if '[]' in str(node.children[0].label):
             # We are dealing with an array index
             address, temp = self.get_index_of_array(
-                symbol.var_counter, self.format_dict[symbol_type], symbol.size,
+                symbol.current_register, self.format_dict[symbol_type], symbol.size,
                 node.children[0].children[1], symbol_table, node.label,
                 node.ctx.start
             )
@@ -437,7 +438,7 @@ class LLVM_Converter:
         reg = self.register
         self.register += 1
         sym_type, stars = get_type_and_stars(symbol.symbol_type)
-        return self.load_instruction(reg, stars, sym_type, symbol.var_counter)
+        return self.load_instruction(reg, stars, sym_type, symbol.current_register)
 
     def load_instruction(self, reg, stars, sym_type, current_register):
         string = '%r{} = load {}{} ,{}{}* {} \n'.format(
@@ -557,13 +558,13 @@ class LLVM_Converter:
                 return self.make_string(str(node.label), symbol_table), "char*"
 
             if str(node.symbol_type)[0] == '&':
-                value = symbol_table.get_written_symbol(value, node.ctx.start).var_counter
+                value = symbol_table.get_written_symbol(value, node.ctx.start).current_register
             return value, str(node.symbol_type)
 
         elif node.node_type == 'lvalue':
             sym = symbol_table.get_assigned_symbol(node.label, node.ctx.start)
             sym_type, stars = get_type_and_stars(sym.symbol_type)
-            address, symbol_type_stars = self.dereference(sym.var_counter, stars, sym_type,
+            address, symbol_type_stars = self.dereference(sym.current_register, stars, sym_type,
                                                           node.label.count('*'))
 
             sym_type, stars = get_type_and_stars(symbol_type_stars)
@@ -589,7 +590,7 @@ class LLVM_Converter:
                 ))
             sym = symbol_table.get_assigned_symbol(node.label, node.ctx.start)
             sym_type, stars = get_type_and_stars(sym.symbol_type)
-            address = self.get_index_of_array(sym.var_counter, self.format_dict[sym_type] + stars, sym.size,
+            address = self.get_index_of_array(sym.current_register, self.format_dict[sym_type] + stars, sym.size,
                                               node.children[1], symbol_table, node.label,
                                               node.ctx.start)[0]
             reg = self.register
@@ -612,7 +613,7 @@ class LLVM_Converter:
             new_sym
         )
         self.write_to_file(string)
-        self.store_symbol(symbol.var_counter, '%r' + str(reg), symbol_type, symbol_type, node)
+        self.store_symbol(symbol.current_register, '%r' + str(reg), symbol_type, symbol_type, node)
         return reg
 
     def increment_register(self, register, symbol_type, plusplus, address, node):

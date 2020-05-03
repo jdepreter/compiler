@@ -15,7 +15,7 @@ class MethodType:
 
 
 class SymbolType:
-    def __init__(self, symbol_type, assigned, const, current_register, offset=0, _global=False, array_size_node=None):
+    def __init__(self, symbol_type, assigned, const, current_register, _global=False, array_size_node=None):
         self.symbol_type = symbol_type
         self.assigned = assigned
         self.const = const
@@ -33,7 +33,7 @@ class SymbolType:
             self.current_register = '%a' + str(current_register)
 
         # MIPS
-        self.offset = offset
+        self.offset = 0
 
     def set_reg(self, current_register):
         self.current_register = current_register
