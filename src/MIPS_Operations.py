@@ -58,17 +58,20 @@ mips_operators ={
     'int': {
         'li': 'li',
         'lw': 'lw',
-        'sw': 'sw'
+        'sw': 'sw',
+        'neg': 'neg'
     },
     'char': {
         'li': 'li',
         'lw': 'lw',
-        'sw': 'sw'
+        'sw': 'sw',
+        'neg': 'neg'
     },
     'float': {
         'li': 'li.s',
         'lw': 'lwc1',
-        'sw': 'swc1'
+        'sw': 'swc1',
+        'neg': 'neg.s'
     }
 
 

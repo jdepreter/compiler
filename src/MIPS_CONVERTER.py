@@ -558,7 +558,7 @@ class MIPS_Converter:
             sym = symbol_table.get_written_symbol(node.children[0].label, node.ctx.start)
             self.store_symbol(reg, sym)
 
-            self.store(reg, '0(*sp)', symbol_type)
+            self.store(reg, '0($sp)', symbol_type)
 
             return reg, symbol_type
 
@@ -567,13 +567,24 @@ class MIPS_Converter:
 
         elif node.node_type == 'unary min':
             value = self.solve_math(node.children[1], symbol_table)
-            reg = self.register
-            self.register += 1
-            string = "%r{} = {} {} {}, {}\n".format(
-                reg, self.optype[value[1]]['-'], self.format_dict[value[1]], self.null[value[1]], value[0]
-            )
-            self.write_to_file(string)
-            return '%r' + str(reg), value[1]
+            reg = register_dict(value[1],0)
+            self.load_word(reg, '0($sp)', value[1])
+            string = "%s %s" % (mips_operators[value[1]]['neg'], reg)
+            self.write_to_instruction(string, 2)
+
+            self.store(reg, '0($sp)', value[1])
+
+            return reg, value[1]
+
+
+
+            # reg = self.register
+            # self.register += 1
+            # string = "%r{} = {} {} {}, {}\n".format(
+            #     reg, self.optype[value[1]]['-'], self.format_dict[value[1]], self.null[value[1]], value[0]
+            # )
+            # self.write_to_file(string)
+            # return '%r' + str(reg), value[1]
 
         # elif node.node_type == 'method_call':
         #     return self.call_method(node, symbol_table)
