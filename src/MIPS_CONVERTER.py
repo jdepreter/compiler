@@ -105,7 +105,7 @@ class MIPS_Converter:
         self.write_to_instruction(string, 2)
 
     def load_word(self, left, right, symbol_type):
-        string = "%s %s, %s" % ( mips_operators[symbol_type]['sw'], left, right)
+        string = "%s %s, %s" % ( mips_operators[symbol_type]['lw'], left, right)
         self.write_to_instruction(string, 2)
 
     def store_symbol(self, value, symbol):
@@ -116,7 +116,7 @@ class MIPS_Converter:
         :return:
         """
         offset = str(symbol.offset)
-        string = "%s %s, %s($sp)" % (mips_operators[symbol.symbol_type]['lw'],str(value), offset)
+        string = "%s %s, %s($sp)" % (mips_operators[symbol.symbol_type]['sw'],str(value), offset)
         self.write_to_instruction(string, 2)
 
     def store(self, source, destination, symbol_type):
@@ -198,7 +198,7 @@ class MIPS_Converter:
         :return:
         """
         if '(' in reg:
-            self.load_word("$t0", reg)
+            self.load_word("$t0", reg, "int")
             reg = "$t0"
         self.write_to_instruction("move $a0, %s" % reg, 2)
         self.write_to_instruction("li $v0, 1", 2)
@@ -206,7 +206,7 @@ class MIPS_Converter:
 
     def print_string(self, reg):
         if '(' in reg:
-            self.load_word("$t0", reg)
+            self.load_word("$t0", reg, "char*")
             reg = "$t0"
         self.write_to_instruction("move $a0, %s" % reg, 2)
         self.write_to_instruction("li $v0, 4", 2)
@@ -227,7 +227,7 @@ class MIPS_Converter:
         :return:
         """
         if '(' in reg:
-            self.load_word("$t0", reg)
+            self.load_word("$t0", reg, "char")
             reg = "$t0"
         self.write_to_instruction("move $a0, %s" % reg, 2)
         self.write_to_instruction("li $v0, 11", 2)
@@ -271,7 +271,14 @@ class MIPS_Converter:
                 # address, symbol_type = self.allocate_node(node.children[i], symbol_table, typing.label)
                 self.allocate_node(node.children[i], symbol_table)
             # return address, symbol_type
+
+        elif node.node_type in ["Increment_var", "Increment_op", "unary plus", "unary min", 'method_call', 'rvalue', 'lvalue', 'bool2']\
+            or node.label in ['+', '-', '*', '/', '%', '&&', '||', '==', '!=', '<', '>', '<=', '>=']:
+
+            self.solve_math(node, symbol_table)
+            self.deallocate_mem(4, symbol_table)
         else:
+
             for child in node.children:
                 if node.symbol_table is not None:
                     symbol_table = node.symbol_table
@@ -529,7 +536,7 @@ class MIPS_Converter:
                 # Store value
                 self.deallocate_mem(4, symbol_table)  # Delete one
                 self.store("$t0", "0($sp)", 'int')  # Overwrite the other
-                self.print_int('$t0')
+                # self.print_int('$t0')
                 return '0($sp)', "int"
 
         elif node.node_type == 'Increment_var':
@@ -546,16 +553,16 @@ class MIPS_Converter:
             return reg, symbol_type
 
         elif node.node_type == 'Increment_op':
-            address_register = self.get_address_register(node.children[1], symbol_table)
-            reg, symbol_type = self.solve_math(node.children[0], symbol_table)
+
+            reg, symbol_type = self.solve_math(node.children[1], symbol_table)
 
             reg = register_dict(symbol_type, 0)
 
-            string = "%s %s, %s, 1" % (self.optype[symbol_type][node.children[1].label], reg, reg)
+            string = "%s %s, %s, 1" % (self.optype[symbol_type][node.children[0].label], reg, reg)
 
             self.write_to_instruction(string, 2)
 
-            sym = symbol_table.get_written_symbol(node.children[0].label, node.ctx.start)
+            sym = symbol_table.get_written_symbol(node.children[1].label, node.ctx.start)
             self.store_symbol(reg, sym)
 
             self.store(reg, '0($sp)', symbol_type)
@@ -577,17 +584,8 @@ class MIPS_Converter:
             return reg, value[1]
 
 
-
-            # reg = self.register
-            # self.register += 1
-            # string = "%r{} = {} {} {}, {}\n".format(
-            #     reg, self.optype[value[1]]['-'], self.format_dict[value[1]], self.null[value[1]], value[0]
-            # )
-            # self.write_to_file(string)
-            # return '%r' + str(reg), value[1]
-
-        # elif node.node_type == 'method_call':
-        #     return self.call_method(node, symbol_table)
+        elif node.node_type == 'method_call':
+            return self.call_method(node, symbol_table)
 
         elif node.node_type == 'rvalue':
             value = str(node.label)
@@ -634,3 +632,27 @@ class MIPS_Converter:
 
         return None, None
 
+
+    def call_method(self, node, symbol_table):
+        method_name = node.children[0].label
+        if method_name == "print_int":
+            args = node.children[1].children[:]
+            arg_types = []
+            arg_reg = []
+            for arg in args:
+                reg, symbol_type = self.solve_math(arg, symbol_table)
+                arg_reg.append(reg)
+                arg_types.append(symbol_type)
+            self.print_int("0($sp)")
+            self.deallocate_mem((len(args)-1)*4, symbol_table)
+
+        elif method_name == "print_char":
+            args = node.children[1].children[:]
+            arg_types = []
+            arg_reg = []
+            for arg in args:
+                reg, symbol_type = self.solve_math(arg, symbol_table)
+                arg_reg.append(reg)
+                arg_types.append(symbol_type)
+            self.print_char("0($sp)")
+            self.deallocate_mem((len(args) - 1) * 4, symbol_table)

@@ -3,6 +3,8 @@
 int main() {
     int x = 2;
     int y = 3;
+    print_int(x++);
     x++;
-    int z = x != y;
+    print_int(++x);
+    print_int(x);
 }
