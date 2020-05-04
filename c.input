@@ -1,8 +1,13 @@
 #include <stdio.h>
 
+int f(int x){
+    return x;
+}
 int main() {
     int x = 2;
+    f(x);
     int y = 3;
+    float z = 2.3;
     print_int(x++);
     x++;
     print_int(++x);

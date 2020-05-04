@@ -19,7 +19,7 @@ class MIPS_Converter:
         self.temp_used_registers = []
 
         self.data_section = ".data\n"
-        self.instruction_section = ".text\nmain:\n"
+        self.instruction_section = ".text\n"
 
     def write_to_file(self, string: str):
         """
@@ -272,6 +272,12 @@ class MIPS_Converter:
                 self.allocate_node(node.children[i], symbol_table)
             # return address, symbol_type
 
+        elif node.node_type == 'method_declaration':
+            return self.declare_method(node, symbol_table)
+
+        elif node.node_type == 'method_definition':
+            return self.generate_method(node, symbol_table)
+
         elif node.node_type in ["Increment_var", "Increment_op", "unary plus", "unary min", 'method_call', 'rvalue', 'lvalue', 'bool2']\
             or node.label in ['+', '-', '*', '/', '%', '&&', '||', '==', '!=', '<', '>', '<=', '>=']:
 
@@ -343,7 +349,8 @@ class MIPS_Converter:
         variable = node.label
         if node.node_type in ['assignment2', 'array']:
             variable = node.children[0].label
-
+        elif node.node_type == "Arg_definition":
+            variable = node.children[1].label
         # if node.node_type == 'Arg_definition':
         #     variable = node.children[1].label
 
@@ -645,6 +652,7 @@ class MIPS_Converter:
                 arg_types.append(symbol_type)
             self.print_int("0($sp)")
             self.deallocate_mem((len(args)-1)*4, symbol_table)
+            return "0($sp)", "void"
 
         elif method_name == "print_char":
             args = node.children[1].children[:]
@@ -656,3 +664,57 @@ class MIPS_Converter:
                 arg_types.append(symbol_type)
             self.print_char("0($sp)")
             self.deallocate_mem((len(args) - 1) * 4, symbol_table)
+            return "0($sp)", "void"
+
+        else:
+            args = node.children[1].children[:]
+            arg_types = []
+            arg_reg = []
+            for arg in args:
+                reg, symbol_type = self.solve_math(arg, symbol_table)
+                arg_reg.append(reg)
+                arg_types.append(symbol_type)
+
+            method = node.symbol_table.get_written_method(method_name, arg_types, node.ctx.start)
+            self.allocate_mem(4, symbol_table)
+            return "0($sp)", "void"
+
+    def declare_method(self, method_node, symbol_table):
+        args = []
+        if len(method_node.children) > 2 and method_node.children[2].node_type == 'def_args':
+            for arg in method_node.children[2].children:
+                args.append(arg.children[0].label)
+        func = symbol_table.get_method(method_node.children[1].label, args, method_node.ctx.start)
+        func.written = True
+        return None, None
+
+    def generate_method(self, method_node, symbol_table):
+        args = []
+        if method_node.children[2].node_type == 'def_args':
+            for arg in method_node.children[2].children:
+                args.append(arg.children[0].label)
+        func = symbol_table.get_method(method_node.children[1].label, args, method_node.ctx.start)
+        func.written = True
+
+
+        if not func.defined:
+            raise Exception("temp")
+
+        if len(args) != len(func.arguments):
+            raise Exception("temp")
+
+
+        for i in range(len(args)):
+            symbol = self.allocate_node(method_node.children[2].children[i],
+                                                          method_node.children[2].children[i].symbol_table)
+
+
+        # m = list(map(self.convert2, args))
+        self.write_to_instruction(func.internal_name+":",0)
+
+
+        self.solve_node(method_node.children[-1], symbol_table)
+
+
+
+        return
