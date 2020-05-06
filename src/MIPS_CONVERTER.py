@@ -67,7 +67,7 @@ class MIPS_Converter:
         to use previous mem spot 4($sp)
         :return:
         """
-        string = "addiu $sp, $sp, -%d" % amount   # Reserve word on stack
+        string = "addiu $sp, $sp, -%d" % amount  # Reserve word on stack
         self.write_to_instruction(string, 2)
         # Increase offset of previous variables in stack (offset can never be < 0)
         symbol_table.increase_offset(amount)
@@ -91,21 +91,21 @@ class MIPS_Converter:
         :param destination:
         :return:
         """
-        string = "%s %s, %s" % (mips_operators[symbol_type]['li'],destination, value)
+        string = "%s %s, %s" % (mips_operators[symbol_type]['li'], destination, value)
         self.write_to_instruction(string, 2)
 
     def load_symbol(self, symbol, symbol_table):
         # TODO maak dit efficient
         self.allocate_mem(4, symbol_table)
         offset = str(symbol.offset)
-        reg = register_dict(symbol.symbol_type,0)
-        string = "%s %s, %s($sp)" % (mips_operators[symbol.symbol_type]['lw'], reg,offset)
+        reg = register_dict(symbol.symbol_type, 0)
+        string = "%s %s, %s($sp)" % (mips_operators[symbol.symbol_type]['lw'], reg, offset)
         self.write_to_instruction(string, 2)
         string = "%s %s 0($sp)" % (mips_operators[symbol.symbol_type]['sw'], reg)
         self.write_to_instruction(string, 2)
 
     def load_word(self, left, right, symbol_type):
-        string = "%s %s, %s" % ( mips_operators[symbol_type]['lw'], left, right)
+        string = "%s %s, %s" % (mips_operators[symbol_type]['lw'], left, right)
         self.write_to_instruction(string, 2)
 
     def store_symbol(self, value, symbol):
@@ -116,7 +116,7 @@ class MIPS_Converter:
         :return:
         """
         offset = str(symbol.offset)
-        string = "%s %s, %s($sp)" % (mips_operators[symbol.symbol_type]['sw'],str(value), offset)
+        string = "%s %s, %s($sp)" % (mips_operators[symbol.symbol_type]['sw'], str(value), offset)
         self.write_to_instruction(string, 2)
 
     def store(self, source, destination, symbol_type):
@@ -126,7 +126,7 @@ class MIPS_Converter:
         :param destination:
         :return:
         """
-        string = "%s %s, %s" % (mips_operators[symbol_type]['sw'],source, destination)
+        string = "%s %s, %s" % (mips_operators[symbol_type]['sw'], source, destination)
         self.write_to_instruction(string, 2)
 
     def cast_value(self, current_reg, current_type, new_type, error):
@@ -154,7 +154,7 @@ class MIPS_Converter:
         elif current_type == "float" and new_type == 'int':
             string = "cvt.w.s %s, %s" % (current_reg, current_reg)
             self.write_to_instruction(string, 2)
-            string = "mfc1 %s, %s" % ( newreg, current_reg)
+            string = "mfc1 %s, %s" % (newreg, current_reg)
             self.write_to_instruction(string, 2)
         else:
             raise Exception("uninstated conversion")
@@ -278,8 +278,9 @@ class MIPS_Converter:
         elif node.node_type == 'method_definition':
             return self.generate_method(node, symbol_table)
 
-        elif node.node_type in ["Increment_var", "Increment_op", "unary plus", "unary min", 'method_call', 'rvalue', 'lvalue', 'bool2']\
-            or node.label in ['+', '-', '*', '/', '%', '&&', '||', '==', '!=', '<', '>', '<=', '>=']:
+        elif node.node_type in ["Increment_var", "Increment_op", "unary plus", "unary min", 'method_call', 'rvalue',
+                                'lvalue', 'bool2'] \
+                or node.label in ['+', '-', '*', '/', '%', '&&', '||', '==', '!=', '<', '>', '<=', '>=']:
 
             self.solve_math(node, symbol_table)
             self.deallocate_mem(4, symbol_table)
@@ -441,11 +442,10 @@ class MIPS_Converter:
             child_1 = self.cast_value(register_dict(child1[1], 1), child1[1], symbol_type, node.ctx.start)
             child_2 = self.cast_value(register_dict(child2[1], 0), child2[1], symbol_type, node.ctx.start)
 
-
             string = "%s %s, %s, %s" % (self.optype[symbol_type][node.label], child_2, child_1, child_2)
             self.write_to_instruction(string, 2)
-            self.deallocate_mem(4, symbol_table)    # Delete one
-            self.store(child_2, "0($sp)", symbol_type)              # Overwrite the other
+            self.deallocate_mem(4, symbol_table)  # Delete one
+            self.store(child_2, "0($sp)", symbol_type)  # Overwrite the other
 
             return "0($sp)", symbol_type
 
@@ -464,7 +464,7 @@ class MIPS_Converter:
             child_1 = self.cast_value(register_dict(child1[1], 1), child1[1], symbol_type, node.ctx.start)
             child_2 = self.cast_value(register_dict(child2[1], 0), child2[1], symbol_type, node.ctx.start)
 
-            if symbol_type == "float" :
+            if symbol_type == "float":
                 string = "div.s %s, %s, %s" % (child_2, child_1, child_2)
                 self.write_to_instruction(string, 2)
                 self.deallocate_mem(4, symbol_table)  # Delete one
@@ -475,7 +475,7 @@ class MIPS_Converter:
                 string = "mflo $t0"
                 self.write_to_instruction(string, 2)
                 self.deallocate_mem(4, symbol_table)  # Delete one
-                self.store("$t0", "0($sp)",symbol_type)  # Overwrite the other
+                self.store("$t0", "0($sp)", symbol_type)  # Overwrite the other
 
             return "0($sp)", symbol_type
         elif node.label == "%":
@@ -492,7 +492,6 @@ class MIPS_Converter:
 
             child_1 = self.cast_value(register_dict(child1[1], 1), child1[1], symbol_type, node.ctx.start)
             child_2 = self.cast_value(register_dict(child2[1], 0), child2[1], symbol_type, node.ctx.start)
-
 
             string = "%s %s, %s" % (self.optype[symbol_type][node.label], child_1, child_2)
             self.write_to_instruction(string, 2)
@@ -581,7 +580,7 @@ class MIPS_Converter:
 
         elif node.node_type == 'unary min':
             value = self.solve_math(node.children[1], symbol_table)
-            reg = register_dict(value[1],0)
+            reg = register_dict(value[1], 0)
             self.load_word(reg, '0($sp)', value[1])
             string = "%s %s" % (mips_operators[value[1]]['neg'], reg)
             self.write_to_instruction(string, 2)
@@ -639,42 +638,27 @@ class MIPS_Converter:
 
         return None, None
 
-
     def call_method(self, node, symbol_table):
         method_name = node.children[0].label
+        args = node.children[1].children[:]
+        arg_types = []
+        arg_reg = []
+        for arg in args:
+            reg, symbol_type = self.solve_math(arg, symbol_table)
+            arg_reg.append(reg)
+            arg_types.append(symbol_type)
+
         if method_name == "print_int":
-            args = node.children[1].children[:]
-            arg_types = []
-            arg_reg = []
-            for arg in args:
-                reg, symbol_type = self.solve_math(arg, symbol_table)
-                arg_reg.append(reg)
-                arg_types.append(symbol_type)
             self.print_int("0($sp)")
-            self.deallocate_mem((len(args)-1)*4, symbol_table)
+            self.deallocate_mem((len(args) - 1) * 4, symbol_table)
             return "0($sp)", "void"
 
         elif method_name == "print_char":
-            args = node.children[1].children[:]
-            arg_types = []
-            arg_reg = []
-            for arg in args:
-                reg, symbol_type = self.solve_math(arg, symbol_table)
-                arg_reg.append(reg)
-                arg_types.append(symbol_type)
             self.print_char("0($sp)")
             self.deallocate_mem((len(args) - 1) * 4, symbol_table)
             return "0($sp)", "void"
 
         else:
-            args = node.children[1].children[:]
-            arg_types = []
-            arg_reg = []
-            for arg in args:
-                reg, symbol_type = self.solve_math(arg, symbol_table)
-                arg_reg.append(reg)
-                arg_types.append(symbol_type)
-
             method = node.symbol_table.get_written_method(method_name, arg_types, node.ctx.start)
             self.allocate_mem(4, symbol_table)
             return "0($sp)", "void"
@@ -696,25 +680,19 @@ class MIPS_Converter:
         func = symbol_table.get_method(method_node.children[1].label, args, method_node.ctx.start)
         func.written = True
 
-
         if not func.defined:
             raise Exception("temp")
 
         if len(args) != len(func.arguments):
             raise Exception("temp")
 
-
         for i in range(len(args)):
             symbol = self.allocate_node(method_node.children[2].children[i],
-                                                          method_node.children[2].children[i].symbol_table)
-
+                                        method_node.children[2].children[i].symbol_table)
 
         # m = list(map(self.convert2, args))
-        self.write_to_instruction(func.internal_name+":",0)
-
+        self.write_to_instruction(func.internal_name + ":", 0)
 
         self.solve_node(method_node.children[-1], symbol_table)
-
-
 
         return
