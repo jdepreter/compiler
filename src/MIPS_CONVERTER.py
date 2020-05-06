@@ -326,26 +326,26 @@ class MIPS_Converter:
         elif node.node_type == 'for':
             return self.loop(node, symbol_table)
         #
-        # elif node.node_type == 'for break':
-        #     if len(self.break_stack) > 0:
-        #         self.go_to_label(self.break_stack[0])
-        #         self.write = False
-        #         self.breaks = True
-        #         return None, None
-        #     else:
-        #         raise BreakError("[Error] Line {} Position {} break statement not within loop or switch".format(
-        #             node.ctx.start.line, node.ctx.start.column
-        #         ))
-        #
-        # elif node.node_type == 'for continue':
-        #     if len(self.continue_stack) > 0:
-        #         self.go_to_label(self.continue_stack[0])
-        #         self.write = False
-        #         return None, None
-        #     else:
-        #         raise BreakError("[Error] Line {} Position {} continue statement not within loop".format(
-        #             node.ctx.start.line, node.ctx.start.column
-        #         ))
+        elif node.node_type == 'for break':
+            if len(self.break_stack) > 0:
+                self.go_to_label(self.break_stack[0])
+                self.write = False
+                self.breaks = True
+                return None, None
+            else:
+                raise BreakError("[Error] Line {} Position {} break statement not within loop or switch".format(
+                    node.ctx.start.line, node.ctx.start.column
+                ))
+
+        elif node.node_type == 'for continue':
+            if len(self.continue_stack) > 0:
+                self.go_to_label(self.continue_stack[0])
+                self.write = False
+                return None, None
+            else:
+                raise BreakError("[Error] Line {} Position {} continue statement not within loop".format(
+                    node.ctx.start.line, node.ctx.start.column
+                ))
         #
         # elif node.node_type == "switch":
         #     return self.switch(node, symbol_table)
@@ -754,11 +754,10 @@ class MIPS_Converter:
         if_write = self.write
         else_write = write
 
+        self.write = write
         self.write_label("Else%d" % label)
         # Write else block
         if len(node.children) > 2:
-            self.write = write
-
             self.solve_node(node.children[2], symbol_table)
             self.go_to_label("Endif%d" % label)
             else_write = self.write
