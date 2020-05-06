@@ -106,8 +106,9 @@ class MIPS_Converter:
         self.write_to_instruction(string, 2)
 
     def load_word(self, left, right, symbol_type):
-        string = "%s %s, %s" % ( mips_operators[symbol_type]['lw'], left, right)
-        self.write_to_instruction(string, 2)
+        if left != right:
+            string = "%s %s, %s" % ( mips_operators[symbol_type]['lw'], left, right)
+            self.write_to_instruction(string, 2)
 
     def store_symbol(self, value, symbol):
         """
