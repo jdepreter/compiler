@@ -3,7 +3,7 @@
 
 int main() {
     int x = 3;
-    if (x == 2) {
+    if (x == 3) {
         print_int(x);
     }
     else {

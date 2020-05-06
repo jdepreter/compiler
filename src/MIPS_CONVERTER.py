@@ -323,8 +323,8 @@ class MIPS_Converter:
         # elif node.node_type == 'assignment':
         #     return self.assign_node(node, symbol_table)
         #
-        # elif node.node_type == 'for':
-        #     return self.loop(node, symbol_table)
+        elif node.node_type == 'for':
+            return self.loop(node, symbol_table)
         #
         # elif node.node_type == 'for break':
         #     if len(self.break_stack) > 0:
@@ -730,15 +730,13 @@ class MIPS_Converter:
             return
         condition = node.children[0]
         # Evaluate Condition
-        stack_pointer, value_type = self.solve_node(condition, symbol_table)
+        temp_register, value_type = self.solve_node(condition, symbol_table)
 
         # Load stack pointer in temp register
         # TODO float must be converted to int
         # temp_reg = "$t0"
         temp_reg = register_dict(value_type,0)
-
-
-        self.load_word(temp_reg, stack_pointer, value_type)
+        self.load_word(temp_reg, temp_register, value_type)
 
         # Update Label
         label = self.label  # Label counter
@@ -769,3 +767,65 @@ class MIPS_Converter:
         self.write_label("Endif%d" % label)
         self.write = else_write or if_write
         return
+
+    def loop(self, node: Node, symbol_table: SymbolTable):
+        skip_condition = False
+        if node.children[0].node_type == 'for initial':
+            self.solve_node(node.children[0].children[0], symbol_table)
+
+        elif node.children[0].node_type == 'for do':
+            skip_condition = True
+
+        labels = {
+            "condition": "for_condition%d" % self.label,
+            "code_block": "for_block%d" % self.label ,
+            "update": "for_update%d" % self.label,
+            "next_block": "for_end%d" % self.label,
+        }
+        self.label += 1
+        breaks = self.breaks
+        self.break_stack.insert(0, labels["next_block"])
+        self.continue_stack.insert(0, labels["condition"])
+        write = self.write
+
+        if skip_condition:
+            # Do While
+            self.go_to_label(labels["code_block"])
+        else:
+            # Go to conditional
+            self.go_to_label(labels["condition"])
+        self.register += 1
+        update = False
+        for child in node.children:
+            if child.node_type == "condition":
+                self.write = write
+                self.write_label(labels["condition"])
+                reg, value_type = self.solve_node(child, child.symbol_table)
+                if value_type == 'float':
+                    # TODO convert
+                    pass
+                self.go_to_label_conditional(reg, labels["next_block"])  # jump to end
+                self.go_to_label(labels["code_block"])  # jump back to loop
+
+            elif child.node_type == 'for update':
+                self.write = write
+                self.continue_stack[0] = labels["update"]
+                self.write_label(labels["update"])
+                self.solve_node(child, child.symbol_table)
+                self.go_to_label(labels["condition"])
+                update = True
+
+            elif child.node_type != 'for initial':
+                self.write = write
+                self.write_label(labels["code_block"])
+                self.solve_node(child, child.symbol_table)
+                if update:
+                    self.go_to_label(labels["update"])
+                else:
+                    self.go_to_label(labels["condition"])
+
+        self.break_stack.pop()
+        self.continue_stack.pop()
+        self.write = write
+        self.write_label(labels["next_block"])
+        self.breaks = breaks
