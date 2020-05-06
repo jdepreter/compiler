@@ -109,8 +109,9 @@ class MIPS_Converter:
         self.write_to_instruction(string, 2)
 
     def load_word(self, left: str, right: str, symbol_type: str):
-        string = "%s %s, %s" % (mips_operators[symbol_type]['lw'], left, right)
-        self.write_to_instruction(string, 2)
+        if left != right:
+            string = "%s %s, %s" % (mips_operators[symbol_type]['lw'], left, right)
+            self.write_to_instruction(string, 2)
 
     def store_symbol(self, value, symbol: SymbolType):
         """
@@ -303,6 +304,13 @@ class MIPS_Converter:
                 or node.label in ['+', '-', '*', '/', '%', '&&', '||', '==', '!=', '<', '>', '<=', '>=']:
 
             register, value_type = self.solve_math(node, symbol_table)
+            reg = '$t0'
+            if value_type is not None and value_type != 'void':
+                reg = register_dict(value_type,0)
+
+                self.load_word(reg, "0($sp)", value_type)
+            self.deallocate_mem(4, symbol_table)
+            return reg, value_type
             # self.deallocate_mem(4, symbol_table)
             return register, value_type
 
@@ -726,12 +734,11 @@ class MIPS_Converter:
 
         # Load stack pointer in temp register
         # TODO float must be converted to int
-        temp_reg = "$t0"
-        if value_type == 'float':
-            temp_reg = "$f0"
+        # temp_reg = "$t0"
+        temp_reg = register_dict(value_type,0)
 
-        else:
-            self.load_word("$t0", stack_pointer, value_type)
+
+        self.load_word(temp_reg, stack_pointer, value_type)
 
         # Update Label
         label = self.label  # Label counter
