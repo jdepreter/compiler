@@ -93,6 +93,7 @@ class MIPS_Converter:
         """
         string = "%s %s, %s" % (mips_operators[symbol_type]['li'],destination, value)
         self.write_to_instruction(string, 2)
+        return destination, symbol_type
 
     def load_symbol(self, symbol, symbol_table):
         # TODO maak dit efficient
@@ -161,13 +162,30 @@ class MIPS_Converter:
         return newreg
 
     # JUMPS
+    def add_label(self, label):
+        string = "\nlabel{}:\n".format(label)
+        self.write_to_file(string)
+
+    def go_to_conditional(self, condition, label_true, label_false):
+        """
+        :param condition: register with value of condition
+        :param label_true: int
+        :param label_false: int
+        :return: nothing
+        """
+        string = "bnez {}, label{}".format(condition, label_true)
+        self.write_to_instruction(string,2)
+        string2 = "j label{}".format(label_false)
+        self.write_to_instruction(string2,2)
+
+
     def go_to_label(self, label):
         """
         go to a label
         :param label:
         :return:
         """
-        string = "j label{}\n".format(label)
+        string = "j {}\n".format(label)
         self.write_to_instruction(string)
 
     def go_to_label_linked(self, label):
@@ -176,7 +194,7 @@ class MIPS_Converter:
         :param label:
         :return:
         """
-        string = "jal label{}".format(label)
+        string = "jal {}".format(label)
         self.write_to_instruction(string)
 
     def go_to_register(self, reg):
@@ -281,8 +299,9 @@ class MIPS_Converter:
         elif node.node_type in ["Increment_var", "Increment_op", "unary plus", "unary min", 'method_call', 'rvalue', 'lvalue', 'bool2']\
             or node.label in ['+', '-', '*', '/', '%', '&&', '||', '==', '!=', '<', '>', '<=', '>=']:
 
-            self.solve_math(node, symbol_table)
+            val = self.solve_math(node, symbol_table)
             self.deallocate_mem(4, symbol_table)
+            return val
         else:
 
             for child in node.children:
@@ -447,7 +466,7 @@ class MIPS_Converter:
             self.deallocate_mem(4, symbol_table)    # Delete one
             self.store(child_2, "0($sp)", symbol_type)              # Overwrite the other
 
-            return "0($sp)", symbol_type
+            return child_2, symbol_type
 
         elif node.label == "/":
             child1 = self.solve_math(node.children[0], symbol_table)
@@ -477,7 +496,7 @@ class MIPS_Converter:
                 self.deallocate_mem(4, symbol_table)  # Delete one
                 self.store("$t0", "0($sp)",symbol_type)  # Overwrite the other
 
-            return "0($sp)", symbol_type
+            return "$t0", symbol_type
         elif node.label == "%":
             child1 = self.solve_math(node.children[0], symbol_table)
             child2 = self.solve_math(node.children[1], symbol_table)
@@ -501,7 +520,7 @@ class MIPS_Converter:
             self.deallocate_mem(4, symbol_table)  # Delete one
             self.store("$t0", "0($sp)", symbol_type)  # Overwrite the other
 
-            return "0($sp)", symbol_type
+            return "$t0", symbol_type
 
         elif node.label in ['&&', '||']:
             # Calculate values and store on stack
@@ -516,7 +535,7 @@ class MIPS_Converter:
             self.deallocate_mem(4, symbol_table)  # Delete one
             self.store("$t0", "0($sp)", 'int')  # Overwrite the other
             # self.print_int('$t0')
-            return "0($sp)", 'int'
+            return "$t0", 'int'
 
         elif node.label in ['==', '!=', '<', '>', '<=', '>=']:
             # Move values on stack
@@ -544,7 +563,7 @@ class MIPS_Converter:
                 self.deallocate_mem(4, symbol_table)  # Delete one
                 self.store("$t0", "0($sp)", 'int')  # Overwrite the other
                 # self.print_int('$t0')
-                return '0($sp)', "int"
+                return "$t0", "int"
 
         elif node.node_type == 'Increment_var':
             reg, symbol_type = self.solve_math(node.children[0], symbol_table)
@@ -608,13 +627,13 @@ class MIPS_Converter:
             self.load_immediate(value, reg, str(node.symbol_type))
             self.store(reg, "0($sp)", str(node.symbol_type))
 
-            return "0($sp)", str(node.symbol_type)
+            return reg, str(node.symbol_type)
 
         elif node.node_type == 'lvalue':
             # TODO Check array, check address
             symbol = symbol_table.get_assigned_symbol(node.label, node.ctx.start)
             self.load_symbol(symbol, symbol_table)
-            return "0($sp)", str(symbol.symbol_type)
+            return register_dict(symbol.symbol_type,0), str(symbol.symbol_type)
 
         # elif node.node_type == 'array_element':
         #     sym = symbol_table.get_symbol(node.label, node.ctx.start)
@@ -696,25 +715,52 @@ class MIPS_Converter:
         func = symbol_table.get_method(method_node.children[1].label, args, method_node.ctx.start)
         func.written = True
 
-
         if not func.defined:
             raise Exception("temp")
-
         if len(args) != len(func.arguments):
             raise Exception("temp")
-
-
         for i in range(len(args)):
             symbol = self.allocate_node(method_node.children[2].children[i],
                                                           method_node.children[2].children[i].symbol_table)
 
-
         # m = list(map(self.convert2, args))
         self.write_to_instruction(func.internal_name+":",0)
-
-
         self.solve_node(method_node.children[-1], symbol_table)
+        return
 
+    def if_else(self, node, symbol_table):
+        if not self.write:
+            return
+        condition = node.children[0]
+        reg, value_type = self.solve_node(condition, symbol_table)
+        # if reg != "$t0":
+        #     reg0, sym0 = self.load_immediate(0,'$t1','int')
+        # else:
+        #     reg0, sym0 = self.load_immediate(0, '$t0', 'int')
 
+        label = self.label
+        self.label += len(node.children)
+        self.go_to_conditional(reg, label, label + 1)
+        self.add_label(label)
+        write = self.write
+        # schrijf if true gedeelte
+
+        self.solve_node(node.children[1], symbol_table)
+        self.go_to_label(label + len(node.children) - 1)
+        if_write = self.write
+        else_write = write
+
+        # schrijf if false gedeelte
+        if len(node.children) > 2:
+            self.write = write
+
+            self.add_label(label + 1)
+            self.solve_node(node.children[2], symbol_table)
+            self.go_to_label(label + 2)
+            else_write = self.write
+
+        self.write = else_write or if_write
+        # schrijf alle volgende instructies achter een label
+        self.add_label(label + len(node.children) - 1)
 
         return
