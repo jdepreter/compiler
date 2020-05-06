@@ -191,7 +191,7 @@ class SymbolTable:
                 SymbolTable.main_defined = True
             self.method_register += 1
 
-    def get_method(self, method, arg_types, error):
+    def get_method(self, method, arg_types, error) -> MethodType:
         # key = self.generate_key(method, arg_types)
         if method == 'printf':
             try:

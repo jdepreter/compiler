@@ -1,5 +1,6 @@
 import unittest
 from src.compile import to_llvm
+from src.compile_mips import to_mips
 import src
 import re
 
@@ -11,28 +12,43 @@ def clear_newlines(string: str) -> str:
 class Assignment1(unittest.TestCase):
     def test_basic_files(self):
         self.assertEqual(to_llvm("basic_declaration.c", "basic_declaration"), "")
+        self.assertEqual(to_mips("basic_declaration.c", "basic_declaration"), "")
+
         self.assertEqual(to_llvm("basic_definition.c", "basic_definition"), "")
+        self.assertEqual(to_mips("basic_definition.c", "basic_definition"), "")
 
     def test_scope(self):
         self.assertEqual(to_llvm("scope_1.c", "scope_1"), "")
+        self.assertEqual(to_mips("scope_1.c", "scope_1"), "")
+
         self.assertEqual(to_llvm("scope_empty.c", "scope_empty"), "")
+        self.assertEqual(to_mips("scope_empty.c", "scope_empty"), "")
+
         self.assertEqual(to_llvm("scope_nested.c", "scope_nested"), "23")
+        self.assertEqual(to_mips("scope_nested.c", "scope_nested"), "23")
 
     def test_folding(self):
         self.assertEqual(to_llvm("folding.c", "folding"), "2440.00000013.00000013")
+        self.assertEqual(to_mips("folding.c", "folding"), "2440.00000013.00000013")
 
     def test_bool_folding(self):
         self.assertEqual(to_llvm("bool_testing.c", "bool_testing"), "6")
+        self.assertEqual(to_mips("bool_testing.c", "bool_testing"), "6")
 
     def test_modulo(self):
         self.assertEqual(to_llvm("modulo.c", "modulo"), "1")
+        self.assertEqual(to_mips("modulo.c", "modulo"), "1")
 
     def test_char(self):
         self.assertEqual(to_llvm("char_casting.c", "char_casting"), "bcd97")
+        self.assertEqual(to_mips("char_casting.c", "char_casting"), "bcd97")
+
         self.assertEqual(to_llvm("char_folding.c", "char_folding"), "d")
+        self.assertEqual(to_mips("char_folding.c", "char_folding"), "d")
 
     def test_pointers(self):
         self.assertEqual(to_llvm("pointers.c", "pointers"), "")
+
         self.assertEqual(to_llvm("pointer_dereference.c", "pointer_dereference"), "3")
 
     def test_not(self):
@@ -40,7 +56,9 @@ class Assignment1(unittest.TestCase):
 
     def test_unary(self):
         self.assertEqual(to_llvm("unary_magic.c", "unary_magic"), "3")
+
         self.assertEqual(to_llvm("unary_++.c", "unary_++"), "799")
+
         self.assertEqual(to_llvm("unary_--.c", "unary_--"), "533")
 
     def test_errors(self):
@@ -67,6 +85,31 @@ class Assignment1(unittest.TestCase):
 
         with self.assertRaises(src.CustomExceptions.IncompatibleType):
             to_llvm("incompatible_type_error.c", "incompatible_type")
+
+    def test_errors_mips(self):
+        with self.assertRaises(src.CustomExceptions.CSyntaxError):
+            to_mips("syntax_error.c", "syntax_error")
+
+        with self.assertRaises(src.CustomExceptions.CSyntaxError):
+            to_mips("syntax_error_1.c", "syntax_error_1")
+
+        with self.assertRaises(src.CustomExceptions.CSyntaxError):
+            to_mips("assignment_to_r_value.c", "assignment_to_r_value")
+
+        with self.assertRaises(src.CustomExceptions.UninitializedVariable):
+            to_mips("uninitialised_var_error.c", "uninit_var_error")
+
+        with self.assertRaises(src.CustomExceptions.UndeclaredVariable):
+            to_mips("undeclared_var_error.c", "undeclared_var_error")
+
+        with self.assertRaises(src.CustomExceptions.ConstAssignment):
+            to_mips("const_assignment_error.c", "const_assignment")
+
+        with self.assertRaises(src.CustomExceptions.DuplicateDeclaration):
+            to_mips("duplicate_declaration_error.c", "duplicate_declaration")
+
+        with self.assertRaises(src.CustomExceptions.IncompatibleType):
+            to_mips("incompatible_type_error.c", "incompatible_type")
 
 
 class IfElse(unittest.TestCase):

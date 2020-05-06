@@ -312,8 +312,6 @@ class MIPS_Converter:
                 self.load_word(reg, "0($sp)", value_type)
             self.deallocate_mem(4, symbol_table)
             return reg, value_type
-            # self.deallocate_mem(4, symbol_table)
-            return register, value_type
 
         elif node.node_type == 'ifelse':
             return self.if_else(node, symbol_table)
@@ -321,8 +319,8 @@ class MIPS_Converter:
         # elif node.node_type == 'include':
         #     self.include()
         #
-        # elif node.node_type == 'assignment':
-        #     return self.assign_node(node, symbol_table)
+        elif node.node_type == 'assignment':
+            return self.assign_node(node, symbol_table)
         #
         elif node.node_type == 'for':
             return self.loop(node, symbol_table)
@@ -767,6 +765,8 @@ class MIPS_Converter:
                                         method_node.children[2].children[i].symbol_table)
 
         # m = list(map(self.convert2, args))
+        if func.internal_name == 'main':
+            self.write_to_instruction(".globl %s" % func.internal_name)
         self.write_to_instruction(func.internal_name + ":", 0)
 
         self.solve_node(method_node.children[-1], symbol_table)
