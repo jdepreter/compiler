@@ -1,8 +1,12 @@
 #include <stdio.h>
+int f(int a){
+    return a-1;
+
+}
 
 
 int main() {
-    int x = 3;
+    int x = f(4);
     if (x == 2) {
         print_int(x);
     }

@@ -19,6 +19,7 @@ class MIPS_Converter:
         self.optype = optype
         self.bool_dict = bool_dict
         self.temp_used_registers = []
+        self.function_stack = []
 
         self.data_section = ".data\n"
         self.instruction_section = ".text\n"
@@ -185,7 +186,7 @@ class MIPS_Converter:
         :param label:
         :return:
         """
-        string = "jal label{}".format(label)
+        string = "jal {}".format(label)
         self.write_to_instruction(string)
 
     def go_to_label_conditional(self, register: str, label: str):
@@ -357,8 +358,8 @@ class MIPS_Converter:
         # elif node.node_type == 'method_definition':
         #     return self.generate_method(node, symbol_table)
         #
-        # elif node.node_type == 'return':
-        #     return self.return_node(node, symbol_table)
+        elif node.node_type == 'return':
+            return self.return_node(node, symbol_table)
         else:
             sol = self.solve_math(node, symbol_table)
 
@@ -661,8 +662,47 @@ class MIPS_Converter:
 
         return None, None
 
+    def return_node(self, node, symbol_table):
+        if len(self.function_stack) == 0:
+            raise Exception(
+                'Error at line: {} column :{} return statement outside of function '.format(node.ctx.start.line,
+                                                                                            node.ctx.start.column))
+        if len(node.children) == 0:
+            # return void
+            if self.function_stack[0].symbol_type == 'void':
+
+                self.go_to_register('$ra')
+                self.write = False
+                return
+            else:
+                raise Exception(
+                    'Error at line: {} column :{} non-void function should not return void '.format(node.ctx.start.line,
+                                                                                                    node.ctx.start.column))
+
+        if self.function_stack[0].symbol_type == 'void':
+            raise Exception(
+                'Error at line: {} column :{} void function should not return value '.format(node.ctx.start.line,
+                                                                                             node.ctx.start.column))
+        returnreg, return_type = self.solve_node(node.children[0], symbol_table)
+        newtype = self.function_stack[0].symbol_type
+        castedreg = self.cast_value(returnreg, return_type, newtype, node.ctx.start)
+
+        self.store(castedreg, "0($sp)", newtype)
+        if self.function_stack[0].name == 'main':
+            self.load_immediate(10, '$v0', 'int')
+            self.write_to_instruction('syscall', 2)
+
+        else:
+            self.go_to_register('$ra')
+
+        self.write = False
+        return
+
     def call_method(self, node: Node, symbol_table: SymbolTable):
         method_name = node.children[0].label
+
+        self.allocate_mem(4, symbol_table)
+        self.store("$ra", "0($sp)", "int")
         args = node.children[1].children[:]
         arg_types = []
         arg_reg = []
@@ -673,18 +713,30 @@ class MIPS_Converter:
 
         if method_name == "print_int":
             self.print_int("0($sp)")
-            self.deallocate_mem((len(args) - 1) * 4, symbol_table)
+            self.deallocate_mem((len(args) ) * 4, symbol_table)
+
+
             return "0($sp)", "void"
 
         elif method_name == "print_char":
             self.print_char("0($sp)")
-            self.deallocate_mem((len(args) - 1) * 4, symbol_table)
+            self.deallocate_mem((len(args) ) * 4, symbol_table)
             return "0($sp)", "void"
 
         else:
             method = node.symbol_table.get_written_method(method_name, arg_types, node.ctx.start)
-            self.allocate_mem(4, symbol_table)
-            return "0($sp)", "void"
+
+            self.go_to_label_linked(method.internal_name)
+            self.load_word("$t0", "0($sp)", "int")
+            # load solution into t0
+
+            self.deallocate_mem((len(args)) * 4, symbol_table)
+
+
+            self.load_word("$ra", "0($sp)", "int")
+            self.store("$t0", "0($sp)", "int")
+
+            return "0($sp)", method.symbol_type
 
     def declare_method(self, method_node: Node, symbol_table: SymbolTable):
         args = []
@@ -696,13 +748,14 @@ class MIPS_Converter:
         return None, None
 
     def generate_method(self, method_node: Node, symbol_table: SymbolTable):
+        self.write = True
         args = []
         if method_node.children[2].node_type == 'def_args':
             for arg in method_node.children[2].children:
                 args.append(arg.children[0].label)
         func = symbol_table.get_method(method_node.children[1].label, args, method_node.ctx.start)
         func.written = True
-
+        self.function_stack.insert(0, func)
         if not func.defined:
             raise Exception("temp")
 
@@ -717,6 +770,8 @@ class MIPS_Converter:
         self.write_to_instruction(func.internal_name + ":", 0)
 
         self.solve_node(method_node.children[-1], symbol_table)
+
+        self.function_stack.pop(0)
 
         return
 
