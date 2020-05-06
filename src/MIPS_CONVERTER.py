@@ -106,9 +106,8 @@ class MIPS_Converter:
         self.write_to_instruction(string, 2)
 
     def load_word(self, left, right, symbol_type):
-        if left != right:
-            string = "%s %s, %s" % ( mips_operators[symbol_type]['lw'], left, right)
-            self.write_to_instruction(string, 2)
+        string = "%s %s, %s" % ( mips_operators[symbol_type]['lw'], left, right)
+        self.write_to_instruction(string, 2)
 
     def store_symbol(self, value, symbol):
         """
@@ -301,8 +300,13 @@ class MIPS_Converter:
             or node.label in ['+', '-', '*', '/', '%', '&&', '||', '==', '!=', '<', '>', '<=', '>=']:
 
             val = self.solve_math(node, symbol_table)
+            reg = '$t0'
+            if val[1] != 'void':
+                reg = register_dict(val[1],0)
+
+                self.load_word(reg, "0($sp)", val[1])
             self.deallocate_mem(4, symbol_table)
-            return val
+            return reg, val[1]
         else:
 
             for child in node.children:
@@ -467,7 +471,7 @@ class MIPS_Converter:
             self.deallocate_mem(4, symbol_table)    # Delete one
             self.store(child_2, "0($sp)", symbol_type)              # Overwrite the other
 
-            return child_2, symbol_type
+            return "0($sp)", symbol_type
 
         elif node.label == "/":
             child1 = self.solve_math(node.children[0], symbol_table)
@@ -497,7 +501,7 @@ class MIPS_Converter:
                 self.deallocate_mem(4, symbol_table)  # Delete one
                 self.store("$t0", "0($sp)",symbol_type)  # Overwrite the other
 
-            return "$t0", symbol_type
+            return "0($sp)", symbol_type
         elif node.label == "%":
             child1 = self.solve_math(node.children[0], symbol_table)
             child2 = self.solve_math(node.children[1], symbol_table)
@@ -521,7 +525,7 @@ class MIPS_Converter:
             self.deallocate_mem(4, symbol_table)  # Delete one
             self.store("$t0", "0($sp)", symbol_type)  # Overwrite the other
 
-            return "$t0", symbol_type
+            return "0($sp)", symbol_type
 
         elif node.label in ['&&', '||']:
             # Calculate values and store on stack
@@ -536,7 +540,7 @@ class MIPS_Converter:
             self.deallocate_mem(4, symbol_table)  # Delete one
             self.store("$t0", "0($sp)", 'int')  # Overwrite the other
             # self.print_int('$t0')
-            return "$t0", 'int'
+            return "0($sp)", 'int'
 
         elif node.label in ['==', '!=', '<', '>', '<=', '>=']:
             # Move values on stack
@@ -564,7 +568,7 @@ class MIPS_Converter:
                 self.deallocate_mem(4, symbol_table)  # Delete one
                 self.store("$t0", "0($sp)", 'int')  # Overwrite the other
                 # self.print_int('$t0')
-                return "$t0", "int"
+                return "0($sp)", "int"
 
         elif node.node_type == 'Increment_var':
             reg, symbol_type = self.solve_math(node.children[0], symbol_table)
@@ -577,7 +581,7 @@ class MIPS_Converter:
 
             sym = symbol_table.get_written_symbol(node.children[0].label, node.ctx.start)
             self.store_symbol(reg, sym)
-            return reg, symbol_type
+            return '0($sp)', symbol_type
 
         elif node.node_type == 'Increment_op':
 
@@ -594,7 +598,7 @@ class MIPS_Converter:
 
             self.store(reg, '0($sp)', symbol_type)
 
-            return reg, symbol_type
+            return '0($sp)', symbol_type
 
         elif node.node_type == 'unary plus':
             return self.solve_math(node.children[1], symbol_table)
@@ -608,7 +612,7 @@ class MIPS_Converter:
 
             self.store(reg, '0($sp)', value[1])
 
-            return reg, value[1]
+            return '0($sp)', value[1]
 
 
         elif node.node_type == 'method_call':
@@ -628,13 +632,13 @@ class MIPS_Converter:
             self.load_immediate(value, reg, str(node.symbol_type))
             self.store(reg, "0($sp)", str(node.symbol_type))
 
-            return reg, str(node.symbol_type)
+            return '0($sp)', str(node.symbol_type)
 
         elif node.node_type == 'lvalue':
             # TODO Check array, check address
             symbol = symbol_table.get_assigned_symbol(node.label, node.ctx.start)
             self.load_symbol(symbol, symbol_table)
-            return register_dict(symbol.symbol_type,0), str(symbol.symbol_type)
+            return '0($sp)', str(symbol.symbol_type)
 
         # elif node.node_type == 'array_element':
         #     sym = symbol_table.get_symbol(node.label, node.ctx.start)
