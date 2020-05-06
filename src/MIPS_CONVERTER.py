@@ -763,8 +763,8 @@ class MIPS_Converter:
             else_write = self.write
 
         # Continue writing if one of the 2 blocks has no return / break / continue
-        self.write_label("Endif%d" % label)
         self.write = else_write or if_write
+        self.write_label("Endif%d" % label)
         return
 
     def loop(self, node: Node, symbol_table: SymbolTable):
@@ -777,7 +777,7 @@ class MIPS_Converter:
 
         labels = {
             "condition": "for_condition%d" % self.label,
-            "code_block": "for_block%d" % self.label ,
+            "code_block": "for_block%d" % self.label,
             "update": "for_update%d" % self.label,
             "next_block": "for_end%d" % self.label,
         }
