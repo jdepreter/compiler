@@ -1,17 +1,20 @@
 #include <stdio.h>
-int f(int a){
-    return a-1;
 
-}
-
-
+// Should print 3
 int main() {
-    int x = f(4);
-    if (x == 2) {
-        print_int(x);
+    int x = 3;
+
+    switch(x) {
+        case 1:
+        case 2:
+            printf("Niet 2");
+        case 3:
+        case 4:
+            printf("%d", x);
+            break;
+        default:
+            printf("Default");
+
     }
-    else {
-        print_int(1);
-    }
-    print_int(1);
+    return 0;
 }

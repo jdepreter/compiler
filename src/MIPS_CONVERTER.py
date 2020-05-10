@@ -180,6 +180,10 @@ class MIPS_Converter:
         string = "j {}\n".format(label)
         self.write_to_instruction(string)
 
+    def add_label(self, labelnr):
+        string = "label%d:" % labelnr
+        self.write_to_instruction(string,0)
+
     def go_to_label_linked(self, label):
         """
         jumps to a label and stores current pc in $ra
@@ -348,16 +352,9 @@ class MIPS_Converter:
                     node.ctx.start.line, node.ctx.start.column
                 ))
         #
-        # elif node.node_type == "switch":
-        #     return self.switch(node, symbol_table)
-        #
-        #
-        # elif node.node_type == 'method_declaration':
-        #     return self.declare_method(node, symbol_table)
-        #
-        # elif node.node_type == 'method_definition':
-        #     return self.generate_method(node, symbol_table)
-        #
+        elif node.node_type == "switch":
+            return self.switch(node, symbol_table)
+
         elif node.node_type == 'return':
             return self.return_node(node, symbol_table)
         else:
@@ -821,6 +818,78 @@ class MIPS_Converter:
         self.write = else_write or if_write
         self.write_label("Endif%d" % label)
         return
+
+    def switch(self, node, symbol_table):
+        if not self.write:
+            return
+        switchval, switchtype = self.solve_math(node.children[0], symbol_table)
+        reg = '$t0'
+        if switchtype is not None and switchtype != 'void':
+            reg = register_dict(switchtype, 0)
+        else:
+            raise Exception("void can't be cast to int in switchcase")
+
+        self.load_word(reg, "0($sp)", switchtype)
+        self.deallocate_mem(4, symbol_table)
+        branchval = self.cast_value(reg, switchtype, "int", node.ctx.start)
+
+        write = self.write
+        breaks = self.breaks
+        self.breaks = False
+
+        continue_writing = False
+
+        current_label = self.label
+        default_label = current_label + len(node.children) - 1
+
+        self.break_stack.insert(0, default_label)
+        self.label += len(node.children)
+        string = ""
+        labels = []
+
+        default = False
+        for i in range(1, len(node.children)):
+            curr = node.children[i]
+            if curr.label == "default":
+                if default:
+                    raise Exception(
+                        "[Error] line {} position {} Secondary definition of default".format(node.ctx.start.line,
+                                                                                             node.ctx.start.column))
+
+                default = True
+                default_label = current_label + i - 1
+
+            else:
+                if curr.label in labels:
+                    raise Exception(
+                        "[Error] line {} position {} Secondary definition of {}".format(node.ctx.start.line,
+                                                                                             node.ctx.start.column, curr.label))
+                self.load_immediate(curr.label, '$t1', 'int')
+                string = "beq %s, %s, label%d" % (reg, "$t1", (current_label + i - 1))
+                self.write_to_instruction(string, 2)
+                labels.append(curr.label)
+
+        operation = "j label%d" % (default_label)
+        self.write_to_instruction(string, 2)
+
+        for i in range(1, len(node.children)):
+            continue_writing = continue_writing or self.write or self.breaks
+            self.write = write
+            self.breaks = False
+            self.go_to_label(current_label + i - 1)
+            self.add_label(current_label + i - 1)
+            self.solve_node(node.children[i], symbol_table)
+
+        if default:
+            self.write = continue_writing
+        else:
+            self.write = write
+
+        self.go_to_label(current_label + len(node.children) - 1)
+        self.add_label(current_label + len(node.children) - 1)
+
+        self.break_stack.pop()
+        self.breaks = breaks
 
     def loop(self, node: Node, symbol_table: SymbolTable):
         skip_condition = False
