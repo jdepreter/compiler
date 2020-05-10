@@ -16,7 +16,7 @@ from pathlib import Path
 from src.symbolTables import SymbolTable
 
 
-def to_llvm(filename, outputname):
+def to_mips(filename, outputname):
     SymbolTable.main_defined = False
     Path("llvm").mkdir(parents=True, exist_ok=True)
     input_stream = FileStream(filename)
@@ -58,7 +58,7 @@ def to_llvm(filename, outputname):
         result = ''
         try:
             result = check_output(
-                "spim -file ./asm/{}.asm ".format(outputname, outputname, outputname),
+                "java -jar ./MARS/Mars4_5_mod.jar sm nc ./asm/{}.asm ".format(outputname, outputname, outputname),
                 shell=True).decode("utf-8")
         except CalledProcessError as e:
             if e.returncode != 1:
@@ -77,7 +77,7 @@ def double_to_hex(f):
 
 def main(argv):
     # print(double_to_hex(12.99))
-    print(to_llvm(argv[1], argv[2]))
+    print(to_mips(argv[1], argv[2]))
 
 
 if __name__ == '__main__':

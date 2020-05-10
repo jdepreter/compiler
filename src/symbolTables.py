@@ -125,7 +125,7 @@ class SymbolTable:
         self.table_stack[0][symbol] = SymbolType(symbol_type, assinged, const, self.var_counter, _global)
         self.var_counter += 1
 
-    def get_assigned_symbol(self, symbol_name, error):
+    def get_assigned_symbol(self, symbol_name, error) -> SymbolType:
         symbol_name = re.sub(r'\*', '', symbol_name)
         symbol_name = re.sub(r'\[]', '', symbol_name)
         symbol = self.get_written_symbol(symbol_name, error)
@@ -135,7 +135,7 @@ class SymbolTable:
 
         return symbol
 
-    def get_written_symbol(self, symbol_name, error):
+    def get_written_symbol(self, symbol_name, error) -> SymbolType:
         symbol_name = re.sub(r'\*', '', symbol_name)
         symbol_name = re.sub(r'\[]', '', symbol_name)
         for scope in self.table_stack:
@@ -146,7 +146,7 @@ class SymbolTable:
         raise UndeclaredVariable("[Error] Line {}, Position {}: variable {} is undeclared"
                                  .format(error.line, error.column, symbol_name))
 
-    def get_symbol(self, symbol, error):
+    def get_symbol(self, symbol, error) -> SymbolType:
         symbol = re.sub(r'\*', '', symbol)
         symbol = re.sub(r'\[]', '', symbol)
         for scope in self.table_stack:
@@ -191,7 +191,7 @@ class SymbolTable:
                 SymbolTable.main_defined = True
             self.method_register += 1
 
-    def get_method(self, method, arg_types, error):
+    def get_method(self, method, arg_types, error) -> MethodType:
         # key = self.generate_key(method, arg_types)
         if method == 'printf':
             try:
@@ -209,7 +209,7 @@ class SymbolTable:
         raise UndeclaredVariable("[Error] Line {}, Position {}: method {}({}) is undeclared"
                                  .format(error.line, error.column, method, ','.join(arg_types)))
 
-    def get_written_method(self, method, arg_types, error):
+    def get_written_method(self, method, arg_types, error) -> MethodType:
         # key = self.generate_key(method, arg_types)
         if method == 'printf':
             try:
@@ -238,9 +238,18 @@ class SymbolTable:
             self.strings[string] = val
             self.restrings[val] = string
 
+            # TODO delete this
             mips_val = "str.{}".format(str(self.strings_nr))
             self.mips_strings[string] = mips_val
             self.strings_nr += 1
+
+        # %d, %c, %s, %f should be split for MIPS
+        strings = re.split("%.", string)
+        for my_string in strings:
+            if my_string not in self.mips_strings:
+                mips_val = "str.{}".format(str(self.strings_nr))
+                self.mips_strings[my_string] = mips_val
+                self.strings_nr += 1
 
     def get_strings(self):
         return self.strings
