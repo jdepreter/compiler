@@ -6,12 +6,6 @@ int f(int a){
 
 
 int main() {
-    int x = f(4);
-    if (x == 2) {
-        print_int(x);
-    }
-    else {
-        print_int(1);
-    }
-    print_int(1);
+    int x = 2;
+    printf("getal %d test", x);
 }

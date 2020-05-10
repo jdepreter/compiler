@@ -229,7 +229,7 @@ class MIPS_Converter:
         if '(' in reg:
             self.load_word("$t0", reg, "char*")
             reg = "$t0"
-        self.write_to_instruction("move $a0, %s" % reg, 2)
+        self.write_to_instruction("la $a0, %s" % reg, 2)    # String from data segment use la
         self.write_to_instruction("li $v0, 4", 2)
         self.write_to_instruction("syscall", 2)
 
@@ -619,8 +619,8 @@ class MIPS_Converter:
             value = str(node.label)
             # if str(node.symbol_type) == "float":
             #     value = self.store_float(float(node.label))
-            # if str(node.symbol_type) == "char*":
-            #     return self.make_string(str(node.label), symbol_table), "char*"
+            if str(node.symbol_type) == "char*":
+                return self.get_string(str(node.label), symbol_table), "char*"
             #
             # if str(node.symbol_type)[0] == '&':
             #     value = symbol_table.get_written_symbol(value, node.ctx.start).var_counter
@@ -699,8 +699,19 @@ class MIPS_Converter:
     def call_method(self, node: Node, symbol_table: SymbolTable):
         method_name = node.children[0].label
 
+        # Store return address
         self.allocate_mem(4, symbol_table)
         self.store("$ra", "0($sp)", "int")
+
+        if method_name == "printf":
+            self.call_printf(node, symbol_table)
+            return "0($sp)", "void"
+
+        elif method_name == "scanf":
+            self.call_scanf(node, symbol_table)
+            return "0($sp)", "void"
+
+        # Load arguments
         args = node.children[1].children[:]
         arg_types = []
         arg_reg = []
@@ -712,8 +723,6 @@ class MIPS_Converter:
         if method_name == "print_int":
             self.print_int("0($sp)")
             self.deallocate_mem((len(args) ) * 4, symbol_table)
-
-
             return "0($sp)", "void"
 
         elif method_name == "print_char":
@@ -883,3 +892,70 @@ class MIPS_Converter:
         self.write = write
         self.write_label(labels["next_block"])
         self.breaks = breaks
+
+    def call_printf(self, node, symbol_table):
+        args = node.children[1].children[:]
+        arg_types = []
+        arg_reg = []
+        arg_reg_types = []
+        expected_args = []
+        i = 0
+        print_string = args[0].label
+        while i < len(print_string) - 1:
+            # print_string == printed string
+            if print_string[i] == '%':
+                if print_string[i + 1] == 'i':
+                    expected_args += ['int']
+                elif print_string[i + 1] == 'f':
+                    expected_args += ['float']
+                elif print_string[i + 1] == 'd':
+                    expected_args += ['int']
+                elif print_string[i + 1] == 'c':
+                    expected_args += ['char']
+                elif print_string[i + 1] == 's':
+                    expected_args += ['char*']
+                i += 1
+            i += 1
+
+        if len(expected_args) != len(args) - 1:
+            error = node.ctx.start
+            if len(expected_args) > len(args) - 1:
+                raise Exception(
+                    "[Error] Line {}, Position {}: Too few arguments for calling {} missing arg(s) with type(s): {}".format(
+                        error.line, error.column, 'printf', ', '.join(expected_args[len(args) - 1:])
+                    ))
+
+            elif len(expected_args) < len(args) - 1:
+                raise Exception(
+                    "[Error] Line {}, Position {}: Too many arguments for calling {}".format(
+                        error.line, error.column, 'printf'
+                    ))
+
+        for arg in args:
+            # Load arg
+            reg, symbol_type = self.solve_math(arg, symbol_table)
+            arg_reg.append(reg)
+            arg_types.append(symbol_type)
+
+        print(arg_types)
+        if print_string is None:
+            raise Exception("what")  # TODO
+
+        partial_strings = re.split("%.", print_string)
+        for i, partial_string in enumerate(partial_strings):
+            # Print string
+            self.print_string(symbol_table.get_mips_strings()[partial_string])
+
+            # Check if a % follows this string
+            if i < len(arg_reg) - 1:  # first arg is print_string => len-1
+                if arg_types[i+1] == 'int':
+                    self.print_int(arg_reg[i+1])
+
+    def call_scanf(self, node: Node, symbol_table: SymbolTable):
+        pass
+
+    def get_string(self, string: str, symbol_table: SymbolTable):
+        all_strings = symbol_table.get_mips_strings()
+        if string in all_strings:
+            return all_strings[string]
+        return None
