@@ -3,14 +3,15 @@
 // Should print 3
 int main() {
     int x = 3;
-
+    char c = 'c';
     switch(x) {
         case 1:
         case 2:
             printf("Niet 2");
         case 3:
+            printf("%c%f", c, " test; ");
         case 4:
-            printf("%d", x);
+            printf("%d\n", x);
             break;
         default:
             printf("Default");
