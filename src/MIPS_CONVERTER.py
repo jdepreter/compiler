@@ -851,7 +851,7 @@ class MIPS_Converter:
         current_label = self.label
         default_label = current_label + len(node.children) - 1
 
-        self.break_stack.insert(0, default_label)
+        self.break_stack.insert(0, "label%d" %default_label)
         self.label += len(node.children)
         string = ""
         labels = []
@@ -874,18 +874,19 @@ class MIPS_Converter:
                         "[Error] line {} position {} Secondary definition of {}".format(node.ctx.start.line,
                                                                                              node.ctx.start.column, curr.label))
                 self.load_immediate(curr.label, '$t1', 'int')
-                string = "beq %s, %s, label%d" % (reg, "$t1", (current_label + i - 1))
+                string = "beq %s, %s, label%d" % (branchval, "$t1", (current_label + i - 1))
                 self.write_to_instruction(string, 2)
                 labels.append(curr.label)
 
-        operation = "j label%d" % (default_label)
-        self.write_to_instruction(string, 2)
+
+        self.go_to_label("label%d" % (default_label))
+
 
         for i in range(1, len(node.children)):
             continue_writing = continue_writing or self.write or self.breaks
             self.write = write
             self.breaks = False
-            self.go_to_label(current_label + i - 1)
+            self.go_to_label("label%d" %(current_label + i - 1))
             self.add_label(current_label + i - 1)
             self.solve_node(node.children[i], symbol_table)
 
@@ -894,7 +895,7 @@ class MIPS_Converter:
         else:
             self.write = write
 
-        self.go_to_label(current_label + len(node.children) - 1)
+        self.go_to_label("label%d" %(current_label + len(node.children) - 1))
         self.add_label(current_label + len(node.children) - 1)
 
         self.break_stack.pop()
