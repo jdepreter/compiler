@@ -9,7 +9,7 @@ int main() {
         case 2:
             printf("Niet 2");
         case 3:
-            printf("%c%f", c, " test; ");
+            printf("%c%s", c, " test; \n");
         case 4:
             printf("%d\n", x);
             break;
