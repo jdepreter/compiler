@@ -3,6 +3,9 @@
 // Should print 3
 int main() {
     int x = 3;
+    float f = 3.2;
+    float f2 = 5.3;
+    float f3 = f + f2;
 
     switch(x) {
         case 1:

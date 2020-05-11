@@ -20,6 +20,7 @@ class MIPS_Converter:
         self.bool_dict = bool_dict
         self.temp_used_registers = []
         self.function_stack = []
+        self.floatp = 0
 
         self.data_section = ".data\n"
         self.instruction_section = ".text\n"
@@ -96,8 +97,16 @@ class MIPS_Converter:
         :param symbol_type:
         :return:
         """
-        string = "%s %s, %s" % (mips_operators[symbol_type]['li'], destination, value)
-        self.write_to_instruction(string, 2)
+        if symbol_type == "float":
+            float_Str = "fp%d" % self.floatp
+            self.write_to_data("%s: .float %s" % (float_Str, value))
+            string = "l.s %s %s" % (destination, float_Str)
+            self.write_to_instruction(string,2)
+            self.floatp += 1
+        else:
+            # string = "%s %s, %s" % (mips_operators[symbol_type]['li'], destination, value)
+            string = "li %s, %s" % (destination, value)
+            self.write_to_instruction(string, 2)
 
     def load_symbol(self, symbol: SymbolType, symbol_table: SymbolTable):
         # TODO maak dit efficient
