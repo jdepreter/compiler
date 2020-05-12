@@ -191,7 +191,7 @@ class MIPS_Converter:
 
     def add_label(self, labelnr):
         string = "label%d:" % labelnr
-        self.write_to_instruction(string,0)
+        self.write_to_instruction(string, 0)
 
     def go_to_label_linked(self, label):
         """
@@ -242,7 +242,7 @@ class MIPS_Converter:
         if '(' in reg:
             self.load_word("$t0", reg, "char*")
             reg = "$t0"
-        self.write_to_instruction("la $a0, %s" % reg, 2)    # String from data segment use la
+        self.write_to_instruction("la $a0, %s" % reg, 2)  # String from data segment use la
         self.write_to_instruction("li $v0, 4", 2)
         self.write_to_instruction("syscall", 2)
 
@@ -320,7 +320,7 @@ class MIPS_Converter:
             register, value_type = self.solve_math(node, symbol_table)
             reg = '$t0'
             if value_type is not None and value_type != 'void':
-                reg = register_dict(value_type,0)
+                reg = register_dict(value_type, 0)
 
                 self.load_word(reg, "0($sp)", value_type)
             self.deallocate_mem(4, symbol_table)
@@ -728,12 +728,12 @@ class MIPS_Converter:
 
         if method_name == "print_int":
             self.print_int("0($sp)")
-            self.deallocate_mem((len(args) ) * 4, symbol_table)
+            self.deallocate_mem((len(args)) * 4, symbol_table)
             return "0($sp)", "void"
 
         elif method_name == "print_char":
             self.print_char("0($sp)")
-            self.deallocate_mem((len(args) ) * 4, symbol_table)
+            self.deallocate_mem((len(args)) * 4, symbol_table)
             return "0($sp)", "void"
 
         else:
@@ -744,7 +744,6 @@ class MIPS_Converter:
             # load solution into t0
 
             self.deallocate_mem((len(args)) * 4, symbol_table)
-
 
             self.load_word("$ra", "0($sp)", "int")
             self.store("$t0", "0($sp)", "int")
@@ -805,7 +804,7 @@ class MIPS_Converter:
         # Load stack pointer in temp register
         # TODO float must be converted to int
         # temp_reg = "$t0"
-        temp_reg = register_dict(value_type,0)
+        temp_reg = register_dict(value_type, 0)
         self.load_word(temp_reg, temp_register, value_type)
 
         # Update Label
@@ -860,7 +859,7 @@ class MIPS_Converter:
         current_label = self.label
         default_label = current_label + len(node.children) - 1
 
-        self.break_stack.insert(0, "label%d" %default_label)
+        self.break_stack.insert(0, "label%d" % default_label)
         self.label += len(node.children)
         string = ""
         labels = []
@@ -881,21 +880,20 @@ class MIPS_Converter:
                 if curr.label in labels:
                     raise Exception(
                         "[Error] line {} position {} Secondary definition of {}".format(node.ctx.start.line,
-                                                                                             node.ctx.start.column, curr.label))
+                                                                                        node.ctx.start.column,
+                                                                                        curr.label))
                 self.load_immediate(curr.label, '$t1', 'int')
                 string = "beq %s, %s, label%d" % (branchval, "$t1", (current_label + i - 1))
                 self.write_to_instruction(string, 2)
                 labels.append(curr.label)
 
-
         self.go_to_label("label%d" % (default_label))
-
 
         for i in range(1, len(node.children)):
             continue_writing = continue_writing or self.write or self.breaks
             self.write = write
             self.breaks = False
-            self.go_to_label("label%d" %(current_label + i - 1))
+            self.go_to_label("label%d" % (current_label + i - 1))
             self.add_label(current_label + i - 1)
             self.solve_node(node.children[i], symbol_table)
 
@@ -904,7 +902,7 @@ class MIPS_Converter:
         else:
             self.write = write
 
-        self.go_to_label("label%d" %(current_label + len(node.children) - 1))
+        self.go_to_label("label%d" % (current_label + len(node.children) - 1))
         self.add_label(current_label + len(node.children) - 1)
 
         self.break_stack.pop()
@@ -1013,6 +1011,8 @@ class MIPS_Converter:
         for arg in args:
             # Load arg
             reg, symbol_type = self.solve_math(arg, symbol_table)
+            if reg is None:
+                raise Exception('Compiler Mistake when solving print arg')
             arg_reg.append(reg)
             arg_types.append(symbol_type)
 
@@ -1027,8 +1027,14 @@ class MIPS_Converter:
 
             # Check if a % follows this string
             if i < len(arg_reg) - 1:  # first arg is print_string => len-1
-                if arg_types[i+1] == 'int':
-                    self.print_int(arg_reg[i+1])
+                if arg_types[i + 1] == 'int':
+                    self.print_int(arg_reg[i + 1])
+                elif arg_types[i + 1] == 'float':
+                    self.print_float(arg_reg[i + 1])
+                elif arg_types[i + 1] == 'char':
+                    self.print_char(arg_reg[i + 1])
+                elif arg_types[i + 1] == 'char*':
+                    self.print_string(arg_reg[i + 1])
 
     def call_scanf(self, node: Node, symbol_table: SymbolTable):
         pass

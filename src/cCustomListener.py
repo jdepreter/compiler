@@ -119,13 +119,14 @@ class CASTGenerator(cListener):
             symbol_type = "char"
 
         elif ctx.STRING():
-
+            # Get string
             string = str(ctx.STRING())[1:-1]
-            string = bytes(string, "ASCII").decode("unicode_escape")
+            self.symbol_table.add_mips_string(string)
 
+            decoded_string = bytes(string, "ASCII").decode("unicode_escape")  # Decode string for llvm
+            self.symbol_table.add_string(decoded_string)
 
             symbol_type = "char*"
-            self.symbol_table.add_string(string)
 
         node = self.create_node(string, "rvalue", self.currentNode, ctx)
         self.currentNode.children.append(node)

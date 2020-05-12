@@ -1111,6 +1111,7 @@ class LLVM_Converter:
         all_strings = symbol_table.get_strings()
         # write_string = '{} = private unnamed_addr constant [{} x i8] c"{}\\00", align 1\n'.format(all_strings[string], len(string[1:-1])+1,string[1:-1])
         # self.write_to_file(write_string)
+        string = bytes(string, "ASCII").decode("unicode_escape")
         if string in all_strings:
             return all_strings[string]
         else:

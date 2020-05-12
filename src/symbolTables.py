@@ -238,12 +238,15 @@ class SymbolTable:
             self.strings[string] = val
             self.restrings[val] = string
 
+    def add_mips_string(self, string):
+        if string not in self.mips_strings:
             # TODO delete this
             mips_val = "str.{}".format(str(self.strings_nr))
             self.mips_strings[string] = mips_val
             self.strings_nr += 1
 
-        # %d, %c, %s, %f should be split for MIPS
+            # %d, %c, %s, %f should be split for MIPS
+
         strings = re.split("%.", string)
         for my_string in strings:
             if my_string not in self.mips_strings:
