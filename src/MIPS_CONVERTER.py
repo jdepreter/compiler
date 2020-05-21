@@ -62,7 +62,7 @@ class MIPS_Converter:
         """
         indent = "".join([" " for i in range(indentation)])
         if self.write:
-            self.instruction_section += indent + string + "\t" + comment + "\n"
+            self.instruction_section += indent + string + " # " + comment + "\n"
 
     def define_strings(self, symbol_table: SymbolTable):
         """
@@ -126,25 +126,27 @@ class MIPS_Converter:
         # TODO maak dit efficient
         self.allocate_mem(4, symbol_table, comment="Allocate for %s" % symbol.name)
         offset = str(symbol.offset)
-        reg = register_dict(symbol.symbol_type, 0)
+        self.put_on_top_of_stack("%s($sp)" % symbol.offset, symbol.symbol_type)
 
-        operator_type = get_operator_type(symbol.symbol_type)
+    def put_on_top_of_stack(self, stack_pointer: str, symbol_type: str):
+        operator_type = get_operator_type(symbol_type)
+        reg = register_dict(symbol_type, 0)
 
         # Load instruction from the stack
-        string = "%s %s, %s($sp)" % (mips_operators[operator_type]['lw'], reg, offset)
-        self.write_to_instruction(string, 2)
+        string = "%s %s, %s" % (mips_operators[operator_type]['lw'], reg, stack_pointer)
+        self.write_to_instruction(string, 2, comment='Put on top of stack load')
 
         # Put it on top of the stack
         string = "%s %s 0($sp)" % (mips_operators[operator_type]['sw'], reg)
-        self.write_to_instruction(string, 2)
+        self.write_to_instruction(string, 2, comment='Put on top of stack save')
 
-    def load_word(self, left: str, right: str, symbol_type: str):
+    def load_word(self, left: str, right: str, symbol_type: str, comment: str = ''):
         if left != right:
             operator_type = get_operator_type(symbol_type)
             string = "%s %s, %s" % (mips_operators[operator_type]['lw'], left, right)
-            self.write_to_instruction(string, 2)
+            self.write_to_instruction(string, 2, comment)
 
-    def load_address(self, left, right):
+    def load_address(self, left, right, comment: str = ''):
         """
         Load the address of register right into register left
         :param left:
@@ -153,9 +155,9 @@ class MIPS_Converter:
         """
         if left != right:
             string = "la %s, %s" % (left, right)
-            self.write_to_instruction(string, 2)
+            self.write_to_instruction(string, 2, comment)
 
-    def store_symbol(self, value, symbol: SymbolType):
+    def store_symbol(self, value, symbol: SymbolType, comment: str = ''):
         """
         Store register in stack pointer
         :param value: register
@@ -165,9 +167,9 @@ class MIPS_Converter:
         offset = str(symbol.offset)
         operator_type = get_operator_type(symbol.symbol_type)
         string = "%s %s, %s($sp)" % (mips_operators[operator_type]['sw'], str(value), offset)
-        self.write_to_instruction(string, 2)
+        self.write_to_instruction(string, 2, comment)
 
-    def store(self, source, destination, symbol_type):
+    def store(self, source, destination, symbol_type, comment: str = ''):
         """
         Load Word instruction
         :param source:
@@ -177,7 +179,7 @@ class MIPS_Converter:
         """
         operator_type = get_operator_type(symbol_type)
         string = "%s %s, %s" % (mips_operators[operator_type]['sw'], source, destination)
-        self.write_to_instruction(string, 2)
+        self.write_to_instruction(string, 2, comment)
 
     def cast_value(self, current_reg, current_type, new_type, error):
         """
@@ -271,7 +273,7 @@ class MIPS_Converter:
         :return:
         """
         if '(' in reg:
-            self.load_word("$t0", reg, "int")
+            self.load_word("$t0", reg, "int", comment='Load int for printing')
             reg = "$t0"
         self.write_to_instruction("move $a0, %s" % reg, 2)
         self.write_to_instruction("li $v0, 1", 2)
@@ -279,7 +281,7 @@ class MIPS_Converter:
 
     def print_string(self, reg):
         if '(' in reg:
-            self.load_word("$t0", reg, "char*")
+            self.load_word("$t0", reg, "char*", comment='Load string for printing')
             reg = "$t0"
         self.write_to_instruction("la $a0, %s" % reg, 2)  # String from data segment use la
         self.write_to_instruction("li $v0, 4", 2)
@@ -300,7 +302,7 @@ class MIPS_Converter:
         :return:
         """
         if '(' in reg:
-            self.load_word("$t0", reg, "char")
+            self.load_word("$t0", reg, "char", comment='Load char for printing')
             reg = "$t0"
         self.write_to_instruction("move $a0, %s" % reg, 2)
         self.write_to_instruction("li $v0, 11", 2)
@@ -328,7 +330,7 @@ class MIPS_Converter:
         :param symbol_table:
         :return:
         """
-        self.allocate_mem(4, symbol_table)
+        self.allocate_mem(4, symbol_table, comment='Allocate space for symbol: %s' % symbol.name)
         symbol.written = True
 
     def solve_node(self, node: Node, symbol_table: SymbolTable):
@@ -362,7 +364,7 @@ class MIPS_Converter:
                 reg = register_dict(value_type, 0)
 
                 self.load_word(reg, "0($sp)", value_type)
-            self.deallocate_mem(4, symbol_table)
+            self.deallocate_mem(4, symbol_table, comment='Deallocate space used for solve math')
             return reg, value_type
 
         elif node.node_type == 'ifelse':
@@ -475,6 +477,7 @@ class MIPS_Converter:
                 # TODO array element getter
                 ...
             # Dereference if needed
+            # TODO hier zit nog een fout met pointers en stuff
             if '*' in str(node.children[0].label):
                 dereference_count = symbol_string.count('*')
                 pointer_reg = "%s($sp)" % symbol.offset if reg is None else reg
@@ -487,8 +490,8 @@ class MIPS_Converter:
 
             self.load_word(reg, value[0], value[1])
             reg = self.cast_value(reg, value[1], symbol_type, node.ctx.start)
-            self.store_symbol(reg, symbol)
-            self.deallocate_mem(4, symbol_table)
+            self.store_symbol(reg, symbol, "Assigning to %s" % symbol.name)
+            self.deallocate_mem(4, symbol_table, comment='deallocate solve math')
 
         # if '[]' in str(node.children[0].label):
         #     # We are dealing with an array index
@@ -678,6 +681,8 @@ class MIPS_Converter:
 
         elif node.node_type == 'rvalue':
             value = str(node.label)
+            self.allocate_mem(4, symbol_table, "Allocate space for rvalue")
+
             # if str(node.symbol_type) == "float":
             #     value = self.store_float(float(node.label))
             if str(node.symbol_type) == "char*":
@@ -686,11 +691,10 @@ class MIPS_Converter:
             # Get address of symbol and store it into t1
             elif str(node.symbol_type)[0] == '&':
                 symbol = symbol_table.get_written_symbol(value, node.ctx.start)
-                self.load_address("$t0", "%s($sp)" % symbol.offset)
+                self.load_address("$t0", "%s($sp)" % symbol.offset, comment='Load address of %s' % symbol.name)
                 reg = "$t0"
 
             else:
-                self.allocate_mem(4, symbol_table)
                 reg = register_dict(str(node.symbol_type), 0)
                 self.load_immediate(value, reg, str(node.symbol_type))
 
@@ -710,8 +714,9 @@ class MIPS_Converter:
                 reg = self.dereference(pointer_reg, dereference_count)
                 symbol_type = symbol_type[:-dereference_count]
 
-            reg = "%s($sp)" % symbol.offset if reg is None else reg
-            return reg, symbol_type
+            reg = ("%s($sp)" % symbol.offset) if reg is None else ("0(%s)" % reg)
+            self.put_on_top_of_stack(reg, symbol_type)
+            return "0($sp)", symbol_type
 
         # elif node.node_type == 'array_element':
         #     sym = symbol_table.get_symbol(node.label, node.ctx.start)
@@ -776,7 +781,7 @@ class MIPS_Converter:
         method_name = node.children[0].label
 
         # Store return address
-        self.allocate_mem(4, symbol_table)
+        self.allocate_mem(4, symbol_table, "Allocate space for $ra")
         self.store("$ra", "0($sp)", "int")
 
         if method_name == "printf":
@@ -798,25 +803,25 @@ class MIPS_Converter:
 
         if method_name == "print_int":
             self.print_int("0($sp)")
-            self.deallocate_mem((len(args)) * 4, symbol_table)
+            self.deallocate_mem((len(args)) * 4, symbol_table, comment='Deallocate mem used in print int')
             return "0($sp)", "void"
 
         elif method_name == "print_char":
             self.print_char("0($sp)")
-            self.deallocate_mem((len(args)) * 4, symbol_table)
+            self.deallocate_mem((len(args)) * 4, symbol_table, comment='Deallocate mem used in print char')
             return "0($sp)", "void"
 
         else:
             method = node.symbol_table.get_written_method(method_name, arg_types, node.ctx.start)
 
             self.go_to_label_linked(method.internal_name)
-            self.load_word("$t0", "0($sp)", "int")
+            self.load_word("$t0", "0($sp)", "int", comment='something with functions')
             # load solution into t0
 
-            self.deallocate_mem((len(args)) * 4, symbol_table)
+            self.deallocate_mem((len(args)) * 4, symbol_table, comment='something with functions')
 
-            self.load_word("$ra", "0($sp)", "int")
-            self.store("$t0", "0($sp)", "int")
+            self.load_word("$ra", "0($sp)", "int", comment='something with functions')
+            self.store("$t0", "0($sp)", "int", comment='something with functions')
 
             return "0($sp)", method.symbol_type
 
@@ -1124,9 +1129,9 @@ class MIPS_Converter:
         :return: final address
         """
         # Load base pointer
-        self.load_word("$t0", pointer_register, "int")
+        self.load_word("$t0", pointer_register, "int", comment='Load pointer before dereference')
         for i in range(dereference_count):
             # Load value that is stored address that was stored in pointer
-            self.load_word("$t0", "$t0", "int")    # Load from address in $t0
+            self.load_address("$t0", "0($t0)", comment='Dereference once')    # Load from address in $t0
 
         return "$t0"
