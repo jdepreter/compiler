@@ -4,6 +4,8 @@ from src.compile_mips import to_mips
 import src
 import re
 
+mars = "../../MARS/Mars4_5_mod.jar"
+
 
 def clear_newlines(string: str) -> str:
     return re.sub("\n", "", string)
@@ -12,39 +14,39 @@ def clear_newlines(string: str) -> str:
 class Assignment1(unittest.TestCase):
     def test_basic_files(self):
         self.assertEqual(to_llvm("basic_declaration.c", "basic_declaration"), "")
-        self.assertEqual(to_mips("basic_declaration.c", "basic_declaration"), "")
+        self.assertEqual(clear_newlines(to_mips("basic_declaration.c", "basic_declaration", mars=mars)), "")
 
         self.assertEqual(to_llvm("basic_definition.c", "basic_definition"), "")
-        self.assertEqual(to_mips("basic_definition.c", "basic_definition"), "")
+        self.assertEqual(clear_newlines(to_mips("basic_definition.c", "basic_definition", mars=mars)), "")
 
     def test_scope(self):
         self.assertEqual(to_llvm("scope_1.c", "scope_1"), "")
-        self.assertEqual(to_mips("scope_1.c", "scope_1"), "")
+        self.assertEqual(clear_newlines(to_mips("scope_1.c", "scope_1", mars=mars)), "")
 
         self.assertEqual(to_llvm("scope_empty.c", "scope_empty"), "")
-        self.assertEqual(to_mips("scope_empty.c", "scope_empty"), "")
+        self.assertEqual(clear_newlines(to_mips("scope_empty.c", "scope_empty", mars=mars)), "")
 
         self.assertEqual(to_llvm("scope_nested.c", "scope_nested"), "23")
-        self.assertEqual(to_mips("scope_nested.c", "scope_nested"), "23")
+        self.assertEqual(clear_newlines(to_mips("scope_nested.c", "scope_nested", mars=mars)), "23")
 
     def test_folding(self):
         self.assertEqual(to_llvm("folding.c", "folding"), "2440.00000013.00000013")
-        self.assertEqual(to_mips("folding.c", "folding"), "2440.00000013.00000013")
+        self.assertEqual(clear_newlines(to_mips("folding.c", "folding", mars=mars)), "2440.013.013")
 
     def test_bool_folding(self):
         self.assertEqual(to_llvm("bool_testing.c", "bool_testing"), "6")
-        self.assertEqual(to_mips("bool_testing.c", "bool_testing"), "6")
+        self.assertEqual(clear_newlines(to_mips("bool_testing.c", "bool_testing", mars=mars)), "6")
 
     def test_modulo(self):
         self.assertEqual(to_llvm("modulo.c", "modulo"), "1")
-        self.assertEqual(to_mips("modulo.c", "modulo"), "1")
+        self.assertEqual(clear_newlines(to_mips("modulo.c", "modulo", mars=mars)), "1")
 
     def test_char(self):
         self.assertEqual(to_llvm("char_casting.c", "char_casting"), "bcd97")
-        self.assertEqual(to_mips("char_casting.c", "char_casting"), "bcd97")
+        self.assertEqual(clear_newlines(to_mips("char_casting.c", "char_casting", mars=mars)), "bcd97")
 
         self.assertEqual(to_llvm("char_folding.c", "char_folding"), "d")
-        self.assertEqual(to_mips("char_folding.c", "char_folding"), "d")
+        self.assertEqual(clear_newlines(to_mips("char_folding.c", "char_folding", mars=mars)), "d")
 
     def test_pointers(self):
         self.assertEqual(to_llvm("pointers.c", "pointers"), "")
@@ -88,28 +90,28 @@ class Assignment1(unittest.TestCase):
 
     def test_errors_mips(self):
         with self.assertRaises(src.CustomExceptions.CSyntaxError):
-            to_mips("syntax_error.c", "syntax_error")
+            clear_newlines(to_mips("syntax_error.c", "syntax_error", mars=mars))
 
         with self.assertRaises(src.CustomExceptions.CSyntaxError):
-            to_mips("syntax_error_1.c", "syntax_error_1")
+            clear_newlines(to_mips("syntax_error_1.c", "syntax_error_1", mars=mars))
 
         with self.assertRaises(src.CustomExceptions.CSyntaxError):
-            to_mips("assignment_to_r_value.c", "assignment_to_r_value")
+            clear_newlines(to_mips("assignment_to_r_value.c", "assignment_to_r_value", mars=mars))
 
         with self.assertRaises(src.CustomExceptions.UninitializedVariable):
-            to_mips("uninitialised_var_error.c", "uninit_var_error")
+            clear_newlines(to_mips("uninitialised_var_error.c", "uninit_var_error", mars=mars))
 
         with self.assertRaises(src.CustomExceptions.UndeclaredVariable):
-            to_mips("undeclared_var_error.c", "undeclared_var_error")
+            clear_newlines(to_mips("undeclared_var_error.c", "undeclared_var_error", mars=mars))
 
         with self.assertRaises(src.CustomExceptions.ConstAssignment):
-            to_mips("const_assignment_error.c", "const_assignment")
+            clear_newlines(to_mips("const_assignment_error.c", "const_assignment", mars=mars))
 
         with self.assertRaises(src.CustomExceptions.DuplicateDeclaration):
-            to_mips("duplicate_declaration_error.c", "duplicate_declaration")
+            clear_newlines(to_mips("duplicate_declaration_error.c", "duplicate_declaration", mars=mars))
 
         with self.assertRaises(src.CustomExceptions.IncompatibleType):
-            to_mips("incompatible_type_error.c", "incompatible_type")
+            clear_newlines(to_mips("incompatible_type_error.c", "incompatible_type", mars=mars))
 
 
 class IfElse(unittest.TestCase):
