@@ -481,7 +481,7 @@ class MIPS_Converter:
             if '*' in str(node.children[0].label):
                 dereference_count = symbol_string.count('*')
                 pointer_reg = "%s($sp)" % symbol.offset if reg is None else reg
-                reg = self.dereference(pointer_reg, dereference_count)
+                reg = self.dereference(pointer_reg, dereference_count, node.children[0].symbol_type.symbol_type[0:-dereference_count])
                 symbol_type = symbol_type[:-dereference_count]
 
             value = self.solve_math(node.children[1], symbol_table)
@@ -711,12 +711,17 @@ class MIPS_Converter:
             if '*' in str(node.label):
                 dereference_count = node.label.count('*')
                 pointer_reg = "%s($sp)" % symbol.offset if reg is None else reg
-                reg = self.dereference(pointer_reg, dereference_count)
+                # TODO add float
+                reg = self.dereference(pointer_reg, dereference_count, "int")
                 symbol_type = symbol_type[:-dereference_count]
+                self.store(reg, '0($sp)', symbol_type, 'store dereferenced value on top')
 
-            reg = ("%s($sp)" % symbol.offset) if reg is None else ("0(%s)" % reg)
-            self.put_on_top_of_stack(reg, symbol_type)
-            return "0($sp)", symbol_type
+                return "0($sp)", symbol_type
+
+            else:
+                reg = ("%s($sp)" % symbol.offset) if reg is None else ("0(%s)" % reg)
+                self.put_on_top_of_stack(reg, symbol_type)
+                return "0($sp)", symbol_type
 
         # elif node.node_type == 'array_element':
         #     sym = symbol_table.get_symbol(node.label, node.ctx.start)
@@ -1121,17 +1126,19 @@ class MIPS_Converter:
         pass
 
     # Pointers
-    def dereference(self, pointer_register: str, dereference_count: int) -> str:
+    def dereference(self, pointer_register: str, dereference_count: int, symbol_type : str) -> str:
         """
         Dereference a register
         :param pointer_register:
         :param dereference_count:
+        :param symbol_type:
         :return: final address
         """
         # Load base pointer
-        self.load_word("$t0", pointer_register, "int", comment='Load pointer before dereference')
+        # self.load_word("$t0", pointer_register, "int", comment='Load pointer before dereference')
+        self.load_address("$t0", pointer_register, comment='Dereference once')
         for i in range(dereference_count):
-            # Load value that is stored address that was stored in pointer
-            self.load_address("$t0", "0($t0)", comment='Dereference once')    # Load from address in $t0
+        #     # Load value that is stored address that was stored in pointer
+            self.load_word("$t0", "0($t0)", symbol_type, comment='Dereference once')    # Load from address in $t0
 
         return "$t0"
