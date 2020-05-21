@@ -5,6 +5,19 @@ from src.AST import *
 from src.symbolTables import *
 
 
+def get_string(string: str, symbol_table: SymbolTable):
+    """
+    Retrun MIPS label (address) for the given string
+    :param string:
+    :param symbol_table:
+    :return:
+    """
+    all_strings = symbol_table.get_mips_strings()
+    if string in all_strings:
+        return all_strings[string]
+    return None
+
+
 class MIPS_Converter:
     def __init__(self, ast: ASTVisitor, file):
         self.ast = ast
@@ -113,14 +126,32 @@ class MIPS_Converter:
         self.allocate_mem(4, symbol_table)
         offset = str(symbol.offset)
         reg = register_dict(symbol.symbol_type, 0)
-        string = "%s %s, %s($sp)" % (mips_operators[symbol.symbol_type]['lw'], reg, offset)
+
+        operator_type = get_operator_type(symbol.symbol_type)
+
+        # Load instruction from the stack
+        string = "%s %s, %s($sp)" % (mips_operators[operator_type]['lw'], reg, offset)
         self.write_to_instruction(string, 2)
-        string = "%s %s 0($sp)" % (mips_operators[symbol.symbol_type]['sw'], reg)
+
+        # Put it on top of the stack
+        string = "%s %s 0($sp)" % (mips_operators[operator_type]['sw'], reg)
         self.write_to_instruction(string, 2)
 
     def load_word(self, left: str, right: str, symbol_type: str):
         if left != right:
-            string = "%s %s, %s" % (mips_operators[symbol_type]['lw'], left, right)
+            operator_type = get_operator_type(symbol_type)
+            string = "%s %s, %s" % (mips_operators[operator_type]['lw'], left, right)
+            self.write_to_instruction(string, 2)
+
+    def load_address(self, left, right):
+        """
+        Load the address of register right into register left
+        :param left:
+        :param right: address of some kind
+        :return:
+        """
+        if left != right:
+            string = "la %s, %s" % (left, right)
             self.write_to_instruction(string, 2)
 
     def store_symbol(self, value, symbol: SymbolType):
@@ -131,7 +162,8 @@ class MIPS_Converter:
         :return:
         """
         offset = str(symbol.offset)
-        string = "%s %s, %s($sp)" % (mips_operators[symbol.symbol_type]['sw'], str(value), offset)
+        operator_type = get_operator_type(symbol.symbol_type)
+        string = "%s %s, %s($sp)" % (mips_operators[operator_type]['sw'], str(value), offset)
         self.write_to_instruction(string, 2)
 
     def store(self, source, destination, symbol_type):
@@ -142,7 +174,8 @@ class MIPS_Converter:
         :param symbol_type:
         :return:
         """
-        string = "%s %s, %s" % (mips_operators[symbol_type]['sw'], source, destination)
+        operator_type = get_operator_type(symbol_type)
+        string = "%s %s, %s" % (mips_operators[operator_type]['sw'], source, destination)
         self.write_to_instruction(string, 2)
 
     def cast_value(self, current_reg, current_type, new_type, error):
@@ -172,6 +205,11 @@ class MIPS_Converter:
             self.write_to_instruction(string, 2)
             string = "mfc1 %s, %s" % (newreg, current_reg)
             self.write_to_instruction(string, 2)
+
+        elif '*' in current_type and new_type == 'int':
+            # Pointer to int does not need any conversion
+            ...
+
         else:
             raise Exception("uninstated conversion")
         return newreg
@@ -611,7 +649,8 @@ class MIPS_Converter:
             value = self.solve_math(node.children[1], symbol_table)
             reg = register_dict(value[1], 0)
             self.load_word(reg, '0($sp)', value[1])
-            string = "%s %s" % (mips_operators[value[1]]['neg'], reg)
+            operator_type = get_operator_type(value[1])
+            string = "%s %s" % (mips_operators[operator_type]['neg'], reg)
             self.write_to_instruction(string, 2)
 
             self.store(reg, '0($sp)', value[1])
@@ -626,13 +665,19 @@ class MIPS_Converter:
             # if str(node.symbol_type) == "float":
             #     value = self.store_float(float(node.label))
             if str(node.symbol_type) == "char*":
-                return self.get_string(str(node.label), symbol_table), "char*"
-            #
-            # if str(node.symbol_type)[0] == '&':
-            #     value = symbol_table.get_written_symbol(value, node.ctx.start).var_counter
-            self.allocate_mem(4, symbol_table)
-            reg = register_dict(str(node.symbol_type), 0)
-            self.load_immediate(value, reg, str(node.symbol_type))
+                return get_string(str(node.label), symbol_table), "char*"
+
+            # Get address of symbol and store it into t1
+            elif str(node.symbol_type)[0] == '&':
+                symbol = symbol_table.get_written_symbol(value, node.ctx.start)
+                self.load_address("$t0", "%s($sp)" % symbol.offset)
+                reg = "$t0"
+
+            else:
+                self.allocate_mem(4, symbol_table)
+                reg = register_dict(str(node.symbol_type), 0)
+                self.load_immediate(value, reg, str(node.symbol_type))
+
             self.store(reg, "0($sp)", str(node.symbol_type))
 
             return "0($sp)", str(node.symbol_type)
@@ -978,6 +1023,8 @@ class MIPS_Converter:
         expected_args = []
         i = 0
         print_string = args[0].label
+
+        # Compute which argument types are needed to complete the print call
         while i < len(print_string) - 1:
             # print_string == printed string
             if print_string[i] == '%':
@@ -994,6 +1041,7 @@ class MIPS_Converter:
                 i += 1
             i += 1
 
+        # Check for no extra / missing params
         if len(expected_args) != len(args) - 1:
             error = node.ctx.start
             if len(expected_args) > len(args) - 1:
@@ -1008,6 +1056,7 @@ class MIPS_Converter:
                         error.line, error.column, 'printf'
                     ))
 
+        # Load all arguments into memory
         for arg in args:
             # Load arg
             reg, symbol_type = self.solve_math(arg, symbol_table)
@@ -1017,9 +1066,11 @@ class MIPS_Converter:
             arg_types.append(symbol_type)
 
         print(arg_types)
+        # Check that the printed string exists
         if print_string is None:
             raise Exception("what")  # TODO
 
+        # Split strings into parts and print each part separately
         partial_strings = re.split("%.", print_string)
         for i, partial_string in enumerate(partial_strings):
             # Print string
@@ -1039,8 +1090,4 @@ class MIPS_Converter:
     def call_scanf(self, node: Node, symbol_table: SymbolTable):
         pass
 
-    def get_string(self, string: str, symbol_table: SymbolTable):
-        all_strings = symbol_table.get_mips_strings()
-        if string in all_strings:
-            return all_strings[string]
-        return None
+    # Pointers

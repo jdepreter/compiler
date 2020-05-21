@@ -1,21 +1,9 @@
 #include <stdio.h>
 
-// Should print 3
 int main() {
-    int x = 3;
-    char c = 'c';
-    switch(x) {
-        case 1:
-        case 2:
-            printf("Niet 2");
-        case 3:
-            printf("%c%s", c, " test; \n");
-        case 4:
-            printf("%d\n", x);
-            break;
-        default:
-            printf("Default");
-
-    }
+    int i = 5;
+    int* j = &i;
+    int z = j;
+    printf("%d", z);
     return 0;
 }

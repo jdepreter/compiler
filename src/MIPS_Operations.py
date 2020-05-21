@@ -54,7 +54,7 @@ bool_dict = {
     }
 }
 
-mips_operators ={
+mips_operators = {
     'int': {
         'li': 'li',
         'lw': 'lw',
@@ -73,8 +73,6 @@ mips_operators ={
         'sw': 'swc1',
         'neg': 'neg.s'
     }
-
-
 }
 
 
@@ -83,3 +81,12 @@ def register_dict(symbol_type, regnr):
     if symbol_type == "float":
         sym = 'f'
     return '$%s%d' % (sym, regnr)
+
+
+def get_operator_type(symbol_type: str) -> str:
+    """
+    pointers use the same operations instructions as integers
+    :param symbol_type:
+    :return: string
+    """
+    return 'int' if '*' in symbol_type or '&' in symbol_type else symbol_type
