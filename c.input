@@ -1,9 +1,8 @@
 #include <stdio.h>
 
-int main() {
-    int x = 15%10;
-    int y = x+6.2;
-    int z = y%x;
-    printf("%d",z);
+int main(){
+    float x = 1.25;
+    int c= 5+(1==1||x == 1.25);
+    printf("%i", c);
     return 0;
 }

@@ -34,6 +34,7 @@ class MIPS_Converter:
         self.temp_used_registers = []
         self.function_stack = []
         self.floatp = 0
+        self.float_branches = 0
 
         self.data_section = ".data\n"
         self.instruction_section = ".text\n"
@@ -622,8 +623,26 @@ class MIPS_Converter:
             # TODO Float detection
             # TODO floats mee werken
 
-            if symbol_type == 'int':
-                string = "%s $t0, $t1, $t0" % self.bool_dict['int'][node.label]
+            if symbol_type == 'float':
+                string = "%s %s, %s" % (self.bool_dict[symbol_type][node.label], child_1,child_2 )
+                self.write_to_instruction(string, 2)
+
+                self.write_to_instruction("bc1f L_CondFalse%d"%self.float_branches, 2)
+                self.write_to_instruction("li $t0, 0", 2)
+                self.write_to_instruction("j L_CondEnd%d"%self.float_branches, 2)
+                self.write_to_instruction("L_CondFalse%d:"%self.float_branches, 0)
+                self.write_to_instruction("li $t0, 1", 2)
+                self.write_to_instruction("L_CondEnd%d:"%self.float_branches, 0)
+
+                # Store value
+                self.deallocate_mem(4, symbol_table)  # Delete one
+                self.store("$t0", "0($sp)", 'int')  # Overwrite the other
+                self.float_branches +=1
+                # self.print_int('$t0')
+                return '0($sp)', "int"
+
+            else:
+                string = "%s $t0, $t1, $t0" % (self.bool_dict[symbol_type][node.label])
                 self.write_to_instruction(string, 2)
 
                 # Store value
@@ -631,6 +650,7 @@ class MIPS_Converter:
                 self.store("$t0", "0($sp)", 'int')  # Overwrite the other
                 # self.print_int('$t0')
                 return '0($sp)', "int"
+
 
         elif node.node_type == 'Increment_var':
             reg, symbol_type = self.solve_math(node.children[0], symbol_table)
