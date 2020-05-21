@@ -15,7 +15,8 @@ class MethodType:
 
 
 class SymbolType:
-    def __init__(self, symbol_type, assigned, const, current_register, _global=False, array_size_node=None):
+    def __init__(self, name, symbol_type, assigned, const, current_register, _global=False, array_size_node=None):
+        self.name = name
         self.symbol_type = symbol_type
         self.assigned = assigned
         self.const = const
@@ -122,7 +123,7 @@ class SymbolTable:
                                        .format(error.line, error.column, symbol))
         _global = len(self.table_stack) == 1
         assinged = assinged or _global
-        self.table_stack[0][symbol] = SymbolType(symbol_type, assinged, const, self.var_counter, _global)
+        self.table_stack[0][symbol] = SymbolType(symbol, symbol_type, assinged, const, self.var_counter, _global)
         self.var_counter += 1
 
     def get_assigned_symbol(self, symbol_name, error) -> SymbolType:

@@ -3,7 +3,8 @@
 int main() {
     int i = 5;
     int* j = &i;
-    int z = j;
-    printf("%d", z);
+    int** x = &j;
+    **x = 3;
+    printf("%d",**x);
     return 0;
 }
