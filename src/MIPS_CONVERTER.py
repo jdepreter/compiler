@@ -706,6 +706,7 @@ class MIPS_Converter:
         elif node.node_type == 'lvalue':
             # TODO Check array
             reg = None
+            self.allocate_mem(4, symbol_table, 'allocate space for instance of %s' % node.label)
             symbol = symbol_table.get_assigned_symbol(node.label, node.ctx.start)
             symbol_type = str(symbol.symbol_type)
             # Dereference if needed
@@ -715,6 +716,7 @@ class MIPS_Converter:
                 # TODO add float
                 reg = self.dereference(pointer_reg, dereference_count, "int")
                 symbol_type = symbol_type[:-dereference_count]
+
                 self.store(reg, '0($sp)', symbol_type, 'store dereferenced value on top')
 
                 return "0($sp)", symbol_type
