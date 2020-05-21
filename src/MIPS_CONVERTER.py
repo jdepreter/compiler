@@ -195,20 +195,24 @@ class MIPS_Converter:
         new_sym_type, new_stars = get_type_and_stars(new_type)
         if current_sym_type + current_stars == new_sym_type + new_stars:  # anders werkt & niet
             return current_reg
+        elif current_type in ["int", "char"] and new_type in ["int", "char"]:
+            return current_reg
 
         newreg = register_dict(new_type, int(current_reg[-1]))
 
-        if current_type == "int" and new_type == 'float':
+        if current_type in ["int", "char"] and new_type == 'float':
             string = "mtc1 %s, %s" % (current_reg, newreg)
             self.write_to_instruction(string, 2)
             string = "cvt.s.w %s, %s" % (newreg, newreg)
             self.write_to_instruction(string, 2)
 
-        elif current_type == "float" and new_type == 'int':
+        elif current_type == "float" and new_type in ["int", "char"]:
             string = "cvt.w.s %s, %s" % (current_reg, current_reg)
             self.write_to_instruction(string, 2)
             string = "mfc1 %s, %s" % (newreg, current_reg)
             self.write_to_instruction(string, 2)
+
+
 
         elif '*' in current_type and new_type == 'int':
             # Pointer to int does not need any conversion
