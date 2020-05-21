@@ -292,7 +292,8 @@ class MIPS_Converter:
         :param reg: Should be $f0-11
         :return:
         """
-        self.write_to_instruction("mov.s $f12, %s" % reg, 2)
+        # self.write_to_instruction("mov.s $f12, %s" % reg, 2)
+        self.load_word("$f12",reg, "float")
         self.write_to_instruction("li $v0, 2", 2)
         self.write_to_instruction("syscall", 2)
 
