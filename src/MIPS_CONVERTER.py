@@ -137,7 +137,7 @@ class MIPS_Converter:
         self.write_to_instruction(string, 2, comment='Put on top of stack load')
 
         # Put it on top of the stack
-        string = "%s %s 0($sp)" % (mips_operators[operator_type]['sw'], reg)
+        string = "%s %s, 0($sp)" % (mips_operators[operator_type]['sw'], reg)
         self.write_to_instruction(string, 2, comment='Put on top of stack save')
 
     def load_word(self, left: str, right: str, symbol_type: str, comment: str = ''):
