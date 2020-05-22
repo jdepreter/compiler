@@ -812,10 +812,6 @@ class MIPS_Converter:
     def call_method(self, node: Node, symbol_table: SymbolTable):
         method_name = node.children[0].label
 
-        # Store return address
-        self.allocate_mem(4, symbol_table, "Allocate space for $ra")
-        self.store("$ra", "0($sp)", "int")
-
         if method_name == "printf":
             self.call_printf(node, symbol_table)
             return "0($sp)", "void"
@@ -823,6 +819,10 @@ class MIPS_Converter:
         elif method_name == "scanf":
             self.call_scanf(node, symbol_table)
             return "0($sp)", "void"
+
+        # Store return address
+        self.allocate_mem(4, symbol_table, "Allocate space for $ra")
+        self.store("$ra", "0($sp)", "int")
 
         # Load arguments
         args = node.children[1].children[:]
