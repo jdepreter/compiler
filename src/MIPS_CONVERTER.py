@@ -685,7 +685,7 @@ class MIPS_Converter:
 
             sym = symbol_table.get_written_symbol(node.children[0].label, node.ctx.start)
             self.store_symbol(reg, sym)
-            return reg, symbol_type
+            return '0($sp)', symbol_type
 
         elif node.node_type == 'Increment_op':
 
@@ -702,7 +702,7 @@ class MIPS_Converter:
 
             self.store(reg, '0($sp)', symbol_type)
 
-            return reg, symbol_type
+            return '0($sp)', symbol_type
 
         elif node.node_type == 'unary plus':
             return self.solve_math(node.children[1], symbol_table)

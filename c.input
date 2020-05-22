@@ -1,8 +1,10 @@
 #include <stdio.h>
 
-int main(){
-    float x = 1.25;
-    int c= 5+(1==1||x == 1.25);
-    printf("%i", c);
+int main() {
+    int x = 6;
+    x++;
+    printf("%d",x++);
+    printf("%d",++x);
+    printf("%d",x);
     return 0;
 }
