@@ -360,7 +360,7 @@ class MIPS_Converter:
         elif node.node_type == 'method_definition':
             return self.generate_method(node, symbol_table)
 
-        elif node.node_type in ["Increment_var", "Increment_op", "unary plus", "unary min", 'method_call', 'rvalue',
+        elif node.node_type in ["Increment_var", "Increment_op", "unary plus", "unary min", 'rvalue',
                                 'lvalue', 'bool2'] \
                 or node.label in ['+', '-', '*', '/', '%', '&&', '||', '==', '!=', '<', '>', '<=', '>=']:
 
@@ -371,6 +371,16 @@ class MIPS_Converter:
 
                 self.load_word(reg, "0($sp)", value_type)
             self.deallocate_mem(4, symbol_table, comment='Deallocate space used for solve math')
+            return reg, value_type
+
+        elif node.node_type == 'method_call':
+            register, value_type = self.solve_math(node, symbol_table)
+            reg = '$t0'
+            if value_type is not None and value_type != 'void':
+                reg = register_dict(value_type, 0)
+
+                self.load_word(reg, "0($sp)", value_type)
+            self.deallocate_mem(4, symbol_table, comment='Deallocate space used for method call')
             return reg, value_type
 
         elif node.node_type == 'ifelse':
@@ -812,6 +822,10 @@ class MIPS_Converter:
     def call_method(self, node: Node, symbol_table: SymbolTable):
         method_name = node.children[0].label
 
+        # Store return address
+        self.allocate_mem(4, symbol_table, "Allocate space for $ra")
+        self.store("$ra", "0($sp)", "int")
+
         if method_name == "printf":
             self.call_printf(node, symbol_table)
             return "0($sp)", "void"
@@ -819,10 +833,6 @@ class MIPS_Converter:
         elif method_name == "scanf":
             self.call_scanf(node, symbol_table)
             return "0($sp)", "void"
-
-        # Store return address
-        self.allocate_mem(4, symbol_table, "Allocate space for $ra")
-        self.store("$ra", "0($sp)", "int")
 
         # Load arguments
         args = node.children[1].children[:]
@@ -1148,6 +1158,9 @@ class MIPS_Converter:
                     self.print_char(arg_reg[i + 1])
                 elif arg_types[i + 1] == 'char*':
                     self.print_string(arg_reg[i + 1])
+
+        # Unload args from memory
+        self.deallocate_mem(len(args) * 4, symbol_table, comment='Deallocating space used for print args')
 
     def call_scanf(self, node: Node, symbol_table: SymbolTable):
         pass
