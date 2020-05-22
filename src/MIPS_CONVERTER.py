@@ -783,6 +783,14 @@ class MIPS_Converter:
 
         return None, None
 
+    def not_value(self, register, symbol_type, node):
+        self.load_word("$t0", register, "int")
+        self.write_to_instruction("seq $t0, $t0, $0")
+
+        self.store("$t0", "0($sp)",'int', "store the negated value")
+
+        return "0($sp)", 'int'
+
     def return_node(self, node, symbol_table):
         if len(self.function_stack) == 0:
             raise Exception(
