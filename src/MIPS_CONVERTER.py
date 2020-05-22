@@ -57,11 +57,19 @@ class MIPS_Converter:
         if self.write:
             self.data_section += "  " + string + "\n"
 
+    def write_comment(self, string: str, indentation: int = 0):
+        """
+        Write a comment to the .text section
+        """
+        indent = "".join([" " for _ in range(indentation)])
+        if self.write:
+            self.instruction_section += indent + '# ' + string + "\n"
+
     def write_to_instruction(self, string: str, indentation: int = 0, comment: str = ''):
         """
         Adds to MIPS .text section
         """
-        indent = "".join([" " for i in range(indentation)])
+        indent = "".join([" " for _ in range(indentation)])
         if self.write:
             self.instruction_section += indent + string + " # " + comment + "\n"
 
@@ -827,11 +835,15 @@ class MIPS_Converter:
         self.store("$ra", "0($sp)", "int")
 
         if method_name == "printf":
+            self.write_comment("Call printf", 2)
             self.call_printf(node, symbol_table)
+            self.write_comment("Exit printf", 2)
             return "0($sp)", "void"
 
         elif method_name == "scanf":
+            self.write_comment("Call scanf", 2)
             self.call_scanf(node, symbol_table)
+            self.write_comment("Exit scanf", 2)
             return "0($sp)", "void"
 
         # Load arguments
