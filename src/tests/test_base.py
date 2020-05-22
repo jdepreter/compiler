@@ -192,7 +192,7 @@ class Loops(unittest.TestCase):
 class Function(unittest.TestCase):
     def test_faculty(self):
         self.assertEqual(clear_newlines(to_llvm("functions/faculty.c", "faculty")), "6")
-        self.assertEqual(clear_newlines(to_mips("functions/faculty.c", "faculty")), "6")
+        self.assertEqual(clear_newlines(to_mips("functions/faculty.c", "faculty", mars=mars)), "6")
 
     def test_declaration(self):
         self.assertEqual(to_llvm("functions/declaration_1.c", "declaration_1"), "2")
