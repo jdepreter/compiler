@@ -39,6 +39,7 @@ class MIPS_Converter:
         self.float_branches = 0
         self.allocation_stack = [0]
         self.offset_stack = [MIPSOffset()]
+        self.loop_stacksize = []
 
         self.data_section = ".data\n"
         self.instruction_section = ".text\n"
@@ -434,7 +435,8 @@ class MIPS_Converter:
 
         elif node.node_type == 'for continue':
             if len(self.continue_stack) > 0:
-                self.leave_stack(symbol_table)
+
+                self.leave_stack(symbol_table, len(self.allocation_stack)- self.loop_stacksize[0],False)
                 self.go_to_label(self.continue_stack[0])
                 self.write = False
                 return None, None
@@ -468,6 +470,8 @@ class MIPS_Converter:
     def enter_stack(self, symbol_table):
         self.allocation_stack.insert(0, 0)
         self.offset_stack.insert(0, MIPSOffset(self.offset_stack[0].symbols))
+        write = self.write
+        self.write = True
         # Save old frame pointer
         self.write_comment("Entering new stack...")
         self.allocate_mem(4, symbol_table, comment="Allocate mem for previous frame pointer")
@@ -475,23 +479,42 @@ class MIPS_Converter:
         # Set new frame pointer
         self.move("$fp", "$sp", comment="Save current stack pointer in frame pointer")
         self.write_comment("Entered Stack")
+        self.write = write
 
-    def leave_stack(self, symbol_table):
-        self.write_comment("Leaving Stack...")
-        diff = self.allocation_stack[0]
-        # Reset stack pointer
-        # self.write_to_instruction("sub $t0, $fp, $sp", 2, comment="Calculate diff between frame and stack pointer")
-        # self.write_to_instruction("addi $sp, $sp, %s" % diff, 2, comment="Deallocate stack")
-        self.deallocate_mem(diff - 4, symbol_table, "Deallocate stack")  # Diff - 4 wegens frame pointer gealloceerd
-        # Load old frame pointer
-        self.load_word("$fp", "0($sp)", "int", comment="Load previous frame pointer")
-        # Deallocate space from frame pointer
-        self.deallocate_mem(4, symbol_table, comment="Deallocate space for old frame pointer")
-        temp = self.allocation_stack.pop(0)
-        self.offset_stack.pop(0)
-        if temp != 0:
-            raise Exception("Not properly deallocated stack")
+    def leave_stack(self, symbol_table, amount=1,pop=True):
+
+        stacks1 = []
+        stacks2 = []
+        for i in range(amount):
+            self.write_comment("Leaving Stack...")
+            diff = self.allocation_stack[0]
+            offset = deepcopy(self.offset_stack[0])
+            write = self.write
+            self.write = True
+            # Reset stack pointer
+            # self.write_to_instruction("sub $t0, $fp, $sp", 2, comment="Calculate diff between frame and stack pointer")
+            # self.write_to_instruction("addi $sp, $sp, %s" % diff, 2, comment="Deallocate stack")
+            self.deallocate_mem(diff - 4, symbol_table, "Deallocate stack")  # Diff - 4 wegens frame pointer gealloceerd
+            # Load old frame pointer
+            self.load_word("$fp", "0($sp)", "int", comment="Load previous frame pointer")
+            # Deallocate space from frame pointer
+            self.deallocate_mem(4, symbol_table, comment="Deallocate space for old frame pointer")
+            temp = self.allocation_stack[0]
+            if temp != 0:
+                raise Exception("Not properly deallocated stack")
+            if not pop:
+                self.allocation_stack[0] = diff
+                self.offset_stack[0] = offset
+            stacks1.insert(0, self.allocation_stack.pop(0))
+            stacks2.insert(0, self.offset_stack.pop(0))
+        if not pop:
+            for i in range(amount):
+
+                self.allocation_stack.insert(0, stacks1[i])
+                self.offset_stack.insert(0, stacks2[i])
+
         self.write_comment("Left stack")
+        self.write = write
 
     def allocate_node(self, node: Node, symbol_table: SymbolTable):
         variable = node.label
@@ -908,8 +931,8 @@ class MIPS_Converter:
         elif method_name == "scanf":
             self.write_comment("Call scanf", 2)
             self.call_scanf(node, symbol_table)
-            self.write_comment("Exit scanf", 2)
             self.leave_stack(symbol_table)
+            self.write_comment("Exit scanf", 2)
             return "0($sp)", "void"
 
         # Load arguments
@@ -1121,6 +1144,7 @@ class MIPS_Converter:
         breaks = self.breaks
         self.break_stack.insert(0, labels["next_block"])
         self.continue_stack.insert(0, labels["condition"])
+        self.loop_stacksize.insert(0, len(self.allocation_stack))
         write = self.write
 
         if skip_condition:
@@ -1161,6 +1185,7 @@ class MIPS_Converter:
 
         self.break_stack.pop()
         self.continue_stack.pop()
+        self.loop_stacksize.pop()
         self.write = write
         self.write_label(labels["next_block"])
         self.breaks = breaks
