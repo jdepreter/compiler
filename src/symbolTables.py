@@ -33,9 +33,6 @@ class SymbolType:
         else:
             self.current_register = '%a' + str(current_register)
 
-        # MIPS
-        self.offset = 0
-
     def set_reg(self, current_register):
         self.current_register = current_register
 
@@ -261,18 +258,6 @@ class SymbolTable:
     # MIPS
     def get_mips_strings(self):
         return self.mips_strings
-
-    def increase_offset(self, amount):
-        for scope in self.table_stack:
-            for key, val in scope.items():
-                if val.written:
-                    val.offset += amount
-
-    def decrease_offset(self, amount):
-        for scope in self.table_stack:
-            for key, val in scope.items():
-                if val.written:
-                    val.offset -= amount
 
     def get_current_scope(self):
         s = SymbolTable()

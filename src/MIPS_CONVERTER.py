@@ -3,6 +3,8 @@ from src.helperfuncs import get_type_and_stars, get_return_type, allowed_operati
 from src.MIPS_Operations import *
 from src.AST import *
 from src.symbolTables import *
+from src.MIPS_Offset import MIPSOffset
+from copy import deepcopy
 
 
 def get_string(string: str, symbol_table: SymbolTable):
@@ -36,6 +38,7 @@ class MIPS_Converter:
         self.floatp = 0
         self.float_branches = 0
         self.allocation_stack = [0]
+        self.offset_stack = [MIPSOffset()]
 
         self.data_section = ".data\n"
         self.instruction_section = ".text\n"
@@ -98,7 +101,7 @@ class MIPS_Converter:
         string = "addiu $sp, $sp, -%d" % amount  # Reserve word on stack
         self.write_to_instruction(string, 2, comment)
         # Increase offset of previous variables in stack (offset can never be < 0)
-        symbol_table.increase_offset(amount)
+        self.offset_stack[0].increase_offset(amount)
 
     def deallocate_mem(self, amount, symbol_table: SymbolTable, comment: str = ''):
         """
@@ -113,7 +116,7 @@ class MIPS_Converter:
         string = "addiu $sp, $sp, %d" % amount  # Reserve word on stack
         self.write_to_instruction(string, 2, comment)
         # Decrease offset of previous variables in stack
-        symbol_table.decrease_offset(amount)
+        self.offset_stack[0].decrease_offset(amount)
 
     def load_immediate(self, value, destination, symbol_type):
         """
@@ -137,8 +140,8 @@ class MIPS_Converter:
     def load_symbol(self, symbol: SymbolType, symbol_table: SymbolTable):
         # TODO maak dit efficient
         self.allocate_mem(4, symbol_table, comment="Allocate for %s" % symbol.name)
-        offset = str(symbol.offset)
-        self.put_on_top_of_stack("%s($sp)" % symbol.offset, symbol.symbol_type)
+        offset = self.offset_stack[0].get_offset(symbol)
+        self.put_on_top_of_stack("%s($sp)" % offset, symbol.symbol_type)
 
     def put_on_top_of_stack(self, stack_pointer: str, symbol_type: str):
         operator_type = get_operator_type(symbol_type)
@@ -176,7 +179,7 @@ class MIPS_Converter:
         :param symbol:
         :return:
         """
-        offset = str(symbol.offset)
+        offset = self.offset_stack[0].get_offset(symbol)
         operator_type = get_operator_type(symbol.symbol_type)
         string = "%s %s, %s($sp)" % (mips_operators[operator_type]['sw'], str(value), offset)
         self.write_to_instruction(string, 2, comment)
@@ -359,6 +362,7 @@ class MIPS_Converter:
         """
         self.allocate_mem(4, symbol_table, comment='Allocate space for symbol: %s' % symbol.name)
         symbol.written = True
+        self.offset_stack[0].add_symbol(symbol)
 
     def solve_node(self, node: Node, symbol_table: SymbolTable):
         if node.symbol_table is not None:
@@ -463,6 +467,7 @@ class MIPS_Converter:
 
     def enter_stack(self, symbol_table):
         self.allocation_stack.insert(0, 0)
+        self.offset_stack.insert(0, MIPSOffset(self.offset_stack[0].symbols))
         # Save old frame pointer
         self.write_comment("Entering new stack...")
         self.allocate_mem(4, symbol_table, comment="Allocate mem for previous frame pointer")
@@ -483,6 +488,7 @@ class MIPS_Converter:
         # Deallocate space from frame pointer
         self.deallocate_mem(4, symbol_table, comment="Deallocate space for old frame pointer")
         temp = self.allocation_stack.pop(0)
+        self.offset_stack.pop(0)
         if temp != 0:
             raise Exception("Not properly deallocated stack")
         self.write_comment("Left stack")
@@ -551,7 +557,7 @@ class MIPS_Converter:
             # TODO hier zit nog een fout met pointers en stuff
             if '*' in str(node.children[0].label):
                 dereference_count = symbol_string.count('*')
-                pointer_reg = "%s($sp)" % symbol.offset if reg is None else reg
+                pointer_reg = "%s($sp)" % self.offset_stack[0].get_offset(symbol) if reg is None else reg
                 reg = self.dereference(pointer_reg, dereference_count, node.children[0].symbol_type.symbol_type[0:-dereference_count])
                 symbol_type = symbol_type[:-dereference_count]
 
@@ -563,6 +569,7 @@ class MIPS_Converter:
             reg = self.cast_value(reg, value[1], symbol_type, node.ctx.start)
             self.store_symbol(reg, symbol, "Assigning to %s" % symbol.name)
             self.deallocate_mem(4, symbol_table, comment='deallocate solve math')
+            return "%s($sp)" % self.offset_stack[0].get_offset(symbol), symbol.symbol_type
 
         # if '[]' in str(node.children[0].label):
         #     # We are dealing with an array index
@@ -781,7 +788,7 @@ class MIPS_Converter:
             # Get address of symbol and store it into t1
             elif str(node.symbol_type)[0] == '&':
                 symbol = symbol_table.get_written_symbol(value, node.ctx.start)
-                self.load_address("$t0", "%s($sp)" % symbol.offset, comment='Load address of %s' % symbol.name)
+                self.load_address("$t0", "%s($sp)" % self.offset_stack[0].get_offset(symbol), comment='Load address of %s' % symbol.name)
                 reg = "$t0"
 
             else:
@@ -801,7 +808,7 @@ class MIPS_Converter:
             # Dereference if needed
             if '*' in str(node.label):
                 dereference_count = node.label.count('*')
-                pointer_reg = "%s($sp)" % symbol.offset if reg is None else reg
+                pointer_reg = "%s($sp)" % self.offset_stack[0].get_offset(symbol) if reg is None else reg
                 # TODO add float
                 reg = self.dereference(pointer_reg, dereference_count, "int")
                 symbol_type = symbol_type[:-dereference_count]
@@ -811,7 +818,7 @@ class MIPS_Converter:
                 return "0($sp)", symbol_type
 
             else:
-                reg = ("%s($sp)" % symbol.offset) if reg is None else ("0(%s)" % reg)
+                reg = ("%s($sp)" % self.offset_stack[0].get_offset(symbol)) if reg is None else ("0(%s)" % reg)
                 self.put_on_top_of_stack(reg, symbol_type)
                 return "0($sp)", symbol_type
 
