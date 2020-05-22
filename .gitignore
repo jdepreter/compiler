@@ -9,4 +9,3 @@ __pycache__
 *.out
 /src/tests/output
 /src/tests/trees
-/asm
