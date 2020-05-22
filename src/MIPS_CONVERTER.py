@@ -418,6 +418,7 @@ class MIPS_Converter:
         #
         elif node.node_type == 'for break':
             if len(self.break_stack) > 0:
+                # self.leave_stack(symbol_table)
                 self.go_to_label(self.break_stack[0])
                 self.write = False
                 self.breaks = True
@@ -429,6 +430,7 @@ class MIPS_Converter:
 
         elif node.node_type == 'for continue':
             if len(self.continue_stack) > 0:
+                self.leave_stack(symbol_table)
                 self.go_to_label(self.continue_stack[0])
                 self.write = False
                 return None, None
@@ -892,8 +894,8 @@ class MIPS_Converter:
         if method_name == "printf":
             self.write_comment("Call printf", 2)
             self.call_printf(node, symbol_table)
-            self.write_comment("Exit printf", 2)
             self.leave_stack(symbol_table)
+            self.write_comment("Exit printf", 2)
             return "0($sp)", "void"
 
         elif method_name == "scanf":
