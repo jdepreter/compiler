@@ -354,9 +354,6 @@ class LLVM_Converter:
 
             if sol[0] is None:
                 for child in node.children:
-                    if node.symbol_table is not None:
-                        symbol_table = node.symbol_table
-
                     sol = self.solve_llvm_node(child, symbol_table)
             return sol
 

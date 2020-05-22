@@ -35,6 +35,7 @@ class MIPS_Converter:
         self.function_stack = []
         self.floatp = 0
         self.float_branches = 0
+        self.allocation_stack = [0]
 
         self.data_section = ".data\n"
         self.instruction_section = ".text\n"
@@ -93,6 +94,7 @@ class MIPS_Converter:
         to use previous mem spot 4($sp)
         :return:
         """
+        self.allocation_stack[0] += amount
         string = "addiu $sp, $sp, -%d" % amount  # Reserve word on stack
         self.write_to_instruction(string, 2, comment)
         # Increase offset of previous variables in stack (offset can never be < 0)
@@ -107,6 +109,7 @@ class MIPS_Converter:
         :param comment:
         :return:
         """
+        self.allocation_stack[0] -= amount
         string = "addiu $sp, $sp, %d" % amount  # Reserve word on stack
         self.write_to_instruction(string, 2, comment)
         # Decrease offset of previous variables in stack
@@ -189,6 +192,16 @@ class MIPS_Converter:
         operator_type = get_operator_type(symbol_type)
         string = "%s %s, %s" % (mips_operators[operator_type]['sw'], source, destination)
         self.write_to_instruction(string, 2, comment)
+
+    def move(self, left, right, comment: str = ''):
+        """
+        Set content of left to right
+        :param left: is changed
+        :param right: is not changed
+        :param comment:
+        :return:
+        """
+        self.write_to_instruction("move %s %s" % (left, right), 2, comment)
 
     def cast_value(self, current_reg, current_type, new_type, error):
         """
@@ -429,16 +442,48 @@ class MIPS_Converter:
 
         elif node.node_type == 'return':
             return self.return_node(node, symbol_table)
+
+        elif node.node_type == 'scope':
+            self.enter_stack(symbol_table)
+            # Run the scope
+            for child in node.children:
+                self.solve_node(child, symbol_table)
+
+            self.leave_stack(symbol_table)
+
         else:
             sol = self.solve_math(node, symbol_table)
 
             if sol[0] is None:
                 for child in node.children:
-                    if node.symbol_table is not None:
-                        symbol_table = node.symbol_table
-
                     sol = self.solve_node(child, symbol_table)
             return sol
+
+    def enter_stack(self, symbol_table):
+        self.allocation_stack.insert(0, 0)
+        # Save old frame pointer
+        self.write_comment("Entering new stack...")
+        self.allocate_mem(4, symbol_table, comment="Allocate mem for previous frame pointer")
+        self.store("$fp", "0($sp)", "int", comment="Save previous frame pointer on stack")
+        # Set new frame pointer
+        self.move("$fp", "$sp", comment="Save current stack pointer in frame pointer")
+        self.write_comment("Entered Stack")
+
+    def leave_stack(self, symbol_table):
+        self.write_comment("Leaving Stack...")
+        diff = self.allocation_stack[0]
+        # Reset stack pointer
+        # self.write_to_instruction("sub $t0, $fp, $sp", 2, comment="Calculate diff between frame and stack pointer")
+        # self.write_to_instruction("addi $sp, $sp, %s" % diff, 2, comment="Deallocate stack")
+        self.deallocate_mem(diff - 4, symbol_table, "Deallocate stack")  # Diff - 4 wegens frame pointer gealloceerd
+        # Load old frame pointer
+        self.load_word("$fp", "0($sp)", "int", comment="Load previous frame pointer")
+        # Deallocate space from frame pointer
+        self.deallocate_mem(4, symbol_table, comment="Deallocate space for old frame pointer")
+        temp = self.allocation_stack.pop(0)
+        if temp != 0:
+            raise Exception("Not properly deallocated stack")
+        self.write_comment("Left stack")
 
     def allocate_node(self, node: Node, symbol_table: SymbolTable):
         variable = node.label
@@ -842,16 +887,20 @@ class MIPS_Converter:
         self.allocate_mem(4, symbol_table, "Allocate space for $ra")
         self.store("$ra", "0($sp)", "int")
 
+        self.enter_stack(symbol_table)
+
         if method_name == "printf":
             self.write_comment("Call printf", 2)
             self.call_printf(node, symbol_table)
             self.write_comment("Exit printf", 2)
+            self.leave_stack(symbol_table)
             return "0($sp)", "void"
 
         elif method_name == "scanf":
             self.write_comment("Call scanf", 2)
             self.call_scanf(node, symbol_table)
             self.write_comment("Exit scanf", 2)
+            self.leave_stack(symbol_table)
             return "0($sp)", "void"
 
         # Load arguments
@@ -865,12 +914,12 @@ class MIPS_Converter:
 
         if method_name == "print_int":
             self.print_int("0($sp)")
-            self.deallocate_mem((len(args)) * 4, symbol_table, comment='Deallocate mem used in print int')
+            self.leave_stack(symbol_table)
             return "0($sp)", "void"
 
         elif method_name == "print_char":
             self.print_char("0($sp)")
-            self.deallocate_mem((len(args)) * 4, symbol_table, comment='Deallocate mem used in print char')
+            self.leave_stack(symbol_table)
             return "0($sp)", "void"
 
         else:
@@ -880,7 +929,7 @@ class MIPS_Converter:
             self.load_word("$t0", "0($sp)", "int", comment='something with functions')
             # load solution into t0
 
-            self.deallocate_mem((len(args)) * 4, symbol_table, comment='something with functions')
+            self.leave_stack(symbol_table)
 
             self.load_word("$ra", "0($sp)", "int", comment='something with functions')
             self.store("$t0", "0($sp)", "int", comment='something with functions')
@@ -1179,9 +1228,6 @@ class MIPS_Converter:
                 elif arg_types[i + 1] == 'char*':
                     self.print_string(arg_reg[i + 1])
 
-        # Unload args from memory
-        self.deallocate_mem(len(args) * 4, symbol_table, comment='Deallocating space used for print args')
-
     def call_scanf(self, node: Node, symbol_table: SymbolTable):
         pass
 
@@ -1202,3 +1248,5 @@ class MIPS_Converter:
             self.load_word("$t0", "0($t0)", symbol_type, comment='Dereference once')    # Load from address in $t0
 
         return "$t0"
+
+
