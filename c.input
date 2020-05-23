@@ -4,6 +4,9 @@ int f(int x) {printf("%d", x); return x;}
 int f = 10;
 
 int main() {
+    f = 6;
+    int x =3;
+    x = 7;
     f(f);
     return 0;
 }

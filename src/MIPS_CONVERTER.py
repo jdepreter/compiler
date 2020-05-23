@@ -182,10 +182,16 @@ class MIPS_Converter:
         :param symbol:
         :return:
         """
-        offset = self.offset_stack[0].get_offset(symbol)
-        operator_type = get_operator_type(symbol.symbol_type)
-        string = "%s %s, %s($sp)" % (mips_operators[operator_type]['sw'], str(value), offset)
-        self.write_to_instruction(string, 2, comment)
+        if symbol.is_global:
+            self.load_address("$t9", "global_%s%d"%(symbol.name, symbol.reg), "load in global .data address")
+            operator_type = get_operator_type(symbol.symbol_type)
+            string = "%s %s, 0($t9)" % (mips_operators[operator_type]['sw'], str(value))
+            self.write_to_instruction(string, 2, comment)
+        else:
+            offset = self.offset_stack[0].get_offset(symbol)
+            operator_type = get_operator_type(symbol.symbol_type)
+            string = "%s %s, %s($sp)" % (mips_operators[operator_type]['sw'], str(value), offset)
+            self.write_to_instruction(string, 2, comment)
 
     def store(self, source, destination, symbol_type, comment: str = ''):
         """
@@ -599,9 +605,12 @@ class MIPS_Converter:
             reg = self.cast_value(reg, value[1], symbol_type, node.ctx.start)
             if address is None:
                 self.store_symbol(reg, symbol, "Assigning to %s" % symbol.name)
+
             else:
                 self.store(reg, address, symbol_type, comment="Store value at dereferenced pointer")
             self.deallocate_mem(4, symbol_table, comment='deallocate solve math')
+            if symbol.is_global:
+                return "global_%s%d" %(symbol.name, symbol.reg),symbol.symbol_type
             return "%s($sp)" % self.offset_stack[0].get_offset(symbol), symbol.symbol_type
 
         # if '[]' in str(node.children[0].label):
