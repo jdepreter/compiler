@@ -323,7 +323,7 @@ class MIPS_Converter:
         :return:
         """
         # self.write_to_instruction("mov.s $f12, %s" % reg, 2)
-        self.load_word("$f12",reg, "float")
+        self.load_word("$f12", reg, "float")
         self.write_to_instruction("li $v0, 2", 2)
         self.write_to_instruction("syscall", 2)
 
@@ -423,7 +423,7 @@ class MIPS_Converter:
         #
         elif node.node_type == 'for break':
             if len(self.break_stack) > 0:
-                # self.leave_stack(symbol_table)
+                self.leave_stack(symbol_table, len(self.allocation_stack) - self.loop_stacksize[0], False)
                 self.go_to_label(self.break_stack[0])
                 self.write = False
                 self.breaks = True
@@ -436,7 +436,7 @@ class MIPS_Converter:
         elif node.node_type == 'for continue':
             if len(self.continue_stack) > 0:
 
-                self.leave_stack(symbol_table, len(self.allocation_stack)- self.loop_stacksize[0],False)
+                self.leave_stack(symbol_table, len(self.allocation_stack) - self.loop_stacksize[0], False)
                 self.go_to_label(self.continue_stack[0])
                 self.write = False
                 return None, None
@@ -481,16 +481,16 @@ class MIPS_Converter:
         self.write_comment("Entered Stack")
         self.write = write
 
-    def leave_stack(self, symbol_table, amount=1,pop=True):
+    def leave_stack(self, symbol_table, amount=1, pop=True):
 
         stacks1 = []
         stacks2 = []
         for i in range(amount):
+            write = self.write
+            self.write = True
             self.write_comment("Leaving Stack...")
             diff = self.allocation_stack[0]
             offset = deepcopy(self.offset_stack[0])
-            write = self.write
-            self.write = True
             # Reset stack pointer
             # self.write_to_instruction("sub $t0, $fp, $sp", 2, comment="Calculate diff between frame and stack pointer")
             # self.write_to_instruction("addi $sp, $sp, %s" % diff, 2, comment="Deallocate stack")
@@ -509,7 +509,6 @@ class MIPS_Converter:
             stacks2.insert(0, self.offset_stack.pop(0))
         if not pop:
             for i in range(amount):
-
                 self.allocation_stack.insert(0, stacks1[i])
                 self.offset_stack.insert(0, stacks2[i])
 
@@ -581,7 +580,8 @@ class MIPS_Converter:
             if '*' in str(node.children[0].label):
                 dereference_count = symbol_string.count('*')
                 pointer_reg = "%s($sp)" % self.offset_stack[0].get_offset(symbol) if reg is None else reg
-                reg = self.dereference(pointer_reg, dereference_count, node.children[0].symbol_type.symbol_type[0:-dereference_count])
+                reg = self.dereference(pointer_reg, dereference_count,
+                                       node.children[0].symbol_type.symbol_type[0:-dereference_count])
                 symbol_type = symbol_type[:-dereference_count]
 
             value = self.solve_math(node.children[1], symbol_table)
@@ -723,20 +723,20 @@ class MIPS_Converter:
             # TODO floats >, >= testen
 
             if symbol_type == 'float':
-                string = "%s %s, %s" % (self.bool_dict[symbol_type][node.label], child_1,child_2 )
+                string = "%s %s, %s" % (self.bool_dict[symbol_type][node.label], child_1, child_2)
                 self.write_to_instruction(string, 2)
 
-                self.write_to_instruction("bc1f L_CondFalse%d"%self.float_branches, 2)
+                self.write_to_instruction("bc1f L_CondFalse%d" % self.float_branches, 2)
                 self.write_to_instruction("li $t0, 0", 2)
-                self.write_to_instruction("j L_CondEnd%d"%self.float_branches, 2)
-                self.write_to_instruction("L_CondFalse%d:"%self.float_branches, 0)
+                self.write_to_instruction("j L_CondEnd%d" % self.float_branches, 2)
+                self.write_to_instruction("L_CondFalse%d:" % self.float_branches, 0)
                 self.write_to_instruction("li $t0, 1", 2)
-                self.write_to_instruction("L_CondEnd%d:"%self.float_branches, 0)
+                self.write_to_instruction("L_CondEnd%d:" % self.float_branches, 0)
 
                 # Store value
                 self.deallocate_mem(4, symbol_table)  # Delete one
                 self.store("$t0", "0($sp)", 'int')  # Overwrite the other
-                self.float_branches +=1
+                self.float_branches += 1
                 # self.print_int('$t0')
                 return '0($sp)', "int"
 
@@ -811,7 +811,8 @@ class MIPS_Converter:
             # Get address of symbol and store it into t1
             elif str(node.symbol_type)[0] == '&':
                 symbol = symbol_table.get_written_symbol(value, node.ctx.start)
-                self.load_address("$t0", "%s($sp)" % self.offset_stack[0].get_offset(symbol), comment='Load address of %s' % symbol.name)
+                self.load_address("$t0", "%s($sp)" % self.offset_stack[0].get_offset(symbol),
+                                  comment='Load address of %s' % symbol.name)
                 reg = "$t0"
 
             else:
@@ -872,7 +873,7 @@ class MIPS_Converter:
         self.load_word("$t0", register, "int")
         self.write_to_instruction("seq $t0, $t0, $0")
 
-        self.store("$t0", "0($sp)",'int', "store the negated value")
+        self.store("$t0", "0($sp)", 'int', "store the negated value")
 
         return "0($sp)", 'int'
 
@@ -1139,6 +1140,7 @@ class MIPS_Converter:
             "code_block": "for_block%d" % self.label,
             "update": "for_update%d" % self.label,
             "next_block": "for_end%d" % self.label,
+            "break_block": "for_break%d" % self.label,
         }
         self.label += 1
         breaks = self.breaks
@@ -1266,7 +1268,7 @@ class MIPS_Converter:
         pass
 
     # Pointers
-    def dereference(self, pointer_register: str, dereference_count: int, symbol_type : str) -> str:
+    def dereference(self, pointer_register: str, dereference_count: int, symbol_type: str) -> str:
         """
         Dereference a register
         :param pointer_register:
@@ -1278,9 +1280,7 @@ class MIPS_Converter:
         # self.load_word("$t0", pointer_register, "int", comment='Load pointer before dereference')
         self.load_address("$t0", pointer_register, comment='Dereference once')
         for i in range(dereference_count):
-        #     # Load value that is stored address that was stored in pointer
-            self.load_word("$t0", "0($t0)", symbol_type, comment='Dereference once')    # Load from address in $t0
+            #     # Load value that is stored address that was stored in pointer
+            self.load_word("$t0", "0($t0)", symbol_type, comment='Dereference once')  # Load from address in $t0
 
         return "$t0"
-
-
