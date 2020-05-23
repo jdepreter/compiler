@@ -1074,8 +1074,9 @@ class MIPS_Converter:
             reg = register_dict(func.symbol_type,0)
             self.load_immediate(0, reg, func.symbol_type)
 
-            self.store(reg, "0(sp)", func.symbol_type)
-        self.go_to_register('$ra')
+            self.store(reg, "0($sp)", func.symbol_type)
+        if func.internal_name != 'main':
+            self.go_to_register('$ra')
 
 
         self.function_stack.pop(0)
