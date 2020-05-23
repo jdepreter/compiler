@@ -3,7 +3,7 @@ from src.compile_mips import to_mips
 import os
 
 expected_output_correct = {
-    'binaryOperations1.c': '10; 10.0; 10; 10.0; 10; 10.0; 10; 10.0;\n',
+    'binaryOperations1.c': '10; 10.0; 10; 10.0; 10; 10.0; 10; 10.0; \n',
     'binaryOperations2.c': '10; 10; 10; 10; \n',
     'breakAndContinue.c': '0\n1\n2\n3\n4\n5\n\n',
     'comparisons1.c': '1; 0; 1; 0; 1; 0; \n',
@@ -21,13 +21,13 @@ expected_output_correct = {
     'prime.c': 'Enter the number of prime numbers required\nFirst 5 prime numbers are :\n2\n3\n5\n7\n11\n\n',
     'printf1.c': 'Hello World!\n\n',
     'printf2.c': 'Hello World!\n\n',
-    'printf3.c': '100.500000%\n',
+    'printf3.c': '100.5%\n',
     'scanf1.c': 'Enter two numbers:5; 6\n',
     'scanf2.c': 'Enter a 5-character string:1234\n',
     'scoping.c': '10;20;30;40;\n',
     'unaryOperations.c': '9; 10; 11; 12; 13; 14; \n',
-    'variables1.c': '5; 0.500000; c\n',
-    'variables2.c': '5; 0.500000; c\n',
+    'variables1.c': '5; 0.5; c\n',
+    'variables2.c': '5; 0.5; c\n',
     'variables3.c': '10; 20; 30\n',
     'variables4.c': '10\n',
     'variables5.c': '10; 10; 10\n',
