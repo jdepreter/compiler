@@ -385,40 +385,40 @@ class MIPS_Converter:
                 varstart = 2
             for i in range(varstart, len(node.children)):
                 # address, symbol_type = self.allocate_node(node.children[i], symbol_table, typing.label)
-                self.allocate_node(node.children[i], symbol_table)
+                self.allocate_node(node.children[i], symbol_table), True
             # return address, symbol_type
 
         elif node.node_type == 'method_declaration':
-            return self.declare_method(node, symbol_table)
+            return self.declare_method(node, symbol_table), True
 
         elif node.node_type == 'method_definition':
-            return self.generate_method(node, symbol_table)
+            return self.generate_method(node, symbol_table), True
 
         elif node.node_type in ["Increment_var", "Increment_op", "unary plus", "unary min", 'rvalue',
                                 'lvalue', 'bool2'] \
                 or node.label in ['+', '-', '*', '/', '%', '&&', '||', '==', '!=', '<', '>', '<=', '>=']:
 
-            register, value_type = self.solve_math(node, symbol_table)
+            register, value_type, not_pointer = self.solve_math(node, symbol_table)
             reg = '$t0'
             if value_type is not None and value_type != 'void':
                 reg = register_dict(value_type, 0)
 
                 self.load_word(reg, "0($sp)", value_type)
             self.deallocate_mem(4, symbol_table, comment='Deallocate space used for solve math')
-            return reg, value_type
+            return reg, value_type, not_pointer
 
         elif node.node_type == 'method_call':
-            register, value_type = self.solve_math(node, symbol_table)
+            register, value_type, not_pointer = self.solve_math(node, symbol_table)
             reg = '$t0'
             if value_type is not None and value_type != 'void':
                 reg = register_dict(value_type, 0)
 
                 self.load_word(reg, "0($sp)", value_type)
             self.deallocate_mem(4, symbol_table, comment='Deallocate space used for method call')
-            return reg, value_type
+            return reg, value_type, not_pointer
 
         elif node.node_type == 'ifelse':
-            return self.if_else(node, symbol_table)
+            return self.if_else(node, symbol_table), True
 
         # elif node.node_type == 'include':
         #     self.include()
@@ -436,7 +436,7 @@ class MIPS_Converter:
                 self.go_to_label(self.break_stack[0])
                 self.write = False
                 self.breaks = True
-                return None, None
+                return None, None, None
             else:
                 raise BreakError("[Error] Line {} Position {} break statement not within loop or switch".format(
                     node.ctx.start.line, node.ctx.start.column
@@ -448,14 +448,14 @@ class MIPS_Converter:
                 self.leave_stack(symbol_table, len(self.allocation_stack) - self.loop_stacksize[0], False)
                 self.go_to_label(self.continue_stack[0])
                 self.write = False
-                return None, None
+                return None, None, None
             else:
                 raise BreakError("[Error] Line {} Position {} continue statement not within loop".format(
                     node.ctx.start.line, node.ctx.start.column
                 ))
         #
         elif node.node_type == "switch":
-            return self.switch(node, symbol_table)
+            return self.switch(node, symbol_table), True
 
         elif node.node_type == 'return':
             return self.return_node(node, symbol_table)
@@ -466,7 +466,7 @@ class MIPS_Converter:
             for child in node.children:
                 self.solve_node(child, symbol_table)
 
-            self.leave_stack(symbol_table)
+            self.leave_stack(symbol_table), True
 
         else:
             sol = self.solve_math(node, symbol_table)
@@ -572,7 +572,7 @@ class MIPS_Converter:
         Assign a value to the symbol in node: node
         :param node: node containing symbol
         :param symbol_table: scope of node
-        :return:
+        :return: register, type, is_address
         """
         symbol_string = str(node.children[0].label)
         symbol = symbol_table.get_written_symbol(symbol_string, node.ctx.start)
@@ -611,7 +611,7 @@ class MIPS_Converter:
             self.deallocate_mem(4, symbol_table, comment='deallocate solve math')
             if symbol.is_global:
                 return "global_%s%d" %(symbol.name, symbol.reg),symbol.symbol_type
-            return "%s($sp)" % self.offset_stack[0].get_offset(symbol), symbol.symbol_type
+            return "%s($sp)" % self.offset_stack[0].get_offset(symbol), symbol.symbol_type, address is None
 
         # if '[]' in str(node.children[0].label):
         #     # We are dealing with an array index
@@ -640,6 +640,8 @@ class MIPS_Converter:
             # # Check if current op is allowed
             allowed_operation(child1[1], child2[1], node.label, node.ctx.start)
             symbol_type = get_return_type(child1[1], child2[1])
+            # Load from address if required
+
             #
             # # Cast if required
             self.load_word(register_dict(child2[1], 0), "0($sp)", child2[1])
@@ -653,7 +655,7 @@ class MIPS_Converter:
             self.deallocate_mem(4, symbol_table)  # Delete one
             self.store(child_2, "0($sp)", symbol_type)  # Overwrite the other
 
-            return "0($sp)", symbol_type
+            return "0($sp)", symbol_type, True
 
         elif node.label == "/":
             child1 = self.solve_math(node.children[0], symbol_table)
@@ -683,7 +685,8 @@ class MIPS_Converter:
                 self.deallocate_mem(4, symbol_table)  # Delete one
                 self.store("$t0", "0($sp)", symbol_type)  # Overwrite the other
 
-            return "0($sp)", symbol_type
+            return "0($sp)", symbol_type, True
+
         elif node.label == "%":
             child1 = self.solve_math(node.children[0], symbol_table)
             child2 = self.solve_math(node.children[1], symbol_table)
@@ -706,7 +709,7 @@ class MIPS_Converter:
             self.deallocate_mem(4, symbol_table)  # Delete one
             self.store("$t0", "0($sp)", symbol_type)  # Overwrite the other
 
-            return "0($sp)", symbol_type
+            return "0($sp)", symbol_type, True
 
         elif node.label in ['&&', '||']:
             # Calculate values and store on stack
@@ -721,7 +724,7 @@ class MIPS_Converter:
             self.deallocate_mem(4, symbol_table)  # Delete one
             self.store("$t0", "0($sp)", 'int')  # Overwrite the other
             # self.print_int('$t0')
-            return "0($sp)", 'int'
+            return "0($sp)", 'int', True
 
         elif node.label in ['==', '!=', '<', '>', '<=', '>=']:
             # Move values on stack
@@ -757,7 +760,7 @@ class MIPS_Converter:
                 self.store("$t0", "0($sp)", 'int')  # Overwrite the other
                 self.float_branches += 1
                 # self.print_int('$t0')
-                return '0($sp)', "int"
+                return '0($sp)', "int", True
 
             else:
                 string = "%s $t0, $t1, $t0" % (self.bool_dict[symbol_type][node.label])
@@ -767,38 +770,52 @@ class MIPS_Converter:
                 self.deallocate_mem(4, symbol_table)  # Delete one
                 self.store("$t0", "0($sp)", 'int')  # Overwrite the other
                 # self.print_int('$t0')
-                return '0($sp)', "int"
-
+                return '0($sp)', "int", True
 
         elif node.node_type == 'Increment_var':
-            reg, symbol_type = self.solve_math(node.children[0], symbol_table)
+            address, symbol_type, not_pointer = self.solve_math(node.children[0], symbol_table)
 
             reg = register_dict(symbol_type, 0)
+            reg1 = register_dict(symbol_type, 1) if not not_pointer else reg
+            if not not_pointer:
+                self.load_word(reg, address, symbol_type, comment="Load value of pointer in %s 1" % reg)
+                self.load_word(reg1, "0(%s)" % reg, symbol_type, comment="Load value of pointer in %s 2" % reg)
 
-            string = "%s %s, %s, 1" % (self.optype[symbol_type][node.children[1].label], reg, reg)
+            string = "%s %s, %s, 1" % (self.optype[symbol_type][node.children[1].label], reg1, reg1)
 
             self.write_to_instruction(string, 2)
 
             sym = symbol_table.get_written_symbol(node.children[0].label, node.ctx.start)
-            self.store_symbol(reg, sym)
-            return '0($sp)', symbol_type
+            if not_pointer:
+                self.store_symbol(reg, sym)
+            else:
+                self.store(reg1, "0(%s)" % reg, symbol_type, comment="Store value at dereferenced pointer")
+            return '0($sp)', symbol_type, True
 
         elif node.node_type == 'Increment_op':
 
-            reg, symbol_type = self.solve_math(node.children[1], symbol_table)
+            address, symbol_type, not_pointer = self.solve_math(node.children[1], symbol_table)
 
             reg = register_dict(symbol_type, 0)
+            reg1 = register_dict(symbol_type, 1) if not not_pointer else reg
+            if not not_pointer:
+                self.load_word(reg, address, symbol_type, comment="Load value of pointer in %s 1" % reg)
+                self.load_word(reg1, "0(%s)" % reg, symbol_type, comment="Load value of pointer in %s 2" % reg)
 
             string = "%s %s, %s, 1" % (self.optype[symbol_type][node.children[0].label], reg, reg)
 
             self.write_to_instruction(string, 2)
 
             sym = symbol_table.get_written_symbol(node.children[1].label, node.ctx.start)
-            self.store_symbol(reg, sym)
+            # TODO klopt dit
+            if not_pointer:
+                self.store_symbol(reg, sym)
+            else:
+                self.store(reg1, "0(%s)" % reg, symbol_type, comment="Store value at dereferenced pointer")
 
             self.store(reg, '0($sp)', symbol_type)
 
-            return '0($sp)', symbol_type
+            return '0($sp)', symbol_type, True
 
         elif node.node_type == 'unary plus':
             return self.solve_math(node.children[1], symbol_table)
@@ -813,7 +830,7 @@ class MIPS_Converter:
 
             self.store(reg, '0($sp)', value[1])
 
-            return reg, value[1]
+            return reg, value[1], True
 
         elif node.node_type == 'method_call':
             return self.call_method(node, symbol_table)
@@ -825,7 +842,7 @@ class MIPS_Converter:
             # if str(node.symbol_type) == "float":
             #     value = self.store_float(float(node.label))
             if str(node.symbol_type) == "char*":
-                return get_string(str(node.label), symbol_table), "char*"
+                return get_string(str(node.label), symbol_table), "char*", True
 
             # Get address of symbol and store it into t1
             elif str(node.symbol_type)[0] == '&':
@@ -840,7 +857,7 @@ class MIPS_Converter:
 
             self.store(reg, "0($sp)", str(node.symbol_type))
 
-            return "0($sp)", str(node.symbol_type)
+            return "0($sp)", str(node.symbol_type), True
 
         elif node.node_type == 'lvalue':
             # TODO Check array
@@ -858,10 +875,10 @@ class MIPS_Converter:
 
                 float_or_int_reg = register_dict(symbol_type, 0)
 
-                self.load_word(float_or_int_reg, "0(%s)" % reg, symbol_type, 'Load value at address')
-                self.store(float_or_int_reg, '0($sp)', symbol_type, 'store dereferenced value on top')
+                # self.load_word(float_or_int_reg, "0(%s)" % reg, symbol_type, 'Load value at address')
+                self.store(float_or_int_reg, '0($sp)', symbol_type, 'store reference value on top')
 
-                return "0($sp)", symbol_type
+                return "0($sp)", symbol_type, False
 
             else:
                 if symbol.is_global:
@@ -869,7 +886,7 @@ class MIPS_Converter:
                 else:
                     reg = ("%s($sp)" % self.offset_stack[0].get_offset(symbol)) if reg is None else ("0(%s)" % reg)
                 self.put_on_top_of_stack(reg, symbol_type)
-                return "0($sp)", symbol_type
+                return "0($sp)", symbol_type, True
 
         # elif node.node_type == 'array_element':
         #     sym = symbol_table.get_symbol(node.label, node.ctx.start)
@@ -892,7 +909,7 @@ class MIPS_Converter:
             value = self.solve_math(node.children[1], symbol_table)
             return self.not_value(value[0], value[1], node)
 
-        return None, None
+        return None, None, None
 
     def not_value(self, register, symbol_type, node):
         self.load_word("$t0", register, "int")
@@ -900,7 +917,7 @@ class MIPS_Converter:
 
         self.store("$t0", "0($sp)", 'int', "store the negated value")
 
-        return "0($sp)", 'int'
+        return "0($sp)", 'int', True
 
     def return_node(self, node, symbol_table):
         if len(self.function_stack) == 0:
@@ -923,7 +940,11 @@ class MIPS_Converter:
             raise Exception(
                 'Error at line: {} column :{} void function should not return value '.format(node.ctx.start.line,
                                                                                              node.ctx.start.column))
-        returnreg, return_type = self.solve_node(node.children[0], symbol_table)
+        returnreg, return_type, not_pointer = self.solve_node(node.children[0], symbol_table)
+        # TODO check if pointer
+        if not not_pointer:
+            ...
+
         newtype = self.function_stack[0].symbol_type
         castedreg = self.cast_value(returnreg, return_type, newtype, node.ctx.start)
 
@@ -956,42 +977,41 @@ class MIPS_Converter:
             self.call_printf(node, symbol_table)
             self.leave_stack(symbol_table)
             self.write_comment("Exit printf", 2)
-            return "0($sp)", "void"
+            return "0($sp)", "void", True
 
         elif method_name == "scanf":
             self.write_comment("Call scanf", 2)
             self.call_scanf(node, symbol_table)
             self.leave_stack(symbol_table)
             self.write_comment("Exit scanf", 2)
-            return "0($sp)", "void"
+            return "0($sp)", "void", True
 
         # Load arguments
         args = node.children[1].children[:]
         arg_types = []
         arg_reg = []
         for arg in args:
-            reg, symbol_type = self.solve_math(arg, symbol_table)
+            reg, symbol_type, not_pointer = self.solve_math(arg, symbol_table)
+            if not not_pointer:
+                ...
             arg_reg.append(reg)
             arg_types.append(symbol_type)
 
         if method_name == "print_int":
             self.print_int("0($sp)")
             self.leave_stack(symbol_table)
-            return "0($sp)", "void"
+            return "0($sp)", "void", True
 
         elif method_name == "print_char":
             self.print_char("0($sp)")
             self.leave_stack(symbol_table)
-            return "0($sp)", "void"
+            return "0($sp)", "void", True
 
         else:
             method = node.symbol_table.get_written_method(method_name, arg_types, node.ctx.start)
-
-
-
             self.go_to_label_linked(method.internal_name)
             register = register_dict(method.symbol_type, 0)
-            self.load_word(register, "0($sp)", method.symbol_type, comment='load in the ruturnvalue of the function')
+            self.load_word(register, "0($sp)", method.symbol_type, comment='load in the return value of the function')
             # load solution into t0
             self.leave_stack(symbol_table)
             # self.leave_stack(symbol_table, len(self.allocation_stack) - self.func_stacksize[0])
@@ -1001,7 +1021,7 @@ class MIPS_Converter:
             self.load_word("$ra", "0($sp)", "int", comment='something with functions')
             self.store(register, "0($sp)", method.symbol_type, comment='something with functions')
 
-            return "0($sp)", method.symbol_type
+            return "0($sp)", method.symbol_type, True
 
     def declare_method(self, method_node: Node, symbol_table: SymbolTable):
         args = []
@@ -1060,7 +1080,9 @@ class MIPS_Converter:
             return
         condition = node.children[0]
         # Evaluate Condition
-        temp_register, value_type = self.solve_node(condition, symbol_table)
+        temp_register, value_type, not_pointer = self.solve_node(condition, symbol_table)
+        if not not_pointer:
+            ...
 
         # Load stack pointer in temp register
         # TODO float must be converted to int
@@ -1102,7 +1124,9 @@ class MIPS_Converter:
         self.in_loop = False
         if not self.write:
             return
-        switchval, switchtype = self.solve_math(node.children[0], symbol_table)
+        switchval, switchtype, not_pointer = self.solve_math(node.children[0], symbol_table)
+        if not not_pointer :
+            ...
         reg = '$t0'
         if switchtype is not None and switchtype != 'void':
             reg = register_dict(switchtype, 0)
@@ -1208,7 +1232,9 @@ class MIPS_Converter:
             if child.node_type == "condition":
                 self.write = write
                 self.write_label(labels["condition"])
-                reg, value_type = self.solve_node(child, child.symbol_table)
+                reg, value_type, not_pointer = self.solve_node(child, child.symbol_table)
+                if not not_pointer:
+                    ...
                 if value_type == 'float':
                     # TODO convert
                     pass
@@ -1289,10 +1315,15 @@ class MIPS_Converter:
                     offset = int(prev_arg_reg[0])
                     arg_reg[index] = str(offset + 4) + prev_arg_reg[1:]
             # Load arg
-            reg, symbol_type = self.solve_math(arg, symbol_table)
-            if reg is None:
+            address, symbol_type, not_pointer = self.solve_math(arg, symbol_table)
+            if not not_pointer:
+                reg = register_dict(symbol_type, 0)
+                self.load_word(reg, address, symbol_type, comment="Load value of pointer in %s 1" % reg)
+                self.load_word(reg, "0(%s)" % reg, symbol_type, comment="Load value of pointer in %s 2" % reg)
+                self.store(reg, address, symbol_type, comment="Load value of pointer in %s 2" % reg)
+            if address is None:
                 raise Exception('Compiler Mistake when solving print arg')
-            arg_reg.append(reg)
+            arg_reg.append(address)
             arg_types.append(symbol_type)
 
 
