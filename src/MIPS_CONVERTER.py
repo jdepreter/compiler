@@ -1267,12 +1267,18 @@ class MIPS_Converter:
 
         # Load all arguments into memory
         for arg in args:
+            # Update Stack pointers of previous
+            for index, prev_arg_reg in enumerate(arg_reg):
+                if "($sp)" in prev_arg_reg:
+                    offset = int(prev_arg_reg[0])
+                    arg_reg[index] = str(offset + 4) + prev_arg_reg[1:]
             # Load arg
             reg, symbol_type = self.solve_math(arg, symbol_table)
             if reg is None:
                 raise Exception('Compiler Mistake when solving print arg')
             arg_reg.append(reg)
             arg_types.append(symbol_type)
+
 
         print(arg_types)
         # Check that the printed string exists
