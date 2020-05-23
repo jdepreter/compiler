@@ -97,4 +97,5 @@ def get_operator_type(symbol_type: str) -> str:
     :param symbol_type:
     :return: string
     """
-    return 'int' if '*' in symbol_type or '&' in symbol_type else symbol_type
+
+    return 'int' if '*' in symbol_type or '&' in symbol_type == symbol_type else symbol_type
