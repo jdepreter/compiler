@@ -1,18 +1,20 @@
 #include <stdio.h>
 
-int x(int i, float y, char c){
+// Should print 3
+int main() {
+    int x = 3;
 
-    if (1==i){
-        return 1;
+    switch(x) {
+        case 1:
+        case 2:
+            printf("Niet 2");
+        case 3:
+        case 4:
+            printf("%d", x);
+            break;
+        default:
+            printf("Default");
+
     }
-    else{
-        return i*x(i-1, y , c);
-    }
-
-}
-
-int main(){
-    int y = x(3, 3.0, 'c');
-    printf("%d", y);
     return 0;
 }

@@ -40,6 +40,7 @@ class MIPS_Converter:
         self.allocation_stack = [0]
         self.offset_stack = [MIPSOffset()]
         self.loop_stacksize = []
+        self.in_loop = False    # Determines if break is for switch case or for loop
 
         self.data_section = ".data\n"
         self.instruction_section = ".text\n"
@@ -423,7 +424,8 @@ class MIPS_Converter:
         #
         elif node.node_type == 'for break':
             if len(self.break_stack) > 0:
-                self.leave_stack(symbol_table, len(self.allocation_stack) - self.loop_stacksize[0], False)
+                if self.in_loop:
+                    self.leave_stack(symbol_table, len(self.allocation_stack) - self.loop_stacksize[0], False)
                 self.go_to_label(self.break_stack[0])
                 self.write = False
                 self.breaks = True
@@ -1056,6 +1058,8 @@ class MIPS_Converter:
         return
 
     def switch(self, node, symbol_table):
+        in_loop = self.in_loop
+        self.in_loop = False
         if not self.write:
             return
         switchval, switchtype = self.solve_math(node.children[0], symbol_table)
@@ -1126,8 +1130,11 @@ class MIPS_Converter:
 
         self.break_stack.pop()
         self.breaks = breaks
+        self.in_loop = in_loop
 
     def loop(self, node: Node, symbol_table: SymbolTable):
+        in_loop = self.in_loop
+        self.in_loop = True
         skip_condition = False
         if node.children[0].node_type == 'for initial':
             self.solve_node(node.children[0].children[0], symbol_table)
@@ -1191,6 +1198,7 @@ class MIPS_Converter:
         self.write = write
         self.write_label(labels["next_block"])
         self.breaks = breaks
+        self.in_loop = in_loop
 
     def call_printf(self, node, symbol_table):
         args = node.children[1].children[:]
