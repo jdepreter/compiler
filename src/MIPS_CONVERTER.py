@@ -927,8 +927,10 @@ class MIPS_Converter:
         if len(node.children) == 0:
             # return void
             if self.function_stack[0].symbol_type == 'void':
+                self.leave_stack(symbol_table, len(self.allocation_stack) - self.func_stacksize[0], False)
 
                 self.go_to_register('$ra')
+
                 self.write = False
                 return
             else:
@@ -950,8 +952,8 @@ class MIPS_Converter:
 
         self.leave_stack(symbol_table, len(self.allocation_stack) - self.func_stacksize[0], False)
 
-
         self.store(castedreg, "0($sp)", newtype)
+
         if self.function_stack[0].name == 'main':
             self.load_immediate(10, '$v0', 'int')
             self.write_to_instruction('syscall', 2)
@@ -1011,7 +1013,8 @@ class MIPS_Converter:
             method = node.symbol_table.get_written_method(method_name, arg_types, node.ctx.start)
             self.go_to_label_linked(method.internal_name)
             register = register_dict(method.symbol_type, 0)
-            self.load_word(register, "0($sp)", method.symbol_type, comment='load in the return value of the function')
+            if method.symbol_type != "void":
+                self.load_word(register, "0($sp)", method.symbol_type, comment='load in the return value of the function')
             # load solution into t0
             self.leave_stack(symbol_table)
             # self.leave_stack(symbol_table, len(self.allocation_stack) - self.func_stacksize[0])
@@ -1019,7 +1022,8 @@ class MIPS_Converter:
             # self.func_stacksize.pop(0)
 
             self.load_word("$ra", "0($sp)", "int", comment='something with functions')
-            self.store(register, "0($sp)", method.symbol_type, comment='something with functions')
+            if method.symbol_type != "void":
+                self.store(register, "0($sp)", method.symbol_type, comment='something with functions')
 
             return "0($sp)", method.symbol_type, True
 
@@ -1063,6 +1067,16 @@ class MIPS_Converter:
         self.write_to_instruction(func.internal_name + ":", 0)
 
         self.solve_node(method_node.children[-1], symbol_table)
+        # generate returns for returnless bois
+        self.leave_stack(symbol_table, len(self.allocation_stack) - self.func_stacksize[0], False)
+        self.allocate_mem(4, symbol_table)
+        if func.symbol_type!= 'void':
+            reg = register_dict(func.symbol_type,0)
+            self.load_immediate(0, reg, func.symbol_type)
+
+            self.store(reg, "0(sp)", func.symbol_type)
+        self.go_to_register('$ra')
+
 
         self.function_stack.pop(0)
         self.func_stacksize.pop(0)
