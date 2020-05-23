@@ -40,6 +40,7 @@ class MIPS_Converter:
         self.allocation_stack = [0]
         self.offset_stack = [MIPSOffset()]
         self.loop_stacksize = []
+        self.func_stacksize = []
 
         self.data_section = ".data\n"
         self.instruction_section = ".text\n"
@@ -485,9 +486,9 @@ class MIPS_Converter:
 
         stacks1 = []
         stacks2 = []
+        write = self.write
+        self.write = True
         for i in range(amount):
-            write = self.write
-            self.write = True
             self.write_comment("Leaving Stack...")
             diff = self.allocation_stack[0]
             offset = deepcopy(self.offset_stack[0])
@@ -902,6 +903,9 @@ class MIPS_Converter:
         newtype = self.function_stack[0].symbol_type
         castedreg = self.cast_value(returnreg, return_type, newtype, node.ctx.start)
 
+        self.leave_stack(symbol_table, len(self.allocation_stack) - self.func_stacksize[0], False)
+
+
         self.store(castedreg, "0($sp)", newtype)
         if self.function_stack[0].name == 'main':
             self.load_immediate(10, '$v0', 'int')
@@ -919,6 +923,7 @@ class MIPS_Converter:
         # Store return address
         self.allocate_mem(4, symbol_table, "Allocate space for $ra")
         self.store("$ra", "0($sp)", "int")
+        # self.func_stacksize.insert(0, len(self.allocation_stack))
 
         self.enter_stack(symbol_table)
 
@@ -958,14 +963,19 @@ class MIPS_Converter:
         else:
             method = node.symbol_table.get_written_method(method_name, arg_types, node.ctx.start)
 
-            self.go_to_label_linked(method.internal_name)
-            self.load_word("$t0", "0($sp)", "int", comment='something with functions')
-            # load solution into t0
 
+
+            self.go_to_label_linked(method.internal_name)
+            register = register_dict(method.symbol_type, 0)
+            self.load_word(register, "0($sp)", method.symbol_type, comment='load in the ruturnvalue of the function')
+            # load solution into t0
             self.leave_stack(symbol_table)
+            # self.leave_stack(symbol_table, len(self.allocation_stack) - self.func_stacksize[0])
+
+            # self.func_stacksize.pop(0)
 
             self.load_word("$ra", "0($sp)", "int", comment='something with functions')
-            self.store("$t0", "0($sp)", "int", comment='something with functions')
+            self.store(register, "0($sp)", method.symbol_type, comment='something with functions')
 
             return "0($sp)", method.symbol_type
 
@@ -981,6 +991,7 @@ class MIPS_Converter:
     def generate_method(self, method_node: Node, symbol_table: SymbolTable):
         self.write = True
         args = []
+        self.func_stacksize.insert(0, len(self.allocation_stack))
         if method_node.children[2].node_type == 'def_args':
             for arg in method_node.children[2].children:
                 args.append(arg.children[0].label)
@@ -993,9 +1004,13 @@ class MIPS_Converter:
         if len(args) != len(func.arguments):
             raise Exception("temp")
 
+        # write = self.write
+        # self.write = False
         for i in range(len(args)):
             symbol = self.allocate_node(method_node.children[2].children[i],
                                         method_node.children[2].children[i].symbol_table)
+
+        # self.write = write
 
         # m = list(map(self.convert2, args))
         if func.internal_name == 'main':
@@ -1005,6 +1020,7 @@ class MIPS_Converter:
         self.solve_node(method_node.children[-1], symbol_table)
 
         self.function_stack.pop(0)
+        self.func_stacksize.pop(0)
 
         return
 
