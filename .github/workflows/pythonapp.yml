@@ -36,7 +36,7 @@ jobs:
         sudo apt-get install graphviz
     - name: Create Folders
       run: |
-        mkdir /src/tests/asm
+        mkdir ./src/tests/asm
     - name: Test with pytest
       run: |
         pip install pytest
