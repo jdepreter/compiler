@@ -75,6 +75,14 @@ mips_operators = {
     }
 }
 
+mips_globals = {
+    "float":".float",
+    "char": ".word",
+    "char*": ".asciiz",
+    "int": ".word"
+
+}
+
 
 def register_dict(symbol_type, regnr):
     sym = 't'

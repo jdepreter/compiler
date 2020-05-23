@@ -529,22 +529,24 @@ class MIPS_Converter:
 
         symbol = symbol_table.get_symbol(variable, node.ctx.start)
 
-        # if symbol.is_global:
-        #     # Do funny xD llvm global stuff
-        #     if node.node_type == 'array':
-        #         reg_nr = self.allocate_global_array(stars, self.format_dict[sym_type], symbol,
-        #                                             self.solve_math(node.children[1], symbol_table))[0]
-        #         return None, None
-        #     value = 0
-        #     if node.node_type == 'assignment2':
-        #         if node.children[1].node_type == 'rvalue':
-        #             value = node.children[1].label
-        #         else:
-        #             raise Exception("Initializer element is not constant")
-        #
-        #     self.write_to_file("{} = global {} {}\n".format(symbol.current_register, self.format_dict[sym_type], value))
-        #     symbol.written = True
-        #     return None, None
+        if symbol.is_global:
+            # Do funny xD asm global stuff
+            if node.node_type == 'array':
+                raise Exception("Arrays not yet made global")
+                reg_nr = self.allocate_global_array(stars, self.format_dict[sym_type], symbol,
+                                                    self.solve_math(node.children[1], symbol_table))[0]
+                return None, None
+            value = 0
+            if node.node_type == 'assignment2':
+                if node.children[1].node_type == 'rvalue':
+                    value = node.children[1].label
+                else:
+                    raise Exception("Initializer element is not constant")
+
+            string = "global_%s%d: %s %s" %(symbol.name, symbol.reg, mips_globals[symbol.symbol_type], value)
+            self.write_to_data(string)
+            symbol.written = True
+            return None, None
 
         # if node.node_type == 'array':
         #     reg_nr = self.allocate_array(stars, self.format_dict[sym_type], symbol,
@@ -853,7 +855,10 @@ class MIPS_Converter:
                 return "0($sp)", symbol_type
 
             else:
-                reg = ("%s($sp)" % self.offset_stack[0].get_offset(symbol)) if reg is None else ("0(%s)" % reg)
+                if symbol.is_global:
+                    reg = "global_%s%d" % (symbol.name, symbol.reg)
+                else:
+                    reg = ("%s($sp)" % self.offset_stack[0].get_offset(symbol)) if reg is None else ("0(%s)" % reg)
                 self.put_on_top_of_stack(reg, symbol_type)
                 return "0($sp)", symbol_type
 
@@ -999,6 +1004,7 @@ class MIPS_Converter:
         return None, None
 
     def generate_method(self, method_node: Node, symbol_table: SymbolTable):
+        write2 = self.write
         self.write = True
         args = []
         self.func_stacksize.insert(0, len(self.allocation_stack))
@@ -1014,13 +1020,13 @@ class MIPS_Converter:
         if len(args) != len(func.arguments):
             raise Exception("temp")
 
-        # write = self.write
-        # self.write = False
+        write = self.write
+        self.write = False
         for i in range(len(args)):
             symbol = self.allocate_node(method_node.children[2].children[i],
                                         method_node.children[2].children[i].symbol_table)
 
-        # self.write = write
+        self.write = write
 
         # m = list(map(self.convert2, args))
         if func.internal_name == 'main':
@@ -1031,6 +1037,7 @@ class MIPS_Converter:
 
         self.function_stack.pop(0)
         self.func_stacksize.pop(0)
+        self.write = write2
 
         return
 
