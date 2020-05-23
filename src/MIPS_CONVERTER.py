@@ -573,26 +573,31 @@ class MIPS_Converter:
             value = self.assign_node(node.children[1], symbol_table)
         else:
             # Check if array
-            reg = None
+            address = None
             if '[]' in str(node.children[0].label):
                 # TODO array element getter
                 ...
             # Dereference if needed
             # TODO hier zit nog een fout met pointers en stuff
             if '*' in str(node.children[0].label):
+                self.allocate_mem(4, symbol_type, comment="Space for dereferenced value")
                 dereference_count = symbol_string.count('*')
-                pointer_reg = "%s($sp)" % self.offset_stack[0].get_offset(symbol) if reg is None else reg
-                reg = self.dereference(pointer_reg, dereference_count,
+                pointer_reg = "%s($sp)" % self.offset_stack[0].get_offset(symbol) if address is None else address
+                address = self.dereference(pointer_reg, dereference_count,
                                        node.children[0].symbol_type.symbol_type[0:-dereference_count])
                 symbol_type = symbol_type[:-dereference_count]
+                self.move("$t2", address, comment="$t0 will be overwritten be solve math")
+                address = "0($t2)"
 
             value = self.solve_math(node.children[1], symbol_table)
-            if reg is None:
-                reg = register_dict(value[1], 0)
+            reg = register_dict(value[1], 0)
 
             self.load_word(reg, value[0], value[1])
             reg = self.cast_value(reg, value[1], symbol_type, node.ctx.start)
-            self.store_symbol(reg, symbol, "Assigning to %s" % symbol.name)
+            if address is None:
+                self.store_symbol(reg, symbol, "Assigning to %s" % symbol.name)
+            else:
+                self.store(reg, address, symbol_type, comment="Store value at dereferenced pointer")
             self.deallocate_mem(4, symbol_table, comment='deallocate solve math')
             return "%s($sp)" % self.offset_stack[0].get_offset(symbol), symbol.symbol_type
 
@@ -836,10 +841,13 @@ class MIPS_Converter:
                 dereference_count = node.label.count('*')
                 pointer_reg = "%s($sp)" % self.offset_stack[0].get_offset(symbol) if reg is None else reg
                 # TODO add float
-                reg = self.dereference(pointer_reg, dereference_count, "int")
+                reg = self.dereference(pointer_reg, dereference_count, "int")   # reg is the address of the value we want
                 symbol_type = symbol_type[:-dereference_count]
 
-                self.store(reg, '0($sp)', symbol_type, 'store dereferenced value on top')
+                float_or_int_reg = register_dict(symbol_type, 0)
+
+                self.load_word(float_or_int_reg, "0(%s)" % reg, symbol_type, 'Load value at address')
+                self.store(float_or_int_reg, '0($sp)', symbol_type, 'store dereferenced value on top')
 
                 return "0($sp)", symbol_type
 
