@@ -1447,8 +1447,18 @@ class MIPS_Converter:
                     expected_args += ['int']
                 elif print_string[i + 1] == 'c':
                     expected_args += ['char']
-                elif print_string[i + 1] == 's':
-                    expected_args += ['char*']
+                else:
+                    full_string_print = print_string[i + 1:]
+                    for number in range(len(full_string_print)):
+                        val = full_string_print[number]
+                        if val == 's':
+                            try:
+                                fullval =int(full_string_print[:number])
+                                expected_args += [('char*',fullval)]
+                            except:
+                                ...
+
+
                 i += 1
             i += 1
 
@@ -1496,8 +1506,8 @@ class MIPS_Converter:
                     self.scan_float(arg_reg[i + 1])
                 elif expected_args[i] == 'char' and symbols[i].size == False:
                     self.scan_char(arg_reg[i + 1])
-                elif expected_args[i] == 'char*':
-                    self.scan_string(arg_reg[i + 1], symbol_table.get_symbol(args[i+1].label, node.ctx.start).size)
+                elif expected_args[i][0] == 'char*':
+                    self.scan_string(arg_reg[i + 1], expected_args[i][1])
 
     def scan_int(self, reg):
         """
