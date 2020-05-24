@@ -1599,7 +1599,6 @@ class MIPS_Converter:
         self.load_immediate(size, '$a1', "int")
         self.load_immediate(8, '$v0', 'int')
         self.write_to_instruction("syscall", 2)
-        self.write_to_instruction("swc1 $f0, 0($t0)", 2)
 
 
     # Pointers
