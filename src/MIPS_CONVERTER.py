@@ -144,7 +144,12 @@ class MIPS_Converter:
         # TODO maak dit efficient
         self.allocate_mem(4, symbol_table, comment="Allocate for %s" % symbol.name)
         offset = self.offset_stack[0].get_offset(symbol)
-        self.put_on_top_of_stack("%s($sp)" % offset, symbol.symbol_type)
+        if symbol.size is None:
+            self.put_on_top_of_stack("%s($sp)" % offset, symbol.symbol_type)
+            return True
+        else:
+            self.put_address_on_top_of_stack("%s($sp)" % offset, symbol.symbol_type)
+            return False
 
     def put_on_top_of_stack(self, stack_pointer: str, symbol_type: str):
         operator_type = get_operator_type(symbol_type)
@@ -157,6 +162,18 @@ class MIPS_Converter:
         # Put it on top of the stack
         string = "%s %s, 0($sp)" % (mips_operators[operator_type]['sw'], reg)
         self.write_to_instruction(string, 2, comment='Put on top of stack save')
+
+    def put_address_on_top_of_stack(self, stack_pointer: str, symbol_type: str):
+        operator_type = get_operator_type(symbol_type)
+        reg = register_dict(symbol_type, 0)
+
+        # Load instruction from the stack
+        string = "la %s, %s" % (reg, stack_pointer)
+        self.write_to_instruction(string, 2, comment='Put address on top of stack load')
+
+        # Put it on top of the stack
+        string = "sw %s, 0($sp)" % reg
+        self.write_to_instruction(string, 2, comment='Put address on top of stack save')
 
     def load_word(self, left: str, right: str, symbol_type: str, comment: str = ''):
         if left != right:
@@ -213,7 +230,7 @@ class MIPS_Converter:
         :param comment:
         :return:
         """
-        self.write_to_instruction("move %s %s" % (left, right), 2, comment)
+        self.write_to_instruction("move %s, %s" % (left, right), 2, comment)
 
     def cast_value(self, current_reg, current_type, new_type, error):
         """
@@ -402,8 +419,11 @@ class MIPS_Converter:
 
         # self.solve_node(index_node, symbol_table)
         symbol.size = size
+        symbol.written = True
+        symbol.assigned = True
+
         self.offset_stack[0].add_symbol(symbol)
-        self.offset_stack[0][symbol.name] = -4
+        self.offset_stack[0].symbols[symbol.name] = -4
         self.allocate_mem(size * 4, symbol_table, "Allocate array for symbol %s" % symbol.name)
 
     def solve_node(self, node: Node, symbol_table: SymbolTable):
@@ -923,12 +943,15 @@ class MIPS_Converter:
                 ))
 
             symbol = symbol_table.get_assigned_symbol(node.label, node.ctx.start)
-            address = self.get_index_of_array(symbol.var_counter, self.format_dict[sym_type] + stars, symbol.size,
-                                              node.children[1], symbol_table, node.label,
-                                              node.ctx.start)[0]
-            reg = self.register
-            self.register += 1
-            return self.load_instruction(reg, stars, sym_type, address), symbol.symbol_type, False
+            address, value_type, not_pointer = self.solve_math(node.children[-1], symbol_table)
+            offset = register_dict(value_type, 1)
+            self.load_word(offset, "%s" % address, value_type, comment="Move value to temp register")
+            if not not_pointer:
+                self.load_word(offset, "0(%sp)" % address, "int", comment="Load value from pointer")
+
+            self.get_index_of_array(symbol, offset, symbol_table)
+
+            return "0($sp)", value_type, False
 
         elif node.node_type == 'bool2' and node.children[0].label == '!':
 
@@ -1437,5 +1460,11 @@ class MIPS_Converter:
         :param symbol_table:
         :return:
         """
-        self.load_symbol(symbol, symbol_table)
-        pass
+        self.load_symbol(symbol, symbol_table)  # Address is now at 0($sp) and $t0
+        # Add offset
+        addition = "add $t0, %s, $t0" % offset
+        for i in range(4):
+            self.write_to_instruction(addition, 2, comment="Load address of array[index]")
+
+        self.store("$t0", "0($sp)", "int", comment="Store address on stack")   # overwrite 0($sp)
+        return "0($sp)"
