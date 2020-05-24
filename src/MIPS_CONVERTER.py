@@ -937,6 +937,9 @@ class MIPS_Converter:
             self.allocate_mem(4, symbol_table, 'allocate space for instance of %s' % node.label)
             symbol = symbol_table.get_assigned_symbol(node.label, node.ctx.start)
             symbol_type = str(symbol.symbol_type)
+            if symbol.size is not None:
+                self.get_index_of_array(symbol, "$0", symbol_table)  # Load address of element in 0($sp) and $t0
+
             # Dereference if needed
             if '*' in str(node.label):
                 dereference_count = node.label.count('*')
@@ -953,6 +956,9 @@ class MIPS_Converter:
                 return "0($sp)", symbol_type, False
 
             else:
+                if symbol.size is not None:
+                    return "0($sp)", symbol_type, True
+
                 if symbol.is_global:
                     reg = "global_%s%d" % (symbol.name, symbol.reg)
                 else:
