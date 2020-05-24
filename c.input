@@ -2,7 +2,7 @@
 
 int main(){
     char i = 1;
-    char j[5];
+    char j[6];
 
     scanf("%5s", j);
 

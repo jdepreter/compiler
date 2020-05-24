@@ -357,7 +357,9 @@ class MIPS_Converter:
         if '(' in reg:
             self.load_word("$t0", reg, "char*", comment='Load string for printing')
             reg = "$t0"
-        self.write_to_instruction("la $a0, %s" % reg, 2)  # String from data segment use la
+            self.move('$a0',reg)
+        else:
+            self.write_to_instruction("la $a0, %s" % reg, 2)  # String from data segment use la
         self.write_to_instruction("li $v0, 4", 2)
         self.write_to_instruction("syscall", 2)
 
