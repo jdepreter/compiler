@@ -394,8 +394,8 @@ class MIPS_Converter:
         current_symbol_table = self.ast.startnode.symbol_table
         self.define_strings(current_symbol_table)
 
-        self.solve_node(self.ast.startnode, self.ast.startnode.symbol_table)
         self.write_seg_fault()
+        self.solve_node(self.ast.startnode, self.ast.startnode.symbol_table)
         self.write_to_file(self.data_section)
         self.write_to_file(self.string_section)
         self.write_to_file(self.instruction_section)
