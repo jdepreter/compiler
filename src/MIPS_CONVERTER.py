@@ -155,7 +155,7 @@ class MIPS_Converter:
         self.allocate_mem(4, symbol_table, comment="Allocate for %s" % symbol.name)
 
         if symbol.is_global:
-            if symbol.size is None:
+            if not symbol.size:
                 self.put_on_top_of_stack("global_%s%d" % (symbol.name, symbol.reg), symbol.symbol_type)
                 return True
             else:
@@ -163,7 +163,7 @@ class MIPS_Converter:
                 return False
         else:
             offset = self.offset_stack[0].get_offset(symbol)
-            if symbol.size is None:
+            if not symbol.size:
                 self.put_on_top_of_stack("%s($sp)" % offset, symbol.symbol_type)
                 return True
             else:
@@ -937,7 +937,7 @@ class MIPS_Converter:
             self.allocate_mem(4, symbol_table, 'allocate space for instance of %s' % node.label)
             symbol = symbol_table.get_assigned_symbol(node.label, node.ctx.start)
             symbol_type = str(symbol.symbol_type)
-            if symbol.size is not None:
+            if symbol.size:
                 self.get_index_of_array(symbol, "$0", symbol_table)  # Load address of element in 0($sp) and $t0
 
             # Dereference if needed
@@ -956,7 +956,7 @@ class MIPS_Converter:
                 return "0($sp)", symbol_type, False
 
             else:
-                if symbol.size is not None:
+                if symbol.size:
                     return "0($sp)", symbol_type, True
 
                 if symbol.is_global:
@@ -1432,7 +1432,7 @@ class MIPS_Converter:
             raise Exception("what")  # TODO
 
         # Split strings into parts and print each part separately
-        partial_strings = re.split("%.", print_string)
+        partial_strings = re.split("%(?:[0-9]*s|.)", print_string)
         for i, partial_string in enumerate(partial_strings):
             # Print string
             self.print_string(symbol_table.get_mips_strings()[partial_string])
@@ -1524,7 +1524,7 @@ class MIPS_Converter:
             raise Exception("what")  # TODO
 
         # Split strings into parts and print each part separately
-        partial_strings = re.split("%.", print_string)
+        partial_strings = re.split("%(?:[0-9]*s|.)", print_string)
         for i, partial_string in enumerate(partial_strings):
             # Print string
             self.print_string(symbol_table.get_mips_strings()[partial_string])
@@ -1663,7 +1663,8 @@ class MIPS_Converter:
         self.write_to_instruction(compare, 2, comment="Check that memory is in bounds")
         # Add offset
         addition = "sub $t0, $t0, %s" % offset
-        for i in range(4):
+        length = 1 if symbol.symbol_type == 'char' else 4
+        for i in range(length):
             self.write_to_instruction(addition, 2, comment="Load address of array[index]")
 
         self.store("$t0", "0($sp)", "int", comment="Store address on stack")   # overwrite 0($sp)

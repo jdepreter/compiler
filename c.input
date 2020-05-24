@@ -5,6 +5,8 @@ int main(){
     char j[6];
 
     scanf("%5s", j);
+    j[0] = 'x';
 
     printf("j is %s", j);
+    printf("j[0] %c", j[0]);
 }

@@ -245,7 +245,7 @@ class SymbolTable:
 
             # %d, %c, %s, %f should be split for MIPS
 
-        strings = re.split("%.", string)
+        strings = re.split("%(?:[0-9]*s|.)", string)
         for my_string in strings:
             if my_string not in self.mips_strings:
                 mips_val = "str.{}".format(str(self.strings_nr))
