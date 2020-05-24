@@ -3,5 +3,7 @@
 int main(){
     char i = 1;
     int j;
-    int x[i = 'c'];
+    scanf("%d", &j);
+
+    printf("j is %d %d %d %d %d", j, j,j ,j, j);
 }

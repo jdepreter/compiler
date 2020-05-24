@@ -1049,14 +1049,16 @@ class MIPS_Converter:
             return "0($sp)", method.symbol_type, True
 
     def load_arguments(self, arg_reg, arg_types, args, symbol_table):
+
         for arg in args:
             # Update Stack pointers of previous
             for index, prev_arg_reg in enumerate(arg_reg):
                 if "($sp)" in prev_arg_reg:
-                    offset = int(prev_arg_reg[0])
-                    arg_reg[index] = str(offset + 4) + prev_arg_reg[1:]
+                    offset = int(prev_arg_reg[0:-5])
+                    arg_reg[index] = str(offset + 4) + prev_arg_reg[-5:]
             # Load arg
             address, symbol_type, not_pointer = self.solve_math(arg, symbol_table)
+
             if not not_pointer:
                 reg = register_dict(symbol_type, 0)
                 self.load_word(reg, address, symbol_type, comment="Load value of pointer in %s 1" % reg)
@@ -1065,7 +1067,8 @@ class MIPS_Converter:
             if address is None:
                 raise Exception('Compiler Mistake when solving arg')
             arg_reg.append(address)
-            arg_types.append(symbol_type)
+            newsym = get_type_and_stars(symbol_type)
+            arg_types.append(newsym[0]+newsym[1])
 
     def declare_method(self, method_node: Node, symbol_table: SymbolTable):
         args = []
@@ -1390,7 +1393,145 @@ class MIPS_Converter:
                     self.print_string(arg_reg[i + 1])
 
     def call_scanf(self, node: Node, symbol_table: SymbolTable):
-        pass
+        args = node.children[1].children[:]
+        arg_types = []
+        arg_reg = []
+        arg_reg_types = []
+        expected_args = []
+        i = 0
+        print_string = args[0].label
+
+        # Compute which argument types are needed to complete the print call
+        while i < len(print_string) - 1:
+            # print_string == printed string
+            if print_string[i] == '%':
+                if print_string[i + 1] == 'i':
+                    expected_args += ['int']
+                elif print_string[i + 1] == 'f':
+                    expected_args += ['float']
+                elif print_string[i + 1] == 'd':
+                    expected_args += ['int']
+                elif print_string[i + 1] == 'c':
+                    expected_args += ['char']
+                elif print_string[i + 1] == 's':
+                    expected_args += ['char*']
+                i += 1
+            i += 1
+
+        # Check for no extra / missing params
+        if len(expected_args) != len(args) - 1:
+            error = node.ctx.start
+            if len(expected_args) > len(args) - 1:
+                raise Exception(
+                    "[Error] Line {}, Position {}: Too few arguments for calling {} missing arg(s) with type(s): {}".format(
+                        error.line, error.column, 'scanf', ', '.join(expected_args[len(args) - 1:])
+                    ))
+
+            elif len(expected_args) < len(args) - 1:
+                raise Exception(
+                    "[Error] Line {}, Position {}: Too many arguments for calling {}".format(
+                        error.line, error.column, 'scanf'
+                    ))
+
+        # set all arguments to written
+        symbols = []
+        for arg in args[1:]:
+
+            sym1 = symbol_table.get_symbol(arg.label, node.ctx.start)
+            sym1.assigned = True
+
+            symbols.append(sym1)
+        # Load all arguments into memory
+        self.load_arguments(arg_reg, arg_types, args, symbol_table)
+        print(arg_types)
+        # Check that the printed string exists
+        if print_string is None:
+            raise Exception("what")  # TODO
+
+        # Split strings into parts and print each part separately
+        partial_strings = re.split("%.", print_string)
+        for i, partial_string in enumerate(partial_strings):
+            # Print string
+            self.print_string(symbol_table.get_mips_strings()[partial_string])
+
+            # Check if a % follows this string
+            if i < len(arg_reg) - 1:  # first arg is print_string => len-1
+                if arg_types[i + 1] == 'int*':
+                    self.scan_int(arg_reg[i + 1])
+                elif arg_types[i + 1] == 'float*':
+                    self.scan_float(arg_reg[i + 1])
+                elif arg_types[i + 1] == 'char':
+                    self.scan_char(arg_reg[i + 1])
+                elif arg_types[i + 1] == 'char*':
+                    self.scan_string(arg_reg[i + 1], symbol_table.get_symbol(args[i+1].label, node.ctx.start).size)
+
+    def scan_int(self, reg):
+        """
+                li $v0, 5
+                syscall
+                lw $t0, reg
+                sw $v0, 0($t0)
+                :param reg: register to put read value
+                :return:
+                """
+        if '(' in reg:
+            self.load_word("$t0", reg, "int", comment='Load int for printing')
+            reg = "$t0"
+        self.load_immediate(5, '$v0', 'int')
+        self.write_to_instruction("syscall", 2)
+        self.write_to_instruction("sw $v0, 0(%s)" %reg, 2)
+
+    def scan_char(self, reg):
+        """
+                li $v0, 12
+                syscall
+                lw $t0, reg
+                sw $v0, 0($t0)
+                :param reg: register to put read value
+                :return:
+                """
+        if '(' in reg:
+            self.load_word("$t0", reg, "int", comment='Load int for printing')
+            reg = "$t0"
+        self.load_immediate(12, '$v0', 'int')
+        self.write_to_instruction("syscall", 2)
+        self.write_to_instruction("sw $v0, 0(%s)" %reg, 2)
+
+    def scan_float(self, reg):
+        """
+                li $v0, 6
+                syscall
+                lw $t0, reg
+                sw $f0, 0($t0)
+                :param reg: register to put read value
+                :return:
+                """
+        if '(' in reg:
+            self.load_word("$t0", reg, "int", comment='Load int for printing')
+            reg = "$t0"
+        self.load_immediate(6, '$v0', 'int')
+        self.write_to_instruction("syscall", 2)
+        self.write_to_instruction("swc1 $f0, 0(%s)" %reg, 2)
+
+    def scan_string(self, reg, size):
+        """
+                li $v0, 8
+                syscall
+                lw $t0, reg
+                sw $f0, 0($t0)
+                :param reg: register to put read value
+                :return:
+                """
+        if '(' in reg:
+            self.load_word("$t0", reg, "int", comment='Load int for printing')
+            reg = "$t0"
+
+        self.move('$a0', reg, comment="move the address into the argument")
+        self.load_immediate(size, '$a1', "int")
+        self.load_immediate(8, '$v0', 'int')
+        self.write_to_instruction("syscall", 2)
+        self.write_to_instruction("swc1 $f0, 0($t0)", 2)
+
 
     # Pointers
     def dereference(self, pointer_register: str, dereference_count: int, symbol_type: str) -> str:
