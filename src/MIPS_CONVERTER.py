@@ -1097,7 +1097,8 @@ class MIPS_Converter:
         # Evaluate Condition
         temp_register, value_type, not_pointer = self.solve_node(condition, symbol_table)
         if not not_pointer:
-            ...
+            reg = register_dict(value_type, 0)
+            self.load_word(reg, "0(%s)" % reg, value_type, comment="Load value of pointer in %s 2" % reg)
 
         # Load stack pointer in temp register
         # TODO float must be converted to int
