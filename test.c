@@ -1,7 +1,10 @@
+#include <stdio.h>
 
-int x = 2;
-int y = 3;
-int z = x+y;
+int main(){
+    char i = 1;
+    char j= 'c';
 
+//    scanf("%c", &j);
 
-
+    printf("j is %c %d %c", j, j,j);
+}

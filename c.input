@@ -2,8 +2,9 @@
 
 int main(){
     char i = 1;
-    int j;
-    scanf("%d", &j);
+    char j;
 
-    printf("j is %d %d %d %d %d", j, j,j ,j, j);
+    scanf("%c", &j);
+
+    printf("j is %c %d %c", j, j,j);
 }

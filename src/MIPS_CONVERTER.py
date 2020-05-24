@@ -1408,13 +1408,22 @@ class MIPS_Converter:
 
             # Check if a % follows this string
             if i < len(arg_reg) - 1:  # first arg is print_string => len-1
-                if arg_types[i + 1] == 'int':
+                if expected_args[i] == 'int':
+                    if arg_types[i+1] == 'float':
+                        # todo cast val
+                        ...
                     self.print_int(arg_reg[i + 1])
-                elif arg_types[i + 1] == 'float':
+                elif expected_args[i] == 'float':
+                    if arg_types[i+1] != 'float':
+                        # todo cast val
+                        ...
                     self.print_float(arg_reg[i + 1])
-                elif arg_types[i + 1] == 'char':
+                elif expected_args[i] == 'char':
+                    if arg_types[i+1] == 'float':
+                        # todo cast val
+                        ...
                     self.print_char(arg_reg[i + 1])
-                elif arg_types[i + 1] == 'char*':
+                elif expected_args[i] == 'char*':
                     self.print_string(arg_reg[i + 1])
 
     def call_scanf(self, node: Node, symbol_table: SymbolTable):
@@ -1481,13 +1490,13 @@ class MIPS_Converter:
 
             # Check if a % follows this string
             if i < len(arg_reg) - 1:  # first arg is print_string => len-1
-                if arg_types[i + 1] == 'int*':
+                if expected_args[i] == 'int':
                     self.scan_int(arg_reg[i + 1])
-                elif arg_types[i + 1] == 'float*':
+                elif expected_args[i] == 'float':
                     self.scan_float(arg_reg[i + 1])
-                elif arg_types[i + 1] == 'char':
+                elif expected_args[i] == 'char' and symbols[i].size == False:
                     self.scan_char(arg_reg[i + 1])
-                elif arg_types[i + 1] == 'char*':
+                elif expected_args[i] == 'char*':
                     self.scan_string(arg_reg[i + 1], symbol_table.get_symbol(args[i+1].label, node.ctx.start).size)
 
     def scan_int(self, reg):
@@ -1500,7 +1509,7 @@ class MIPS_Converter:
                 :return:
                 """
         if '(' in reg:
-            self.load_word("$t0", reg, "int", comment='Load int for printing')
+            self.load_word("$t0", reg, "int", comment='Load location for storing')
             reg = "$t0"
         self.load_immediate(5, '$v0', 'int')
         self.write_to_instruction("syscall", 2)
@@ -1516,7 +1525,7 @@ class MIPS_Converter:
                 :return:
                 """
         if '(' in reg:
-            self.load_word("$t0", reg, "int", comment='Load int for printing')
+            self.load_word("$t0", reg, "int", comment='Load location for storing')
             reg = "$t0"
         self.load_immediate(12, '$v0', 'int')
         self.write_to_instruction("syscall", 2)
@@ -1532,7 +1541,7 @@ class MIPS_Converter:
                 :return:
                 """
         if '(' in reg:
-            self.load_word("$t0", reg, "int", comment='Load int for printing')
+            self.load_word("$t0", reg, "int", comment='Load location for storing')
             reg = "$t0"
         self.load_immediate(6, '$v0', 'int')
         self.write_to_instruction("syscall", 2)
@@ -1548,7 +1557,7 @@ class MIPS_Converter:
                 :return:
                 """
         if '(' in reg:
-            self.load_word("$t0", reg, "int", comment='Load int for printing')
+            self.load_word("$t0", reg, "int", comment='Load location for storing')
             reg = "$t0"
 
         self.move('$a0', reg, comment="move the address into the argument")
