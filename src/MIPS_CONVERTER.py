@@ -367,11 +367,44 @@ class MIPS_Converter:
         Allocate space for a variable
         :param symbol:
         :param symbol_table:
+        :param is_array:
         :return:
         """
         self.allocate_mem(4, symbol_table, comment='Allocate space for symbol: %s' % symbol.name)
         symbol.written = True
         self.offset_stack[0].add_symbol(symbol)
+
+    def allocate_array(self, symbol: SymbolType, index_node: Node, symbol_table: SymbolTable):
+        self.solve_node(index_node, symbol_table)
+        size = None
+        if index_node.node_type == 'rvalue':
+            try:
+                size = int(index_node.label)
+            except ValueError:
+                raise Exception("Error Line {}, Position {}: ISO C90 forbids variable length array".format(
+                    index_node.ctx.start.line, index_node.ctx.start.column,
+                ))
+        elif index_node.node_type == 'assignment':
+            child = index_node.children[1]
+            while child.node_type == 'assignment':
+                child = child.children[1]
+            try:
+                size = int(child.label)
+            except ValueError:
+                raise Exception("Error Line {}, Position {}: ISO C90 forbids variable length array".format(
+                    index_node.ctx.start.line, index_node.ctx.start.column,
+                ))
+
+        if size is None:
+            raise Exception("Error Line {}, Position {}: array subscript is not an integer".format(
+                index_node.ctx.start.line, index_node.ctx.start.column
+            ))
+
+        # self.solve_node(index_node, symbol_table)
+        symbol.size = size
+        self.offset_stack[0].add_symbol(symbol)
+        self.offset_stack[0][symbol.name] = -4
+        self.allocate_mem(size * 4, symbol_table, "Allocate array for symbol %s" % symbol.name)
 
     def solve_node(self, node: Node, symbol_table: SymbolTable):
         if node.symbol_table is not None:
@@ -536,9 +569,7 @@ class MIPS_Converter:
         if symbol.is_global:
             # Do funny xD asm global stuff
             if node.node_type == 'array':
-                raise Exception("Arrays not yet made global")
-                reg_nr = self.allocate_global_array(stars, self.format_dict[sym_type], symbol,
-                                                    self.solve_math(node.children[1], symbol_table))[0]
+                self.allocate_global_array(symbol, node.children[1], symbol_table)
                 return None, None
             value = 0
             if node.node_type == 'assignment2':
@@ -552,13 +583,10 @@ class MIPS_Converter:
             symbol.written = True
             return None, None
 
-        # if node.node_type == 'array':
-        #     reg_nr = self.allocate_array(stars, self.format_dict[sym_type], symbol,
-        #                                  node.children[1], symbol_table)[0]
-        # else:
-        #     reg_nr = self.alloc_instruction(stars, sym_type, symbol)
-
-        self.allocate_symbol(symbol, symbol_table)  # Remove L8er
+        if node.node_type == 'array':
+            self.allocate_array(symbol, node.children[-1], symbol_table)
+        else:
+            self.allocate_symbol(symbol, symbol_table)
 
         if node.node_type == 'assignment2':
             self.assign_node(node, symbol_table)
@@ -886,21 +914,21 @@ class MIPS_Converter:
                 self.put_on_top_of_stack(reg, symbol_type)
                 return "0($sp)", symbol_type, True
 
-        # elif node.node_type == 'array_element':
-        #     sym = symbol_table.get_symbol(node.label, node.ctx.start)
-        #     if not sym.size:
-        #         symbol_name = re.sub(r'\[]', '', node.label)
-        #         raise Exception("Error Line {}, Position {}: {} is not an array".format(
-        #             node.ctx.start.line, node.ctx.start.column, symbol_name
-        #         ))
-        #     sym = symbol_table.get_assigned_symbol(node.label, node.ctx.start)
-        #     sym_type, stars = get_type_and_stars(sym.symbol_type)
-        #     address = self.get_index_of_array(sym.var_counter, self.format_dict[sym_type] + stars, sym.size,
-        #                                       node.children[1], symbol_table, node.label,
-        #                                       node.ctx.start)[0]
-        #     reg = self.register
-        #     self.register += 1
-        #     return self.load_instruction(reg, stars, sym_type, address), sym.symbol_type
+        elif node.node_type == 'array_element':
+            symbol = symbol_table.get_symbol(node.label, node.ctx.start)
+            if not symbol.size:
+                symbol_name = re.sub(r'\[]', '', node.label)
+                raise Exception("Error Line {}, Position {}: {} is not an array".format(
+                    node.ctx.start.line, node.ctx.start.column, symbol_name
+                ))
+
+            symbol = symbol_table.get_assigned_symbol(node.label, node.ctx.start)
+            address = self.get_index_of_array(symbol.var_counter, self.format_dict[sym_type] + stars, symbol.size,
+                                              node.children[1], symbol_table, node.label,
+                                              node.ctx.start)[0]
+            reg = self.register
+            self.register += 1
+            return self.load_instruction(reg, stars, sym_type, address), symbol.symbol_type, False
 
         elif node.node_type == 'bool2' and node.children[0].label == '!':
 
@@ -1381,3 +1409,33 @@ class MIPS_Converter:
             self.load_word("$t0", "0($t0)", symbol_type, comment='Dereference once')  # Load from address in $t0
 
         return "$t0"
+
+    def allocate_global_array(self, symbol, index_node, symbol_table):
+        self.solve_node(index_node, symbol_table)
+        size = None
+        if index_node.node_type == 'rvalue':
+            try:
+                size = int(index_node.label)
+            except ValueError:
+                raise Exception("Error Line {}, Position {}: ISO C90 forbids variable length array".format(
+                    index_node.ctx.start.line, index_node.ctx.start.column,
+                ))
+
+        if size is None:
+            raise Exception("Error Line {}, Position {}: array subscript is not an integer".format(
+                index_node.ctx.start.line, index_node.ctx.start.column
+            ))
+
+        symbol.size = size
+        string = "global_array_%s%d: .word %d" % (symbol.name, symbol.reg, size)
+        self.write_to_data(string)
+
+    def get_index_of_array(self, symbol: SymbolType, offset: str, symbol_table: SymbolTable):
+        """
+        :param symbol:
+        :param offset:
+        :param symbol_table:
+        :return:
+        """
+        self.load_symbol(symbol, symbol_table)
+        pass
