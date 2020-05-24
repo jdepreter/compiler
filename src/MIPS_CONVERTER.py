@@ -663,6 +663,7 @@ class MIPS_Converter:
             else:
                 self.store(reg, address, symbol_type, comment="Store value at dereferenced pointer")
             self.deallocate_mem(4, symbol_table, comment='deallocate solve math')
+            symbol.assigned = True
             if symbol.is_global:
                 return "global_%s%d" % (symbol.name, symbol.reg), symbol.symbol_type
             return "%s($sp)" % self.offset_stack[0].get_offset(symbol), symbol.symbol_type, address is None
