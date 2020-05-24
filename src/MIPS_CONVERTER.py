@@ -1140,8 +1140,8 @@ class MIPS_Converter:
         self.solve_node(method_node.children[-1], symbol_table)
         # generate returns for returnless bois
         self.leave_stack(symbol_table, len(self.allocation_stack) - self.func_stacksize[0], False)
-        self.allocate_mem(4, symbol_table, "Space for return value I think")
         if func.symbol_type != 'void':
+            self.allocate_mem(4, symbol_table, "Space for return value")
             reg = register_dict(func.symbol_type, 0)
             self.load_immediate(0, reg, func.symbol_type)
 
