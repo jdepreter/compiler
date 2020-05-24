@@ -85,6 +85,10 @@ class MIPS_Converter:
         if self.write:
             self.instruction_section += indent + string + " # " + comment + "\n"
 
+    def write_seg_fault(self):
+        self.write_label('seg')
+        self.print_string('seg_fault')
+
     def define_strings(self, symbol_table: SymbolTable):
         """
         Add all strings to data section
@@ -95,6 +99,7 @@ class MIPS_Converter:
         for string_value, var_name in all_strings.items():
             self.write_to_string('%s: .asciiz "%s"' % (var_name, string_value))
 
+        self.write_to_string('seg_fault: .asciiz "Segmentation Fault"')
         return
 
     def allocate_mem(self, amount, symbol_table: SymbolTable, comment: str = ''):
@@ -388,7 +393,7 @@ class MIPS_Converter:
         self.define_strings(current_symbol_table)
 
         self.solve_node(self.ast.startnode, self.ast.startnode.symbol_table)
-
+        self.write_seg_fault()
         self.write_to_file(self.data_section)
         self.write_to_file(self.string_section)
         self.write_to_file(self.instruction_section)
@@ -1634,6 +1639,11 @@ class MIPS_Converter:
         :return:
         """
         self.load_symbol(symbol, symbol_table)  # Address is now at 0($sp) and $t0
+        # Check inbounds
+        loadi = "li $t7, %s" % str(symbol.size-1)
+        compare = "blt $t7, %s, seg" % offset
+        self.write_to_instruction(loadi, 2, comment="Check that memory is in bounds")
+        self.write_to_instruction(compare, 2, comment="Check that memory is in bounds")
         # Add offset
         addition = "sub $t0, $t0, %s" % offset
         for i in range(4):
