@@ -652,6 +652,8 @@ class MIPS_Converter:
                 symbol_type = symbol_type[:-dereference_count]
                 self.move("$t2", address, comment="$t0 will be overwritten be solve math")
                 address = "0($t2)"
+                self.deallocate_mem(4, symbol_type, comment="Deallocate space for dereferenced value")
+
 
             value = self.solve_math(node.children[1], symbol_table)
             reg = register_dict(value[1], 0)
@@ -700,8 +702,8 @@ class MIPS_Converter:
 
             string = "%s %s, %s, %s" % (self.optype[symbol_type][node.label], child_2, child_1, child_2)
             self.write_to_instruction(string, 2)
-            self.deallocate_mem(4, symbol_table)  # Delete one
-            self.store(child_2, "0($sp)", symbol_type)  # Overwrite the other
+            self.deallocate_mem(4, symbol_table, comment="Delete right operand")  # Delete one
+            self.store(child_2, "0($sp)", symbol_type, comment="Overwrite left operand")  # Overwrite the other
 
             return "0($sp)", symbol_type, True
 
@@ -723,15 +725,15 @@ class MIPS_Converter:
             if symbol_type == "float":
                 string = "div.s %s, %s, %s" % (child_2, child_1, child_2)
                 self.write_to_instruction(string, 2)
-                self.deallocate_mem(4, symbol_table)  # Delete one
-                self.store(child_2, "0($sp)", symbol_type)  # Overwrite the other
+                self.deallocate_mem(4, symbol_table, comment="Delete right operand")  # Delete one
+                self.store(child_2, "0($sp)", symbol_type, comment="Overwrite left operand")  # Overwrite the other
             else:
                 string = "%s %s, %s" % (self.optype['int'][node.label], child_1, child_2)
                 self.write_to_instruction(string, 2)
                 string = "mflo $t0"
                 self.write_to_instruction(string, 2)
-                self.deallocate_mem(4, symbol_table)  # Delete one
-                self.store("$t0", "0($sp)", symbol_type)  # Overwrite the other
+                self.deallocate_mem(4, symbol_table, comment="Delete right operand")  # Delete one
+                self.store("$t0", "0($sp)", symbol_type, comment="Overwrite left operand")  # Overwrite the other
 
             return "0($sp)", symbol_type, True
 
@@ -754,8 +756,8 @@ class MIPS_Converter:
             self.write_to_instruction(string, 2)
             string = "mfhi $t0"
             self.write_to_instruction(string, 2)
-            self.deallocate_mem(4, symbol_table)  # Delete one
-            self.store("$t0", "0($sp)", symbol_type)  # Overwrite the other
+            self.deallocate_mem(4, symbol_table, comment="Delete right operand")  # Delete one
+            self.store("$t0", "0($sp)", symbol_type, comment="Overwrite left operand")  # Overwrite the other
 
             return "0($sp)", symbol_type, True
 
@@ -769,8 +771,8 @@ class MIPS_Converter:
             instruction = "and" if node.label == "&&" else "or"
             string = "%s $t0, $t1, $t0" % instruction
             self.write_to_instruction(string, 2)
-            self.deallocate_mem(4, symbol_table)  # Delete one
-            self.store("$t0", "0($sp)", 'int')  # Overwrite the other
+            self.deallocate_mem(4, symbol_table, comment="Delete right operand")  # Delete one
+            self.store("$t0", "0($sp)", 'int', comment="Overwrite left operand")  # Overwrite the other
             # self.print_int('$t0')
             return "0($sp)", 'int', True
 
@@ -804,8 +806,8 @@ class MIPS_Converter:
                 self.write_to_instruction("L_CondEnd%d:" % self.float_branches, 0)
 
                 # Store value
-                self.deallocate_mem(4, symbol_table)  # Delete one
-                self.store("$t0", "0($sp)", 'int')  # Overwrite the other
+                self.deallocate_mem(4, symbol_table, comment="Deallocate right operand")  # Delete one
+                self.store("$t0", "0($sp)", 'int', comment="Overwrite left operand")  # Overwrite the other
                 self.float_branches += 1
                 # self.print_int('$t0')
                 return '0($sp)', "int", True
@@ -815,8 +817,8 @@ class MIPS_Converter:
                 self.write_to_instruction(string, 2)
 
                 # Store value
-                self.deallocate_mem(4, symbol_table)  # Delete one
-                self.store("$t0", "0($sp)", 'int')  # Overwrite the other
+                self.deallocate_mem(4, symbol_table, comment="Deallocate right operand")  # Delete one
+                self.store("$t0", "0($sp)", 'int', comment="Overwrite left operand")  # Overwrite the other
                 # self.print_int('$t0')
                 return '0($sp)', "int", True
 
@@ -1138,9 +1140,9 @@ class MIPS_Converter:
         self.solve_node(method_node.children[-1], symbol_table)
         # generate returns for returnless bois
         self.leave_stack(symbol_table, len(self.allocation_stack) - self.func_stacksize[0], False)
-        self.allocate_mem(4, symbol_table)
-        if func.symbol_type!= 'void':
-            reg = register_dict(func.symbol_type,0)
+        self.allocate_mem(4, symbol_table, "Space for return value I think")
+        if func.symbol_type != 'void':
+            reg = register_dict(func.symbol_type, 0)
             self.load_immediate(0, reg, func.symbol_type)
 
             self.store(reg, "0($sp)", func.symbol_type)
@@ -1210,7 +1212,7 @@ class MIPS_Converter:
         if not self.write:
             return
         switchval, switchtype, not_pointer = self.solve_math(node.children[0], symbol_table)
-        if not not_pointer :
+        if not not_pointer:
             ...
         reg = '$t0'
         if switchtype is not None and switchtype != 'void':
@@ -1219,7 +1221,7 @@ class MIPS_Converter:
             raise Exception("void can't be cast to int in switchcase")
 
         self.load_word(reg, "0($sp)", switchtype)
-        self.deallocate_mem(4, symbol_table)
+        self.deallocate_mem(4, symbol_table, comment="Deallocate solve math")
         branchval = self.cast_value(reg, switchtype, "int", node.ctx.start)
 
         write = self.write
