@@ -992,12 +992,7 @@ class MIPS_Converter:
         args = node.children[1].children[:]
         arg_types = []
         arg_reg = []
-        for arg in args:
-            reg, symbol_type, not_pointer = self.solve_math(arg, symbol_table)
-            if not not_pointer:
-                ...
-            arg_reg.append(reg)
-            arg_types.append(symbol_type)
+        self.load_arguments(arg_reg, arg_types, args, symbol_table)
 
         if method_name == "print_int":
             self.print_int("0($sp)")
@@ -1026,6 +1021,25 @@ class MIPS_Converter:
                 self.store(register, "0($sp)", method.symbol_type, comment='something with functions')
 
             return "0($sp)", method.symbol_type, True
+
+    def load_arguments(self, arg_reg, arg_types, args, symbol_table):
+        for arg in args:
+            # Update Stack pointers of previous
+            for index, prev_arg_reg in enumerate(arg_reg):
+                if "($sp)" in prev_arg_reg:
+                    offset = int(prev_arg_reg[0])
+                    arg_reg[index] = str(offset + 4) + prev_arg_reg[1:]
+            # Load arg
+            address, symbol_type, not_pointer = self.solve_math(arg, symbol_table)
+            if not not_pointer:
+                reg = register_dict(symbol_type, 0)
+                self.load_word(reg, address, symbol_type, comment="Load value of pointer in %s 1" % reg)
+                self.load_word(reg, "0(%s)" % reg, symbol_type, comment="Load value of pointer in %s 2" % reg)
+                self.store(reg, address, symbol_type, comment="Load value of pointer in %s 2" % reg)
+            if address is None:
+                raise Exception('Compiler Mistake when solving arg')
+            arg_reg.append(address)
+            arg_types.append(symbol_type)
 
     def declare_method(self, method_node: Node, symbol_table: SymbolTable):
         args = []
@@ -1250,7 +1264,8 @@ class MIPS_Converter:
                 self.write_label(labels["condition"])
                 reg, value_type, not_pointer = self.solve_node(child, child.symbol_table)
                 if not not_pointer:
-                    ...
+                    reg = register_dict(value_type, 0)
+                    self.load_word(reg, "0(%s)" % reg, value_type, comment="Load value of pointer in %s 2" % reg)
                 if value_type == 'float':
                     # TODO convert
                     pass
@@ -1324,24 +1339,7 @@ class MIPS_Converter:
                     ))
 
         # Load all arguments into memory
-        for arg in args:
-            # Update Stack pointers of previous
-            for index, prev_arg_reg in enumerate(arg_reg):
-                if "($sp)" in prev_arg_reg:
-                    offset = int(prev_arg_reg[0])
-                    arg_reg[index] = str(offset + 4) + prev_arg_reg[1:]
-            # Load arg
-            address, symbol_type, not_pointer = self.solve_math(arg, symbol_table)
-            if not not_pointer:
-                reg = register_dict(symbol_type, 0)
-                self.load_word(reg, address, symbol_type, comment="Load value of pointer in %s 1" % reg)
-                self.load_word(reg, "0(%s)" % reg, symbol_type, comment="Load value of pointer in %s 2" % reg)
-                self.store(reg, address, symbol_type, comment="Load value of pointer in %s 2" % reg)
-            if address is None:
-                raise Exception('Compiler Mistake when solving print arg')
-            arg_reg.append(address)
-            arg_types.append(symbol_type)
-
+        self.load_arguments(arg_reg, arg_types, args, symbol_table)
 
         print(arg_types)
         # Check that the printed string exists

@@ -1,10 +1,11 @@
 #include <stdio.h>
 
 int main(){
-    int i = 0;
+    int i = 1;
     int* j = &i;
-    if (*j) {
+    while (*j) {
         printf("Hello");
+        *j = 0;
     }
     return 0;
 }
