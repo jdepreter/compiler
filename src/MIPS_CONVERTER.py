@@ -850,7 +850,7 @@ class MIPS_Converter:
                 self.load_word(reg, address, symbol_type, comment="Load value of pointer in %s 1" % reg)
                 self.load_word(reg1, "0(%s)" % reg, symbol_type, comment="Load value of pointer in %s 2" % reg)
 
-            string = "%s %s, %s, 1" % (self.optype[symbol_type][node.children[0].label], reg, reg)
+            string = "%s %s, %s, 1" % (self.optype[symbol_type][node.children[0].label], reg1, reg1)
 
             self.write_to_instruction(string, 2)
 
@@ -861,7 +861,7 @@ class MIPS_Converter:
             else:
                 self.store(reg1, "0(%s)" % reg, symbol_type, comment="Store value at dereferenced pointer")
 
-            self.store(reg, '0($sp)', symbol_type)
+            self.store(reg1, '0($sp)', symbol_type)
 
             return '0($sp)', symbol_type, True
 
