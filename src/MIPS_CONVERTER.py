@@ -530,8 +530,6 @@ class MIPS_Converter:
             variable = node.children[0].label
         elif node.node_type == "Arg_definition":
             variable = node.children[1].label
-        # if node.node_type == 'Arg_definition':
-        #     variable = node.children[1].label
 
         symbol = symbol_table.get_symbol(variable, node.ctx.start)
 
@@ -549,7 +547,7 @@ class MIPS_Converter:
                 else:
                     raise Exception("Initializer element is not constant")
 
-            string = "global_%s%d: %s %s" %(symbol.name, symbol.reg, mips_globals[symbol.symbol_type], value)
+            string = "global_%s%d: %s %s" % (symbol.name, symbol.reg, mips_globals[symbol.symbol_type], value)
             self.write_to_data(string)
             symbol.written = True
             return None, None
@@ -945,7 +943,7 @@ class MIPS_Converter:
         returnreg, return_type, not_pointer = self.solve_node(node.children[0], symbol_table)
         # TODO check if pointer
         if not not_pointer:
-            ...
+            self.load_word(returnreg, "0(%s)" % returnreg, return_type, comment='Load value of pointer (return)')
 
         newtype = self.function_stack[0].symbol_type
         castedreg = self.cast_value(returnreg, return_type, newtype, node.ctx.start)
