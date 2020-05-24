@@ -44,6 +44,7 @@ class MIPS_Converter:
         self.func_stacksize = []
 
         self.data_section = ".data\n"
+        self.string_section = "\n"
         self.instruction_section = ".text\n"
 
     def write_to_file(self, string: str):
@@ -64,6 +65,10 @@ class MIPS_Converter:
         if self.write:
             self.data_section += "  " + string + "\n"
 
+    def write_to_string(self, string: str):
+        if self.write:
+            self.string_section += "  " + string + "\n"
+
     def write_comment(self, string: str, indentation: int = 0):
         """
         Write a comment to the .text section
@@ -80,6 +85,10 @@ class MIPS_Converter:
         if self.write:
             self.instruction_section += indent + string + " # " + comment + "\n"
 
+    def write_seg_fault(self):
+        self.write_label('seg')
+        self.print_string('seg_fault')
+
     def define_strings(self, symbol_table: SymbolTable):
         """
         Add all strings to data section
@@ -88,8 +97,9 @@ class MIPS_Converter:
         """
         all_strings = symbol_table.get_mips_strings()
         for string_value, var_name in all_strings.items():
-            self.write_to_data('%s: .asciiz "%s"' % (var_name, string_value))
+            self.write_to_string('%s: .asciiz "%s"' % (var_name, string_value))
 
+        self.write_to_string('seg_fault: .asciiz "Segmentation Fault"')
         return
 
     def allocate_mem(self, amount, symbol_table: SymbolTable, comment: str = ''):
@@ -141,15 +151,24 @@ class MIPS_Converter:
             self.write_to_instruction(string, 2)
 
     def load_symbol(self, symbol: SymbolType, symbol_table: SymbolTable):
-        # TODO maak dit efficient
+
         self.allocate_mem(4, symbol_table, comment="Allocate for %s" % symbol.name)
-        offset = self.offset_stack[0].get_offset(symbol)
-        if symbol.size is None:
-            self.put_on_top_of_stack("%s($sp)" % offset, symbol.symbol_type)
-            return True
+
+        if symbol.is_global:
+            if symbol.size is None:
+                self.put_on_top_of_stack("global_%s%d" % (symbol.name, symbol.reg), symbol.symbol_type)
+                return True
+            else:
+                self.put_address_on_top_of_stack("global_array_%s%d" % (symbol.name, symbol.reg), symbol.symbol_type)
+                return False
         else:
-            self.put_address_on_top_of_stack("%s($sp)" % offset, symbol.symbol_type)
-            return False
+            offset = self.offset_stack[0].get_offset(symbol)
+            if symbol.size is None:
+                self.put_on_top_of_stack("%s($sp)" % offset, symbol.symbol_type)
+                return True
+            else:
+                self.put_address_on_top_of_stack("%s($sp)" % offset, symbol.symbol_type)
+                return False
 
     def put_on_top_of_stack(self, stack_pointer: str, symbol_type: str):
         operator_type = get_operator_type(symbol_type)
@@ -374,8 +393,9 @@ class MIPS_Converter:
         self.define_strings(current_symbol_table)
 
         self.solve_node(self.ast.startnode, self.ast.startnode.symbol_table)
-
+        self.write_seg_fault()
         self.write_to_file(self.data_section)
+        self.write_to_file(self.string_section)
         self.write_to_file(self.instruction_section)
         # self.solve_llvm_node(self.ast.startnode, current_symbol_table)
 
@@ -652,6 +672,8 @@ class MIPS_Converter:
                 symbol_type = symbol_type[:-dereference_count]
                 self.move("$t2", address, comment="$t0 will be overwritten be solve math")
                 address = "0($t2)"
+                self.deallocate_mem(4, symbol_type, comment="Deallocate space for dereferenced value")
+
 
             value = self.solve_math(node.children[1], symbol_table)
             reg = register_dict(value[1], 0)
@@ -663,6 +685,7 @@ class MIPS_Converter:
             else:
                 self.store(reg, address, symbol_type, comment="Store value at dereferenced pointer")
             self.deallocate_mem(4, symbol_table, comment='deallocate solve math')
+            symbol.assigned = True
             if symbol.is_global:
                 return "global_%s%d" % (symbol.name, symbol.reg), symbol.symbol_type
             return "%s($sp)" % self.offset_stack[0].get_offset(symbol), symbol.symbol_type, address is None
@@ -699,8 +722,8 @@ class MIPS_Converter:
 
             string = "%s %s, %s, %s" % (self.optype[symbol_type][node.label], child_2, child_1, child_2)
             self.write_to_instruction(string, 2)
-            self.deallocate_mem(4, symbol_table)  # Delete one
-            self.store(child_2, "0($sp)", symbol_type)  # Overwrite the other
+            self.deallocate_mem(4, symbol_table, comment="Delete right operand")  # Delete one
+            self.store(child_2, "0($sp)", symbol_type, comment="Overwrite left operand")  # Overwrite the other
 
             return "0($sp)", symbol_type, True
 
@@ -722,15 +745,15 @@ class MIPS_Converter:
             if symbol_type == "float":
                 string = "div.s %s, %s, %s" % (child_2, child_1, child_2)
                 self.write_to_instruction(string, 2)
-                self.deallocate_mem(4, symbol_table)  # Delete one
-                self.store(child_2, "0($sp)", symbol_type)  # Overwrite the other
+                self.deallocate_mem(4, symbol_table, comment="Delete right operand")  # Delete one
+                self.store(child_2, "0($sp)", symbol_type, comment="Overwrite left operand")  # Overwrite the other
             else:
                 string = "%s %s, %s" % (self.optype['int'][node.label], child_1, child_2)
                 self.write_to_instruction(string, 2)
                 string = "mflo $t0"
                 self.write_to_instruction(string, 2)
-                self.deallocate_mem(4, symbol_table)  # Delete one
-                self.store("$t0", "0($sp)", symbol_type)  # Overwrite the other
+                self.deallocate_mem(4, symbol_table, comment="Delete right operand")  # Delete one
+                self.store("$t0", "0($sp)", symbol_type, comment="Overwrite left operand")  # Overwrite the other
 
             return "0($sp)", symbol_type, True
 
@@ -753,8 +776,8 @@ class MIPS_Converter:
             self.write_to_instruction(string, 2)
             string = "mfhi $t0"
             self.write_to_instruction(string, 2)
-            self.deallocate_mem(4, symbol_table)  # Delete one
-            self.store("$t0", "0($sp)", symbol_type)  # Overwrite the other
+            self.deallocate_mem(4, symbol_table, comment="Delete right operand")  # Delete one
+            self.store("$t0", "0($sp)", symbol_type, comment="Overwrite left operand")  # Overwrite the other
 
             return "0($sp)", symbol_type, True
 
@@ -768,8 +791,8 @@ class MIPS_Converter:
             instruction = "and" if node.label == "&&" else "or"
             string = "%s $t0, $t1, $t0" % instruction
             self.write_to_instruction(string, 2)
-            self.deallocate_mem(4, symbol_table)  # Delete one
-            self.store("$t0", "0($sp)", 'int')  # Overwrite the other
+            self.deallocate_mem(4, symbol_table, comment="Delete right operand")  # Delete one
+            self.store("$t0", "0($sp)", 'int', comment="Overwrite left operand")  # Overwrite the other
             # self.print_int('$t0')
             return "0($sp)", 'int', True
 
@@ -803,8 +826,8 @@ class MIPS_Converter:
                 self.write_to_instruction("L_CondEnd%d:" % self.float_branches, 0)
 
                 # Store value
-                self.deallocate_mem(4, symbol_table)  # Delete one
-                self.store("$t0", "0($sp)", 'int')  # Overwrite the other
+                self.deallocate_mem(4, symbol_table, comment="Deallocate right operand")  # Delete one
+                self.store("$t0", "0($sp)", 'int', comment="Overwrite left operand")  # Overwrite the other
                 self.float_branches += 1
                 # self.print_int('$t0')
                 return '0($sp)', "int", True
@@ -814,8 +837,8 @@ class MIPS_Converter:
                 self.write_to_instruction(string, 2)
 
                 # Store value
-                self.deallocate_mem(4, symbol_table)  # Delete one
-                self.store("$t0", "0($sp)", 'int')  # Overwrite the other
+                self.deallocate_mem(4, symbol_table, comment="Deallocate right operand")  # Delete one
+                self.store("$t0", "0($sp)", 'int', comment="Overwrite left operand")  # Overwrite the other
                 # self.print_int('$t0')
                 return '0($sp)', "int", True
 
@@ -849,7 +872,7 @@ class MIPS_Converter:
                 self.load_word(reg, address, symbol_type, comment="Load value of pointer in %s 1" % reg)
                 self.load_word(reg1, "0(%s)" % reg, symbol_type, comment="Load value of pointer in %s 2" % reg)
 
-            string = "%s %s, %s, 1" % (self.optype[symbol_type][node.children[0].label], reg, reg)
+            string = "%s %s, %s, 1" % (self.optype[symbol_type][node.children[0].label], reg1, reg1)
 
             self.write_to_instruction(string, 2)
 
@@ -860,7 +883,7 @@ class MIPS_Converter:
             else:
                 self.store(reg1, "0(%s)" % reg, symbol_type, comment="Store value at dereferenced pointer")
 
-            self.store(reg, '0($sp)', symbol_type)
+            self.store(reg1, '0($sp)', symbol_type)
 
             return '0($sp)', symbol_type, True
 
@@ -1137,9 +1160,9 @@ class MIPS_Converter:
         self.solve_node(method_node.children[-1], symbol_table)
         # generate returns for returnless bois
         self.leave_stack(symbol_table, len(self.allocation_stack) - self.func_stacksize[0], False)
-        self.allocate_mem(4, symbol_table)
-        if func.symbol_type!= 'void':
-            reg = register_dict(func.symbol_type,0)
+        if func.symbol_type != 'void':
+            self.allocate_mem(4, symbol_table, "Space for return value")
+            reg = register_dict(func.symbol_type, 0)
             self.load_immediate(0, reg, func.symbol_type)
 
             self.store(reg, "0($sp)", func.symbol_type)
@@ -1209,7 +1232,7 @@ class MIPS_Converter:
         if not self.write:
             return
         switchval, switchtype, not_pointer = self.solve_math(node.children[0], symbol_table)
-        if not not_pointer :
+        if not not_pointer:
             ...
         reg = '$t0'
         if switchtype is not None and switchtype != 'void':
@@ -1218,7 +1241,7 @@ class MIPS_Converter:
             raise Exception("void can't be cast to int in switchcase")
 
         self.load_word(reg, "0($sp)", switchtype)
-        self.deallocate_mem(4, symbol_table)
+        self.deallocate_mem(4, symbol_table, comment="Deallocate solve math")
         branchval = self.cast_value(reg, switchtype, "int", node.ctx.start)
 
         write = self.write
@@ -1597,6 +1620,7 @@ class MIPS_Converter:
 
     def allocate_global_array(self, symbol, index_node, symbol_table):
         self.solve_node(index_node, symbol_table)
+        self
         size = None
         if index_node.node_type == 'rvalue':
             try:
@@ -1612,6 +1636,8 @@ class MIPS_Converter:
             ))
 
         symbol.size = size
+        symbol.written = True
+        symbol.assigned = True
         string = "global_array_%s%d: .word %d" % (symbol.name, symbol.reg, size)
         self.write_to_data(string)
 
@@ -1623,6 +1649,11 @@ class MIPS_Converter:
         :return:
         """
         self.load_symbol(symbol, symbol_table)  # Address is now at 0($sp) and $t0
+        # Check inbounds
+        loadi = "li $t7, %s" % str(symbol.size-1)
+        compare = "blt $t7, %s, seg" % offset
+        self.write_to_instruction(loadi, 2, comment="Check that memory is in bounds")
+        self.write_to_instruction(compare, 2, comment="Check that memory is in bounds")
         # Add offset
         addition = "sub $t0, $t0, %s" % offset
         for i in range(4):
