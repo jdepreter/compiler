@@ -225,5 +225,10 @@ class Function(unittest.TestCase):
             to_mips("functions/multi_definition.c", "multi_definition", mars=mars)
 
 
+class Array(unittest.TestCase):
+    def test_array(self):
+        self.assertEqual(clear_newlines(to_mips("array.c", "array", mars=mars)), "14 12")
+
+
 if __name__ == '__main__':
     unittest.main()
