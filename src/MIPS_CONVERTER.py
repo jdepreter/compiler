@@ -44,6 +44,7 @@ class MIPS_Converter:
         self.func_stacksize = []
 
         self.data_section = ".data\n"
+        self.string_section = "\n"
         self.instruction_section = ".text\n"
 
     def write_to_file(self, string: str):
@@ -63,6 +64,10 @@ class MIPS_Converter:
         """
         if self.write:
             self.data_section += "  " + string + "\n"
+
+    def write_to_string(self, string: str):
+        if self.write:
+            self.string_section += "  " + string + "\n"
 
     def write_comment(self, string: str, indentation: int = 0):
         """
@@ -88,7 +93,7 @@ class MIPS_Converter:
         """
         all_strings = symbol_table.get_mips_strings()
         for string_value, var_name in all_strings.items():
-            self.write_to_data('%s: .asciiz "%s"' % (var_name, string_value))
+            self.write_to_string('%s: .asciiz "%s"' % (var_name, string_value))
 
         return
 
@@ -141,15 +146,24 @@ class MIPS_Converter:
             self.write_to_instruction(string, 2)
 
     def load_symbol(self, symbol: SymbolType, symbol_table: SymbolTable):
-        # TODO maak dit efficient
+
         self.allocate_mem(4, symbol_table, comment="Allocate for %s" % symbol.name)
-        offset = self.offset_stack[0].get_offset(symbol)
-        if symbol.size is None:
-            self.put_on_top_of_stack("%s($sp)" % offset, symbol.symbol_type)
-            return True
+
+        if symbol.is_global:
+            if symbol.size is None:
+                self.put_on_top_of_stack("global_%s%d" % (symbol.name, symbol.reg), symbol.symbol_type)
+                return True
+            else:
+                self.put_address_on_top_of_stack("global_array_%s%d" % (symbol.name, symbol.reg), symbol.symbol_type)
+                return False
         else:
-            self.put_address_on_top_of_stack("%s($sp)" % offset, symbol.symbol_type)
-            return False
+            offset = self.offset_stack[0].get_offset(symbol)
+            if symbol.size is None:
+                self.put_on_top_of_stack("%s($sp)" % offset, symbol.symbol_type)
+                return True
+            else:
+                self.put_address_on_top_of_stack("%s($sp)" % offset, symbol.symbol_type)
+                return False
 
     def put_on_top_of_stack(self, stack_pointer: str, symbol_type: str):
         operator_type = get_operator_type(symbol_type)
@@ -376,6 +390,7 @@ class MIPS_Converter:
         self.solve_node(self.ast.startnode, self.ast.startnode.symbol_table)
 
         self.write_to_file(self.data_section)
+        self.write_to_file(self.string_section)
         self.write_to_file(self.instruction_section)
         # self.solve_llvm_node(self.ast.startnode, current_symbol_table)
 
@@ -1590,6 +1605,7 @@ class MIPS_Converter:
 
     def allocate_global_array(self, symbol, index_node, symbol_table):
         self.solve_node(index_node, symbol_table)
+        self
         size = None
         if index_node.node_type == 'rvalue':
             try:
@@ -1605,6 +1621,8 @@ class MIPS_Converter:
             ))
 
         symbol.size = size
+        symbol.written = True
+        symbol.assigned = True
         string = "global_array_%s%d: .word %d" % (symbol.name, symbol.reg, size)
         self.write_to_data(string)
 
