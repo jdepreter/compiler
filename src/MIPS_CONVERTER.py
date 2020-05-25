@@ -1,5 +1,5 @@
 from src.CustomExceptions import *
-from src.helperfuncs import get_type_and_stars, get_return_type, allowed_operation
+from src.helperfuncs import *
 from src.MIPS_Operations import *
 from src.AST import *
 from src.symbolTables import *
@@ -1088,6 +1088,7 @@ class MIPS_Converter:
 
         else:
             method = node.symbol_table.get_written_method(method_name, arg_types, node.ctx.start)
+            check_arg_count(arg_types, args, method, method_name, node)
             self.go_to_label_linked(method.internal_name)
             register = register_dict(method.symbol_type, 0)
             if method.symbol_type != "void":
