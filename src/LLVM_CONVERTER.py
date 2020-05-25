@@ -446,7 +446,7 @@ class LLVM_Converter:
 
     def solve_math(self, node, symbol_table):
         string = ''
-        if node.label in ['+', '-', '*', '/', '%']:
+        if node.label in ['+', '-', '*', '/', '%'] and node.node_type != 'rvalue':
             reg = self.register
             self.register += 1
             child1 = self.solve_math(node.children[0], symbol_table)
@@ -467,7 +467,7 @@ class LLVM_Converter:
             self.write_to_file(string)
             return '%r' + str(reg), symbol_type
 
-        elif node.label == '&&':
+        elif node.label == '&&' and node.node_type != 'rvalue':
             reg = self.register
             self.register += 1
             child1 = self.solve_math(node.children[0], symbol_table)
@@ -479,7 +479,7 @@ class LLVM_Converter:
             )
             self.write_to_file(string)
             return '%r' + str(reg), "int"
-        elif node.label == '||':
+        elif node.label == '||' and node.node_type != 'rvalue':
             reg = self.register
             self.register += 1
             child1 = self.solve_math(node.children[0], symbol_table)
@@ -492,7 +492,7 @@ class LLVM_Converter:
             self.write_to_file(string)
             return '%r' + str(reg), "int"
 
-        elif node.label in ['==', '!=', '<', '>', '<=', '>=']:
+        elif node.label in ['==', '!=', '<', '>', '<=', '>='] and node.node_type != 'rvalue':
             reg = self.register
             self.register += 1
             child1 = self.solve_math(node.children[0], symbol_table)
