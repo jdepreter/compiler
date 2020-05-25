@@ -1010,10 +1010,7 @@ class MIPS_Converter:
 
                     symbol_type = symbol_type[:-symbol_type.count("*")] if count > 0 else symbol_type
 
-                float_or_int_reg = register_dict(symbol_type, 0)
-
-                # self.load_word(float_or_int_reg, "0(%s)" % reg, symbol_type, 'Load value at address')
-                self.store(float_or_int_reg, '0($sp)', symbol_type, 'store reference value on top')
+                self.store('$t0', '0($sp)', 'int', 'store reference value on top')
 
                 return "0($sp)", symbol_type, False
 

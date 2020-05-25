@@ -1,6 +1,6 @@
 #include <stdio.h>
 
-float main(){
+int main(){
     float f = 3.5;
     float* fp = &f;
     float f2 = 4.5;
