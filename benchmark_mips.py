@@ -64,7 +64,7 @@ expected_output_semantic = {
     'incompatibleTypes4.c': 'pointer type cannot be operated on',
     'incompatibleTypes5.c': '[Error] Line 3, Position 10: variable x is not initialised',
     'incompatibleTypes6.c': "Segmentation fault (core dumped)\nCommand 'clang ./llvm/incompatibleTypes6.ll -o ./llvm/incompatibleTypes6 && ./llvm/incompatibleTypes6' returned non-zero exit status 139.",
-    'incompatibleTypes7.c': '',  #'[Warning] line 5: implicit cast from char to int',
+    'incompatibleTypes7.c': '\n',  #'[Warning] line 5: implicit cast from char to int',
     'invalidIncludeError.c': '[Syntax Error] Line 1 Position 25: token recognition error at: \'.\'',  #
     'invalidLoopControlStatement.c': '[Error] Line 2 Position 1 continue statement not within loop',
     'invalidUnaryOperation.c': "[Syntax Error] Line 4 Position 24: no viable alternative at input 'printf(\"%d; \",9++'",
