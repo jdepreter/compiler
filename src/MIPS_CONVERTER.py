@@ -871,7 +871,6 @@ class MIPS_Converter:
             child_1 = self.cast_value(register_dict(child1[1], 1), child1[1], symbol_type, node.ctx.start)
             child_2 = self.cast_value(register_dict(child2[1], 0), child2[1], symbol_type, node.ctx.start)
 
-            # TODO floats >, >= testen
             if symbol_type == 'float':
                 string = "%s %s, %s" % (self.bool_dict[symbol_type][node.label], child_1, child_2)
                 self.write_to_instruction(string, 2)
