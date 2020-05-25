@@ -1,10 +1,6 @@
-#include <stdio.h>
-
 int main(){
-    char i = 1;
-    char j[6];
-
-    scanf("%5s", j);
-
-    printf("j is %s", j);
+    int i = 1;
+    int* j = &i;
+    int h = -*j;
+    printf("%d", h);
 }

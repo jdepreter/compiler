@@ -58,13 +58,13 @@ expected_output_semantic = {
     'functionRedefinition1.c': '[Error] Line 7, Position 0: Duplicate definition of method f ',
     'functionRedefinition2.c': '[Error] Line 7, Position 0: Duplicate definition of method f ',
     'functionRedefinition3.c': '[Error] Line 7, Position 0: Duplicate definition of method f ',
-    'incompatibleTypes1.c': '',
-    'incompatibleTypes2.c': '',  # '[Warning] line 4: implicit cast from char to int',  #
+    'incompatibleTypes1.c': '\n',
+    'incompatibleTypes2.c': '\n',  # '[Warning] line 4: implicit cast from char to int',  #
     'incompatibleTypes3.c': 'Can\'t cast void',
     'incompatibleTypes4.c': 'pointer type cannot be operated on',
     'incompatibleTypes5.c': '[Error] Line 3, Position 10: variable x is not initialised',
     'incompatibleTypes6.c': "Segmentation fault (core dumped)\nCommand 'clang ./llvm/incompatibleTypes6.ll -o ./llvm/incompatibleTypes6 && ./llvm/incompatibleTypes6' returned non-zero exit status 139.",
-    'incompatibleTypes7.c': '',  #'[Warning] line 5: implicit cast from char to int',
+    'incompatibleTypes7.c': '\n',  #'[Warning] line 5: implicit cast from char to int',
     'invalidIncludeError.c': '[Syntax Error] Line 1 Position 25: token recognition error at: \'.\'',  #
     'invalidLoopControlStatement.c': '[Error] Line 2 Position 1 continue statement not within loop',
     'invalidUnaryOperation.c': "[Syntax Error] Line 4 Position 24: no viable alternative at input 'printf(\"%d; \",9++'",
@@ -87,42 +87,42 @@ expected_output_semantic = {
     'variableRedefinition6.c': '[Error] Line 3, Position 0: Duplicate declaration of variable x ',
 }
 
-print("Correct Code: ")
-base_path = os.getcwd() + '/src/tests/benchmark1/CorrectCode'
-with os.scandir(base_path) as entries:
-    for entry in entries:
-        if entry.is_file():
-            try:
-                if entry.name == '.DS_Store':
-                    continue
-                print(entry.name)
-                output = to_mips('./src/tests/benchmark1/CorrectCode/' + entry.name, entry.name.split('.')[0])
-                if output != expected_output_correct[entry.name]:
-                    print("^", output)
-                    print("^", expected_output_correct[entry.name])
-                    # quit(1)
-                else:
-                    print(output)
-                print(entry.name, 'compiled and executed without errors')
-            except Exception as e:
-                print(e)
-                print(entry.name, 'failed')
-
-# print("Semantic Errors: ")
-# base_path = os.getcwd() + '/src/tests/benchmark1/SemanticErrors/'
+# print("Correct Code: ")
+# base_path = os.getcwd() + '/src/tests/benchmark1/CorrectCode'
 # with os.scandir(base_path) as entries:
 #     for entry in entries:
 #         if entry.is_file():
 #             try:
+#                 if entry.name == '.DS_Store':
+#                     continue
 #                 print(entry.name)
-#                 output = to_mips('./src/tests/benchmark1/SemanticErrors/' + entry.name, entry.name.split('.')[0])
-#                 if output != expected_output_semantic[entry.name]:
+#                 output = to_mips('./src/tests/benchmark1/CorrectCode/' + entry.name, entry.name.split('.')[0])
+#                 if output != expected_output_correct[entry.name]:
 #                     print("^", output)
-#                     print("^", expected_output_semantic[entry.name])
+#                     print("^", expected_output_correct[entry.name])
 #                     # quit(1)
 #                 else:
 #                     print(output)
 #                 print(entry.name, 'compiled and executed without errors')
 #             except Exception as e:
 #                 print(e)
-#                 print(entry.name, 'Error as Expected')
+#                 print(entry.name, 'failed')
+
+print("Semantic Errors: ")
+base_path = os.getcwd() + '/src/tests/benchmark1/SemanticErrors/'
+with os.scandir(base_path) as entries:
+    for entry in entries:
+        if entry.is_file():
+            try:
+                print(entry.name)
+                output = to_mips('./src/tests/benchmark1/SemanticErrors/' + entry.name, entry.name.split('.')[0])
+                if output != expected_output_semantic[entry.name]:
+                    print("^", output)
+                    print("^", expected_output_semantic[entry.name])
+                    # quit(1)
+                else:
+                    print(output)
+                print(entry.name, 'compiled and executed without errors')
+            except Exception as e:
+                print(e)
+                print(entry.name, 'Error as Expected')

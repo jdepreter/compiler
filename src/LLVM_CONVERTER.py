@@ -744,22 +744,7 @@ class LLVM_Converter:
 
         method = node.symbol_table.get_written_method(method_name, arg_types, node.ctx.start)
 
-        if len(method.arguments) < len(arg_types):
-            error = args[len(method.arguments)].ctx.start
-            raise Exception("[Error] Line {}, Position {}: Too many arguments for calling {}".format(
-                error.line, error.column, method_name
-            ))
-
-        elif len(method.arguments) > len(arg_types):
-            if len(arg_types) > 0:
-                error = args[-1].ctx.start
-            else:
-                error = node.ctx.start
-            raise Exception(
-                "[Error] Line {}, Position {}: Too few arguments for calling {} missing arg(s) with type(s): {}".format(
-                    error.line, error.column, method_name, ', '.join(method.arguments[len(args):])
-                )
-            )
+        check_arg_count(arg_types, args, method, method_name, node)
 
         for i, arg_type in enumerate(arg_types):
             if arg_type != method.arguments[i]:

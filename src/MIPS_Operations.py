@@ -63,8 +63,8 @@ mips_operators = {
     },
     'char': {
         'li': 'li',
-        'lw': 'lw',
-        'sw': 'sw',
+        'lw': 'lb',
+        'sw': 'sb',
         'neg': 'neg'
     },
     'float': {
@@ -76,8 +76,8 @@ mips_operators = {
 }
 
 mips_globals = {
-    "float":".float",
-    "char": ".word",
+    "float": ".float",
+    "char": ".byte",
     "char*": ".asciiz",
     "int": ".word"
 

@@ -64,3 +64,23 @@ def allowed_operation(symbol_type1, symbol_type2, operation, ctx):
             ctx.line, ctx.column,
             symbol_type1, operation, symbol_type2
         ))
+
+
+def check_arg_count(arg_types, args, method, method_name, node):
+    if len(method.arguments) < len(arg_types):
+        error = args[len(method.arguments)].ctx.start
+        raise Exception("[Error] Line {}, Position {}: Too many arguments for calling {}".format(
+            error.line, error.column, method_name
+        ))
+
+    elif len(method.arguments) > len(arg_types):
+        if len(arg_types) > 0:
+            error = args[-1].ctx.start
+        else:
+            error = node.ctx.start
+        raise Exception(
+            "[Error] Line {}, Position {}: Too few arguments for calling {} missing arg(s) with type(s): {}".format(
+                error.line, error.column, method_name, ', '.join(method.arguments[len(args):])
+            )
+        )
+

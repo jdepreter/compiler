@@ -1,5 +1,5 @@
 from src.CustomExceptions import *
-from src.helperfuncs import get_type_and_stars, get_return_type, allowed_operation
+from src.helperfuncs import *
 from src.MIPS_Operations import *
 from src.AST import *
 from src.symbolTables import *
@@ -156,7 +156,7 @@ class MIPS_Converter:
         self.allocate_mem(4, symbol_table, comment="Allocate for %s" % symbol.name)
 
         if symbol.is_global:
-            if symbol.size is None:
+            if not symbol.size:
                 self.put_on_top_of_stack("global_%s%d" % (symbol.name, symbol.reg), symbol.symbol_type)
                 return True
             else:
@@ -164,7 +164,7 @@ class MIPS_Converter:
                 return False
         else:
             offset = self.offset_stack[0].get_offset(symbol)
-            if symbol.size is None:
+            if not symbol.size:
                 self.put_on_top_of_stack("%s($sp)" % offset, symbol.symbol_type)
                 return True
             else:
@@ -653,8 +653,11 @@ class MIPS_Converter:
             # Check if array
             address = None
             if '[]' in str(node.children[0].label):
-                # TODO array element getter
                 index_address, value_type, not_pointer = self.solve_math(node.children[0].children[-1], symbol_table)
+                if value_type not in ['char', 'int']:
+                    raise Exception("Error Line {}, Position {}: array subscript is not an integer".format(
+                        node.children[0].children[-1].ctx.start.line, node.children[0].children[-1].ctx.start.column
+                    ))
                 offset = register_dict(value_type, 1)
                 self.load_word(offset, "%s" % index_address, value_type, comment="Move value to temp register")
                 if not not_pointer:
@@ -713,10 +716,20 @@ class MIPS_Converter:
             # # Check if current op is allowed
             allowed_operation(child1[1], child2[1], node.label, node.ctx.start)
             symbol_type = get_return_type(child1[1], child2[1])
-            # Load from address if required
 
-            #
-            # # Cast if required
+            # Load from address if required
+            child1_reg = register_dict(child1[1], 1)
+            child2_reg = register_dict(child2[1], 0)
+            if not child1[2]:
+                self.load_word(child1_reg, "4($sp)", child1[1])
+                self.load_word(child1_reg, "0(%s)" % child1_reg, child1[1])
+                self.store(child1_reg, "4($sp)", child1[1])
+            if not child2[2]:
+                self.load_word(child2_reg, "0($sp)", child2[1])
+                self.load_word(child2_reg, "0(%s)" % child2_reg, child2[1])
+                self.store(child2_reg, "0($sp)", child2[1])
+
+            # Cast if required
             self.load_word(register_dict(child2[1], 0), "0($sp)", child2[1])
             self.load_word(register_dict(child1[1], 1), "4($sp)", child1[1])
 
@@ -734,11 +747,23 @@ class MIPS_Converter:
             child1 = self.solve_math(node.children[0], symbol_table)
             child2 = self.solve_math(node.children[1], symbol_table)
 
-            # # Check if current op is allowed
+            # Check if current op is allowed
             allowed_operation(child1[1], child2[1], node.label, node.ctx.start)
             symbol_type = get_return_type(child1[1], child2[1])
-            #
-            # # Cast if required
+
+            # Load from address if required
+            child1_reg = register_dict(child1[1], 1)
+            child2_reg = register_dict(child2[1], 0)
+            if not child1[2]:
+                self.load_word(child1_reg, "4($sp)", child1[1])
+                self.load_word(child1_reg, "0(%s)" % child1_reg, child1[1])
+                self.store(child1_reg, "4($sp)", child1[1])
+            if not child2[2]:
+                self.load_word(child2_reg, "0($sp)", child2[1])
+                self.load_word(child2_reg, "0(%s)" % child2_reg, child2[1])
+                self.store(child2_reg, "0($sp)", child2[1])
+
+            # Cast if required
             self.load_word(register_dict(child2[1], 0), "0($sp)", child2[1])
             self.load_word(register_dict(child1[1], 1), "4($sp)", child1[1])
 
@@ -764,11 +789,23 @@ class MIPS_Converter:
             child1 = self.solve_math(node.children[0], symbol_table)
             child2 = self.solve_math(node.children[1], symbol_table)
 
-            # # Check if current op is allowed
+            # Check if current op is allowed
             allowed_operation(child1[1], child2[1], node.label, node.ctx.start)
             symbol_type = get_return_type(child1[1], child2[1])
-            #
-            # # Cast if required
+
+            # Load from address if required
+            child1_reg = register_dict(child1[1], 1)
+            child2_reg = register_dict(child2[1], 0)
+            if not child1[2]:
+                self.load_word(child1_reg, "4($sp)", child1[1])
+                self.load_word(child1_reg, "0(%s)" % child1_reg, child1[1])
+                self.store(child1_reg, "4($sp)", child1[1])
+            if not child2[2]:
+                self.load_word(child2_reg, "0($sp)", child2[1])
+                self.load_word(child2_reg, "0(%s)" % child2_reg, child2[1])
+                self.store(child2_reg, "0($sp)", child2[1])
+
+            # Cast if required
             self.load_word(register_dict(child2[1], 0), "0($sp)", child2[1])
             self.load_word(register_dict(child1[1], 1), "4($sp)", child2[1])
 
@@ -788,15 +825,27 @@ class MIPS_Converter:
             # Calculate values and store on stack
             child1 = self.solve_math(node.children[0], symbol_table)
             child2 = self.solve_math(node.children[1], symbol_table)
+
+            # Load from address if required
+            child1_reg = register_dict(child1[1], 1)
+            child2_reg = register_dict(child2[1], 0)
+            if not child1[2]:
+                self.load_word(child1_reg, "4($sp)", child1[1])
+                self.load_word(child1_reg, "0(%s)" % child1_reg, child1[1])
+                self.store(child1_reg, "4($sp)", child1[1])
+            if not child2[2]:
+                self.load_word(child2_reg, "0($sp)", child2[1])
+                self.load_word(child2_reg, "0(%s)" % child2_reg, child2[1])
+                self.store(child2_reg, "0($sp)", child2[1])
+
             # No cast because bitwise
-            self.load_word("$t0", "0($sp)", 'int')
-            self.load_word("$t1", "4($sp)", 'int')
+            self.load_word("$t0", "0($sp)", 'int')  # Child2
+            self.load_word("$t1", "4($sp)", 'int')  # Child1
             instruction = "and" if node.label == "&&" else "or"
             string = "%s $t0, $t1, $t0" % instruction
             self.write_to_instruction(string, 2)
             self.deallocate_mem(4, symbol_table, comment="Delete right operand")  # Delete one
             self.store("$t0", "0($sp)", 'int', comment="Overwrite left operand")  # Overwrite the other
-            # self.print_int('$t0')
             return "0($sp)", 'int', True
 
         elif node.label in ['==', '!=', '<', '>', '<=', '>=']:
@@ -804,11 +853,23 @@ class MIPS_Converter:
             child1 = self.solve_math(node.children[0], symbol_table)
             child2 = self.solve_math(node.children[1], symbol_table)
 
-            # # Check if current op is allowed
+            # Check if current op is allowed
             allowed_operation(child1[1], child2[1], node.label, node.ctx.start)
             symbol_type = get_return_type(child1[1], child2[1])
-            #
-            # # Cast if required
+
+            # Load from address if required
+            child1_reg = register_dict(child1[1], 1)
+            child2_reg = register_dict(child2[1], 0)
+            if not child1[2]:
+                self.load_word(child1_reg, "4($sp)", child1[1])
+                self.load_word(child1_reg, "0(%s)" % child1_reg, child1[1])
+                self.store(child1_reg, "4($sp)", child1[1])
+            if not child2[2]:
+                self.load_word(child2_reg, "0($sp)", child2[1])
+                self.load_word(child2_reg, "0(%s)" % child2_reg, child2[1])
+                self.store(child2_reg, "0($sp)", child2[1])
+
+            # Cast if required
             self.load_word(register_dict(child2[1], 0), "0($sp)", child2[1])
             self.load_word(register_dict(child1[1], 1), "4($sp)", child1[1])
 
@@ -816,7 +877,6 @@ class MIPS_Converter:
             child_2 = self.cast_value(register_dict(child2[1], 0), child2[1], symbol_type, node.ctx.start)
 
             # TODO floats >, >= testen
-
             if symbol_type == 'float':
                 string = "%s %s, %s" % (self.bool_dict[symbol_type][node.label], child_1, child_2)
                 self.write_to_instruction(string, 2)
@@ -832,7 +892,6 @@ class MIPS_Converter:
                 self.deallocate_mem(4, symbol_table, comment="Deallocate right operand")  # Delete one
                 self.store("$t0", "0($sp)", 'int', comment="Overwrite left operand")  # Overwrite the other
                 self.float_branches += 1
-                # self.print_int('$t0')
                 return '0($sp)', "int", True
 
             else:
@@ -842,7 +901,6 @@ class MIPS_Converter:
                 # Store value
                 self.deallocate_mem(4, symbol_table, comment="Deallocate right operand")  # Delete one
                 self.store("$t0", "0($sp)", 'int', comment="Overwrite left operand")  # Overwrite the other
-                # self.print_int('$t0')
                 return '0($sp)', "int", True
 
         elif node.node_type == 'Increment_var':
@@ -880,7 +938,6 @@ class MIPS_Converter:
             self.write_to_instruction(string, 2)
 
             sym = symbol_table.get_written_symbol(node.children[1].label, node.ctx.start)
-            # TODO klopt dit
             if not_pointer:
                 self.store_symbol(reg, sym)
             else:
@@ -895,10 +952,15 @@ class MIPS_Converter:
 
         elif node.node_type == 'unary min':
             value = self.solve_math(node.children[1], symbol_table)
+            address = "0($sp)"
             reg = register_dict(value[1], 0)
-            self.load_word(reg, '0($sp)', value[1])
+            if not value[2]:
+                self.load_word(reg, address, value[1])
+                address = "0(%s)" % reg
+
+            self.load_word(reg, address, value[1])
             operator_type = get_operator_type(value[1])
-            string = "%s %s" % (mips_operators[operator_type]['neg'], reg)
+            string = "%s %s, %s" % (mips_operators[operator_type]['neg'], reg, reg)
             self.write_to_instruction(string, 2)
 
             self.store(reg, '0($sp)', value[1])
@@ -938,7 +1000,7 @@ class MIPS_Converter:
             self.allocate_mem(4, symbol_table, 'allocate space for instance of %s' % node.label)
             symbol = symbol_table.get_assigned_symbol(node.label, node.ctx.start)
             symbol_type = str(symbol.symbol_type)
-            if symbol.size is not None:
+            if symbol.size:
                 self.get_index_of_array(symbol, "$0", symbol_table)  # Load address of element in 0($sp) and $t0
 
             # Dereference if needed
@@ -946,7 +1008,7 @@ class MIPS_Converter:
                 dereference_count = node.label.count('*')
                 pointer_reg = "%s($sp)" % self.offset_stack[0].get_offset(symbol) if reg is None else reg
                 # TODO add float
-                reg = self.dereference(pointer_reg, dereference_count, "int")   # reg is the address of the value we want
+                self.dereference(pointer_reg, dereference_count, "int")   # reg is the address of the value we want
                 symbol_type = symbol_type[:-dereference_count]
 
                 float_or_int_reg = register_dict(symbol_type, 0)
@@ -957,8 +1019,8 @@ class MIPS_Converter:
                 return "0($sp)", symbol_type, False
 
             else:
-                if symbol.size is not None:
-                    return "0($sp)", symbol_type, True
+                if symbol.size:
+                    return "0($sp)", symbol_type + '*', True
 
                 if symbol.is_global:
                     reg = "global_%s%d" % (symbol.name, symbol.reg)
@@ -977,6 +1039,10 @@ class MIPS_Converter:
 
             symbol = symbol_table.get_assigned_symbol(node.label, node.ctx.start)
             address, value_type, not_pointer = self.solve_math(node.children[-1], symbol_table)
+            if value_type not in ['char', 'int']:
+                raise Exception("Error Line {}, Position {}: array subscript is not an integer".format(
+                    node.children[-1].ctx.start.line, node.children[-1].ctx.start.column
+                ))
             offset = register_dict(value_type, 1)
             self.load_word(offset, "%s" % address, value_type, comment="Move value to temp register")
             if not not_pointer:
@@ -1026,7 +1092,6 @@ class MIPS_Converter:
                 'Error at line: {} column :{} void function should not return value '.format(node.ctx.start.line,
                                                                                              node.ctx.start.column))
         returnreg, return_type, not_pointer = self.solve_node(node.children[0], symbol_table)
-        # TODO check if pointer
         if not not_pointer:
             self.load_word(returnreg, "0(%s)" % returnreg, return_type, comment='Load value of pointer (return)')
 
@@ -1089,6 +1154,7 @@ class MIPS_Converter:
 
         else:
             method = node.symbol_table.get_written_method(method_name, arg_types, node.ctx.start)
+            check_arg_count(arg_types, args, method, method_name, node)
             self.go_to_label_linked(method.internal_name)
             register = register_dict(method.symbol_type, 0)
             if method.symbol_type != "void":
@@ -1106,7 +1172,6 @@ class MIPS_Converter:
             return "0($sp)", method.symbol_type, True
 
     def load_arguments(self, arg_reg, arg_types, args, symbol_table):
-
         for arg in args:
             # Update Stack pointers of previous
             for index, prev_arg_reg in enumerate(arg_reg):
@@ -1156,12 +1221,10 @@ class MIPS_Converter:
         write = self.write
         self.write = False
         for i in range(len(args)):
-            symbol = self.allocate_node(method_node.children[2].children[i],
-                                        method_node.children[2].children[i].symbol_table)
+            self.allocate_node(method_node.children[2].children[i], method_node.children[2].children[i].symbol_table)
 
         self.write = write
 
-        # m = list(map(self.convert2, args))
         if func.internal_name == 'main':
             self.write_to_instruction(".globl %s" % func.internal_name)
         self.write_to_instruction(func.internal_name + ":", 0)
@@ -1177,7 +1240,6 @@ class MIPS_Converter:
             self.store(reg, "0($sp)", func.symbol_type)
         if func.internal_name != 'main':
             self.go_to_register('$ra')
-
 
         self.function_stack.pop(0)
         self.func_stacksize.pop(0)
@@ -1241,15 +1303,16 @@ class MIPS_Converter:
         if not self.write:
             return
         switchval, switchtype, not_pointer = self.solve_math(node.children[0], symbol_table)
-        if not not_pointer:
-            ...
-        reg = '$t0'
-        if switchtype is not None and switchtype != 'void':
-            reg = register_dict(switchtype, 0)
-        else:
+
+        if switchtype is None or switchtype == 'void':
             raise Exception("void can't be cast to int in switchcase")
 
-        self.load_word(reg, "0($sp)", switchtype)
+        reg = register_dict(switchtype, 0)
+        if not not_pointer:
+            self.load_word(reg, switchval, "int", comment="Load value from pointer")
+            switchval = "0(%s)" % reg
+
+        self.load_word(reg, switchval, switchtype)
         self.deallocate_mem(4, symbol_table, comment="Deallocate solve math")
         branchval = self.cast_value(reg, switchtype, "int", node.ctx.start)
 
@@ -1264,7 +1327,6 @@ class MIPS_Converter:
 
         self.break_stack.insert(0, "label%d" % default_label)
         self.label += len(node.children)
-        string = ""
         labels = []
 
         default = False
@@ -1273,8 +1335,9 @@ class MIPS_Converter:
             if curr.label == "default":
                 if default:
                     raise Exception(
-                        "[Error] line {} position {} Secondary definition of default".format(node.ctx.start.line,
-                                                                                             node.ctx.start.column))
+                        "[Error] line {} position {} Secondary definition of default".format(
+                            node.ctx.start.line, node.ctx.start.column
+                        ))
 
                 default = True
                 default_label = current_label + i - 1
@@ -1282,15 +1345,15 @@ class MIPS_Converter:
             else:
                 if curr.label in labels:
                     raise Exception(
-                        "[Error] line {} position {} Secondary definition of {}".format(node.ctx.start.line,
-                                                                                        node.ctx.start.column,
-                                                                                        curr.label))
+                        "[Error] line {} position {} Secondary definition of {}".format(
+                            node.ctx.start.line, node.ctx.start.column, curr.label
+                        ))
                 self.load_immediate(curr.label, '$t1', 'int')
                 string = "beq %s, %s, label%d" % (branchval, "$t1", (current_label + i - 1))
                 self.write_to_instruction(string, 2)
                 labels.append(curr.label)
 
-        self.go_to_label("label%d" % (default_label))
+        self.go_to_label("label%d" % default_label)
 
         for i in range(1, len(node.children)):
             continue_writing = continue_writing or self.write or self.breaks
@@ -1342,6 +1405,7 @@ class MIPS_Converter:
         else:
             # Go to conditional
             self.go_to_label(labels["condition"])
+
         self.register += 1
         update = False
         for child in node.children:
@@ -1389,7 +1453,6 @@ class MIPS_Converter:
         args = node.children[1].children[:]
         arg_types = []
         arg_reg = []
-        arg_reg_types = []
         expected_args = []
         i = 0
         print_string = args[0].label
@@ -1429,13 +1492,12 @@ class MIPS_Converter:
         # Load all arguments into memory
         self.load_arguments(arg_reg, arg_types, args, symbol_table)
 
-        print(arg_types)
         # Check that the printed string exists
         if print_string is None:
-            raise Exception("what")  # TODO
+            raise Exception("Compiler mistake 2 :(")
 
         # Split strings into parts and print each part separately
-        partial_strings = re.split("%.", print_string)
+        partial_strings = re.split("%(?:[0-9]*s|.)", print_string)
         for i, partial_string in enumerate(partial_strings):
             # Print string
             self.print_string(symbol_table.get_mips_strings()[partial_string])
@@ -1466,7 +1528,6 @@ class MIPS_Converter:
         args = node.children[1].children[:]
         arg_types = []
         arg_reg = []
-        arg_reg_types = []
         expected_args = []
         i = 0
         print_string = args[0].label
@@ -1489,12 +1550,10 @@ class MIPS_Converter:
                         val = full_string_print[number]
                         if val == 's':
                             try:
-                                fullval =int(full_string_print[:number])
+                                fullval = int(full_string_print[:number])
                                 expected_args += [('char*',fullval)]
                             except:
                                 ...
-
-
                 i += 1
             i += 1
 
@@ -1516,20 +1575,18 @@ class MIPS_Converter:
         # set all arguments to written
         symbols = []
         for arg in args[1:]:
-
             sym1 = symbol_table.get_symbol(arg.label, node.ctx.start)
             sym1.assigned = True
-
             symbols.append(sym1)
+
         # Load all arguments into memory
         self.load_arguments(arg_reg, arg_types, args, symbol_table)
-        print(arg_types)
         # Check that the printed string exists
         if print_string is None:
-            raise Exception("what")  # TODO
+            raise Exception("Compiler mistake :(")
 
         # Split strings into parts and print each part separately
-        partial_strings = re.split("%.", print_string)
+        partial_strings = re.split("%(?:[0-9]*s|.)", print_string)
         for i, partial_string in enumerate(partial_strings):
             # Print string
             self.print_string(symbol_table.get_mips_strings()[partial_string])
@@ -1540,20 +1597,20 @@ class MIPS_Converter:
                     self.scan_int(arg_reg[i + 1])
                 elif expected_args[i] == 'float':
                     self.scan_float(arg_reg[i + 1])
-                elif expected_args[i] == 'char' and symbols[i].size == False:
+                elif expected_args[i] == 'char' and symbols[i].size is False:
                     self.scan_char(arg_reg[i + 1])
                 elif expected_args[i][0] == 'char*':
                     self.scan_string(arg_reg[i + 1], expected_args[i][1])
 
     def scan_int(self, reg):
         """
-                li $v0, 5
-                syscall
-                lw $t0, reg
-                sw $v0, 0($t0)
-                :param reg: register to put read value
-                :return:
-                """
+        li $v0, 5
+        syscall
+        lw $t0, reg
+        sw $v0, 0($t0)
+        :param reg: register to put read value
+        :return:
+        """
         if '(' in reg:
             self.load_word("$t0", reg, "int", comment='Load location for storing')
             reg = "$t0"
@@ -1563,13 +1620,13 @@ class MIPS_Converter:
 
     def scan_char(self, reg):
         """
-                li $v0, 12
-                syscall
-                lw $t0, reg
-                sw $v0, 0($t0)
-                :param reg: register to put read value
-                :return:
-                """
+        li $v0, 12
+        syscall
+        lw $t0, reg
+        sw $v0, 0($t0)
+        :param reg: register to put read value
+        :return:
+        """
         if '(' in reg:
             self.load_word("$t0", reg, "int", comment='Load location for storing')
             reg = "$t0"
@@ -1579,13 +1636,13 @@ class MIPS_Converter:
 
     def scan_float(self, reg):
         """
-                li $v0, 6
-                syscall
-                lw $t0, reg
-                sw $f0, 0($t0)
-                :param reg: register to put read value
-                :return:
-                """
+        li $v0, 6
+        syscall
+        lw $t0, reg
+        sw $f0, 0($t0)
+        :param reg: register to put read value
+        :return:
+        """
         if '(' in reg:
             self.load_word("$t0", reg, "int", comment='Load location for storing')
             reg = "$t0"
@@ -1595,13 +1652,13 @@ class MIPS_Converter:
 
     def scan_string(self, reg, size):
         """
-                li $v0, 8
-                syscall
-                lw $t0, reg
-                sw $f0, 0($t0)
-                :param reg: register to put read value
-                :return:
-                """
+        li $v0, 8
+        syscall
+        lw $t0, reg
+        sw $f0, 0($t0)
+        :param reg: register to put read value
+        :return:
+        """
         if '(' in reg:
             self.load_word("$t0", reg, "int", comment='Load location for storing')
             reg = "$t0"
@@ -1611,8 +1668,6 @@ class MIPS_Converter:
         self.load_immediate(8, '$v0', 'int')
         self.write_to_instruction("syscall", 2)
 
-
-    # Pointers
     def dereference(self, pointer_register: str, dereference_count: int, symbol_type: str) -> str:
         """
         Dereference a register
@@ -1622,17 +1677,15 @@ class MIPS_Converter:
         :return: final address
         """
         # Load base pointer
-        # self.load_word("$t0", pointer_register, "int", comment='Load pointer before dereference')
         self.load_address("$t0", pointer_register, comment='Dereference once')
         for i in range(dereference_count):
-            #     # Load value that is stored address that was stored in pointer
+            # Load value that is stored address that was stored in pointer
             self.load_word("$t0", "0($t0)", symbol_type, comment='Dereference once')  # Load from address in $t0
 
         return "$t0"
 
     def allocate_global_array(self, symbol, index_node, symbol_table):
         self.solve_node(index_node, symbol_table)
-        self
         size = None
         if index_node.node_type == 'rvalue':
             try:
@@ -1668,7 +1721,8 @@ class MIPS_Converter:
         self.write_to_instruction(compare, 2, comment="Check that memory is in bounds")
         # Add offset
         addition = "sub $t0, $t0, %s" % offset
-        for i in range(4):
+        length = 1 if symbol.symbol_type == 'char' else 4
+        for i in range(length):
             self.write_to_instruction(addition, 2, comment="Load address of array[index]")
 
         self.store("$t0", "0($sp)", "int", comment="Store address on stack")   # overwrite 0($sp)
