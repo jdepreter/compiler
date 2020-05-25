@@ -47,9 +47,9 @@ bool_dict = {
     'float': {
         '==': 'c.eq.s',
         '!=': 'c.ne.s',
-        '>': 'c.gt.s',
+        '>': 'c.le.s',
         '<': 'c.lt.s',
-        '>=': 'c.ge.s',
+        '>=': 'c.lt.s',
         '<=': 'c.le.s'
     }
 }

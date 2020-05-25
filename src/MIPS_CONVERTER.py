@@ -714,7 +714,7 @@ class MIPS_Converter:
         :return:
         """
         string = ''
-        if node.label in ['+', '-', '*']:
+        if node.label in ['+', '-', '*'] and node.node_type != 'rvalue':
             child1 = self.solve_math(node.children[0], symbol_table)
             child2 = self.solve_math(node.children[1], symbol_table)
 
@@ -747,7 +747,7 @@ class MIPS_Converter:
 
             return "0($sp)", symbol_type, True
 
-        elif node.label == "/":
+        elif node.label == "/" and node.node_type != 'rvalue':
             child1 = self.solve_math(node.children[0], symbol_table)
             child2 = self.solve_math(node.children[1], symbol_table)
 
@@ -786,7 +786,7 @@ class MIPS_Converter:
 
             return "0($sp)", symbol_type, True
 
-        elif node.label == "%":
+        elif node.label == "%" and node.node_type != 'rvalue':
             child1 = self.solve_math(node.children[0], symbol_table)
             child2 = self.solve_math(node.children[1], symbol_table)
 
@@ -820,7 +820,7 @@ class MIPS_Converter:
 
             return "0($sp)", symbol_type, True
 
-        elif node.label in ['&&', '||']:
+        elif node.label in ['&&', '||'] and node.node_type != 'rvalue':
             # Calculate values and store on stack
             child1 = self.solve_math(node.children[0], symbol_table)
             child2 = self.solve_math(node.children[1], symbol_table)
@@ -845,7 +845,7 @@ class MIPS_Converter:
             self.store("$t0", "0($sp)", 'int', comment="Overwrite left operand")  # Overwrite the other
             return "0($sp)", 'int', True
 
-        elif node.label in ['==', '!=', '<', '>', '<=', '>=']:
+        elif node.label in ['==', '!=', '<', '>', '<=', '>='] and node.node_type != 'rvalue':
             # Move values on stack
             child1 = self.solve_math(node.children[0], symbol_table)
             child2 = self.solve_math(node.children[1], symbol_table)
@@ -887,6 +887,8 @@ class MIPS_Converter:
                 self.deallocate_mem(4, symbol_table, comment="Deallocate right operand")  # Delete one
                 self.store("$t0", "0($sp)", 'int', comment="Overwrite left operand")  # Overwrite the other
                 self.float_branches += 1
+                if node.label in ['>', '>=']:
+                    self.not_value('0($sp)', 'int', node)
                 return '0($sp)', "int", True
 
             else:
@@ -1001,7 +1003,6 @@ class MIPS_Converter:
             if '*' in str(node.label):
                 dereference_count = node.label.count('*')
                 pointer_reg = "%s($sp)" % self.offset_stack[0].get_offset(symbol) if reg is None else reg
-                # TODO add float
                 self.dereference(pointer_reg, dereference_count, "int")   # reg is the address of the value we want
                 if '*' * dereference_count in symbol_type:
                     symbol_type = symbol_type[:-dereference_count]

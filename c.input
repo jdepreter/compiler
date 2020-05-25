@@ -6,8 +6,17 @@ int main(){
     float f2 = 4.5;
     float* f2p = &f2;
 
-    float r = f + *f2p;
+
+    if (f < *f2p){
+        printf("+");
+    }else{
+        printf(">=");
+    }
+    if (f > *f2p){
+        printf(">");
+    }else{
+        printf("<=");
+    }
 
 
-    printf("%f", r);
 }
