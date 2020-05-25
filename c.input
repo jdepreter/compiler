@@ -1,6 +1,13 @@
-int main(){
-    int i = 1;
-    int* j = &i;
-    int h = -*j;
-    printf("%d", h);
+#include <stdio.h>
+
+float main(){
+    float f = 3.5;
+    float* fp = &f;
+    float f2 = 4.5;
+    float* f2p = &f2;
+
+    float r = f + *f2p;
+
+
+    printf("%f", r);
 }

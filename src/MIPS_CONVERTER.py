@@ -673,9 +673,14 @@ class MIPS_Converter:
                 self.allocate_mem(4, symbol_type, comment="Space for dereferenced value")
                 dereference_count = symbol_string.count('*')
                 pointer_reg = "%s($sp)" % self.offset_stack[0].get_offset(symbol) if address is None else address
-                address = self.dereference(pointer_reg, dereference_count,
-                                       node.children[0].symbol_type.symbol_type[0:-dereference_count])
-                symbol_type = symbol_type[:-dereference_count]
+                address = self.dereference(pointer_reg, dereference_count,'int')
+                                       # node.children[0].symbol_type.symbol_type[0:-dereference_count])
+                if '*' * dereference_count in symbol_type:
+                    symbol_type = symbol_type[:-dereference_count]
+                else:
+                    count = symbol_type.count("*")
+
+                    symbol_type = symbol_type[:-symbol_type.count("*")] if count > 0 else symbol_type
                 self.move("$t2", address, comment="$t0 will be overwritten be solve math")
                 address = "0($t2)"
                 self.deallocate_mem(4, symbol_type, comment="Deallocate space for dereferenced value")
@@ -718,16 +723,15 @@ class MIPS_Converter:
             symbol_type = get_return_type(child1[1], child2[1])
 
             # Load from address if required
-            child1_reg = register_dict(child1[1], 1)
-            child2_reg = register_dict(child2[1], 0)
+
             if not child1[2]:
-                self.load_word(child1_reg, "4($sp)", child1[1])
-                self.load_word(child1_reg, "0(%s)" % child1_reg, child1[1])
-                self.store(child1_reg, "4($sp)", child1[1])
+                self.load_word('$t0', "4($sp)", 'int')
+                self.load_word('$t0', "0(%s)" % '$t0', 'int')
+                self.store('$t0', "4($sp)", 'int')
             if not child2[2]:
-                self.load_word(child2_reg, "0($sp)", child2[1])
-                self.load_word(child2_reg, "0(%s)" % child2_reg, child2[1])
-                self.store(child2_reg, "0($sp)", child2[1])
+                self.load_word('$t0', "0($sp)", 'int')
+                self.load_word('$t0', "0(%s)" % '$t0', 'int')
+                self.store('$t0', "0($sp)", 'int')
 
             # Cast if required
             self.load_word(register_dict(child2[1], 0), "0($sp)", child2[1])
@@ -752,17 +756,14 @@ class MIPS_Converter:
             symbol_type = get_return_type(child1[1], child2[1])
 
             # Load from address if required
-            child1_reg = register_dict(child1[1], 1)
-            child2_reg = register_dict(child2[1], 0)
             if not child1[2]:
-                self.load_word(child1_reg, "4($sp)", child1[1])
-                self.load_word(child1_reg, "0(%s)" % child1_reg, child1[1])
-                self.store(child1_reg, "4($sp)", child1[1])
+                self.load_word('$t0', "4($sp)", 'int')
+                self.load_word('$t0', "0(%s)" % '$t0', 'int')
+                self.store('$t0', "4($sp)", 'int')
             if not child2[2]:
-                self.load_word(child2_reg, "0($sp)", child2[1])
-                self.load_word(child2_reg, "0(%s)" % child2_reg, child2[1])
-                self.store(child2_reg, "0($sp)", child2[1])
-
+                self.load_word('$t0', "0($sp)", 'int')
+                self.load_word('$t0', "0(%s)" % '$t0', 'int')
+                self.store('$t0', "0($sp)", 'int')
             # Cast if required
             self.load_word(register_dict(child2[1], 0), "0($sp)", child2[1])
             self.load_word(register_dict(child1[1], 1), "4($sp)", child1[1])
@@ -794,16 +795,14 @@ class MIPS_Converter:
             symbol_type = get_return_type(child1[1], child2[1])
 
             # Load from address if required
-            child1_reg = register_dict(child1[1], 1)
-            child2_reg = register_dict(child2[1], 0)
             if not child1[2]:
-                self.load_word(child1_reg, "4($sp)", child1[1])
-                self.load_word(child1_reg, "0(%s)" % child1_reg, child1[1])
-                self.store(child1_reg, "4($sp)", child1[1])
+                self.load_word('$t0', "4($sp)", 'int')
+                self.load_word('$t0', "0(%s)" % '$t0', 'int')
+                self.store('$t0', "4($sp)", 'int')
             if not child2[2]:
-                self.load_word(child2_reg, "0($sp)", child2[1])
-                self.load_word(child2_reg, "0(%s)" % child2_reg, child2[1])
-                self.store(child2_reg, "0($sp)", child2[1])
+                self.load_word('$t0', "0($sp)", 'int')
+                self.load_word('$t0', "0(%s)" % '$t0', 'int')
+                self.store('$t0', "0($sp)", 'int')
 
             # Cast if required
             self.load_word(register_dict(child2[1], 0), "0($sp)", child2[1])
@@ -827,16 +826,14 @@ class MIPS_Converter:
             child2 = self.solve_math(node.children[1], symbol_table)
 
             # Load from address if required
-            child1_reg = register_dict(child1[1], 1)
-            child2_reg = register_dict(child2[1], 0)
             if not child1[2]:
-                self.load_word(child1_reg, "4($sp)", child1[1])
-                self.load_word(child1_reg, "0(%s)" % child1_reg, child1[1])
-                self.store(child1_reg, "4($sp)", child1[1])
+                self.load_word('$t0', "4($sp)", 'int')
+                self.load_word('$t0', "0(%s)" % '$t0', 'int')
+                self.store('$t0', "4($sp)", 'int')
             if not child2[2]:
-                self.load_word(child2_reg, "0($sp)", child2[1])
-                self.load_word(child2_reg, "0(%s)" % child2_reg, child2[1])
-                self.store(child2_reg, "0($sp)", child2[1])
+                self.load_word('$t0', "0($sp)", 'int')
+                self.load_word('$t0', "0(%s)" % '$t0', 'int')
+                self.store('$t0', "0($sp)", 'int')
 
             # No cast because bitwise
             self.load_word("$t0", "0($sp)", 'int')  # Child2
@@ -858,16 +855,14 @@ class MIPS_Converter:
             symbol_type = get_return_type(child1[1], child2[1])
 
             # Load from address if required
-            child1_reg = register_dict(child1[1], 1)
-            child2_reg = register_dict(child2[1], 0)
             if not child1[2]:
-                self.load_word(child1_reg, "4($sp)", child1[1])
-                self.load_word(child1_reg, "0(%s)" % child1_reg, child1[1])
-                self.store(child1_reg, "4($sp)", child1[1])
+                self.load_word('$t0', "4($sp)", 'int')
+                self.load_word('$t0', "0(%s)" % '$t0', 'int')
+                self.store('$t0', "4($sp)", 'int')
             if not child2[2]:
-                self.load_word(child2_reg, "0($sp)", child2[1])
-                self.load_word(child2_reg, "0(%s)" % child2_reg, child2[1])
-                self.store(child2_reg, "0($sp)", child2[1])
+                self.load_word('$t0', "0($sp)", 'int')
+                self.load_word('$t0', "0(%s)" % '$t0', 'int')
+                self.store('$t0', "0($sp)", 'int')
 
             # Cast if required
             self.load_word(register_dict(child2[1], 0), "0($sp)", child2[1])
@@ -995,7 +990,6 @@ class MIPS_Converter:
             return "0($sp)", str(node.symbol_type), True
 
         elif node.node_type == 'lvalue':
-            # TODO Check array
             reg = None
             self.allocate_mem(4, symbol_table, 'allocate space for instance of %s' % node.label)
             symbol = symbol_table.get_assigned_symbol(node.label, node.ctx.start)
@@ -1009,7 +1003,12 @@ class MIPS_Converter:
                 pointer_reg = "%s($sp)" % self.offset_stack[0].get_offset(symbol) if reg is None else reg
                 # TODO add float
                 self.dereference(pointer_reg, dereference_count, "int")   # reg is the address of the value we want
-                symbol_type = symbol_type[:-dereference_count]
+                if '*' * dereference_count in symbol_type:
+                    symbol_type = symbol_type[:-dereference_count]
+                else:
+                    count = symbol_type.count("*")
+
+                    symbol_type = symbol_type[:-symbol_type.count("*")] if count > 0 else symbol_type
 
                 float_or_int_reg = register_dict(symbol_type, 0)
 
@@ -1263,7 +1262,7 @@ class MIPS_Converter:
             self.load_word(reg, "0(%s)" % reg, value_type, comment="Load value of pointer in %s 2" % reg)
 
         # Load stack pointer in temp register
-        # TODO float must be converted to int
+        # reg = self.cast_value(reg, value_type, "int", node.ctx.start)
         # temp_reg = "$t0"
         temp_reg = register_dict(value_type, 0)
         self.load_word(temp_reg, temp_register, value_type)
@@ -1417,7 +1416,7 @@ class MIPS_Converter:
                     reg = register_dict(value_type, 0)
                     self.load_word(reg, "0(%s)" % reg, value_type, comment="Load value of pointer in %s 2" % reg)
                 if value_type == 'float':
-                    # TODO convert
+                    reg = self.cast_value(reg, value_type, "int", node.ctx.start)
                     pass
                 self.go_to_label_conditional(reg, labels["next_block"])  # jump to end
                 self.go_to_label(labels["code_block"])  # jump back to loop
