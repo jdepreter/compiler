@@ -42,6 +42,7 @@ class MIPS_Converter:
         self.loop_stacksize = []
         self.in_loop = False    # Determines if break is for switch case or for loop
         self.func_stacksize = []
+        self.import_stdio = False
 
         self.data_section = ".data\n"
         self.string_section = "\n"
@@ -495,8 +496,8 @@ class MIPS_Converter:
         elif node.node_type == 'ifelse':
             return self.if_else(node, symbol_table), True
 
-        # elif node.node_type == 'include':
-        #     self.include()
+        elif node.node_type == 'include':
+            self.import_stdio = True
         #
         elif node.node_type == 'assignment':
             return self.assign_node(node, symbol_table)
@@ -1383,6 +1384,8 @@ class MIPS_Converter:
         self.in_loop = in_loop
 
     def call_printf(self, node, symbol_table):
+        if not self.import_stdio:
+            raise Exception("can't recognise printf, pleas include stdio.h")
         args = node.children[1].children[:]
         arg_types = []
         arg_reg = []
@@ -1458,6 +1461,8 @@ class MIPS_Converter:
                     self.print_string(arg_reg[i + 1])
 
     def call_scanf(self, node: Node, symbol_table: SymbolTable):
+        if not self.import_stdio:
+            raise Exception("can't recognise printf, pleas include stdio.h")
         args = node.children[1].children[:]
         arg_types = []
         arg_reg = []
