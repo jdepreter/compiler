@@ -2,21 +2,11 @@
 
 int main(){
     float f = 3.5;
-    float* fp = &f;
-    float f2 = 4.5;
-    float* f2p = &f2;
+    int i =100;
+    char c = 'c';
 
-
-    if (f < *f2p){
-        printf("+");
-    }else{
-        printf(">=");
-    }
-    if (f > *f2p){
-        printf(">");
-    }else{
-        printf("<=");
-    }
-
+    printf("%f; %f; %f; \n", f,i,c);
+    printf("%d; %d; %d; \n", f,i,c);
+    printf("%c; %c; %c; \n", f,i,c);
 
 }

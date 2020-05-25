@@ -1501,19 +1501,15 @@ class MIPS_Converter:
             # Check if a % follows this string
             if i < len(arg_reg) - 1:  # first arg is print_string => len-1
                 if expected_args[i] == 'int':
-                    if arg_types[i+1] == 'float':
-                        # todo cast val
-                        ...
+
+
                     self.print_int(arg_reg[i + 1])
                 elif expected_args[i] == 'float':
-                    if arg_types[i+1] != 'float':
-                        # todo cast val
-                        ...
+
+
                     self.print_float(arg_reg[i + 1])
                 elif expected_args[i] == 'char':
-                    if arg_types[i+1] == 'float':
-                        # todo cast val
-                        ...
+
                     self.print_char(arg_reg[i + 1])
                 elif expected_args[i] == 'char*':
                     self.print_string(arg_reg[i + 1])
