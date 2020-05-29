@@ -555,8 +555,7 @@ class MIPS_Converter:
     def enter_stack(self, symbol_table):
         self.allocation_stack.insert(0, 0)
         self.offset_stack.insert(0, MIPSOffset(self.offset_stack[0].symbols))
-        write = self.write
-        self.write = True
+
         # Save old frame pointer
         self.write_comment("Entering new stack...")
         self.allocate_mem(4, symbol_table, comment="Allocate mem for previous frame pointer")
@@ -564,14 +563,12 @@ class MIPS_Converter:
         # Set new frame pointer
         self.move("$fp", "$sp", comment="Save current stack pointer in frame pointer")
         self.write_comment("Entered Stack")
-        self.write = write
 
     def leave_stack(self, symbol_table, amount=1, pop=True):
 
         stacks1 = []
         stacks2 = []
-        write = self.write
-        self.write = True
+
         for i in range(amount):
             self.write_comment("Leaving Stack...")
             diff = self.allocation_stack[0]
@@ -598,7 +595,6 @@ class MIPS_Converter:
                 self.offset_stack.insert(0, stacks2[i])
 
         self.write_comment("Left stack")
-        self.write = write
 
     def allocate_node(self, node: Node, symbol_table: SymbolTable):
         variable = node.label

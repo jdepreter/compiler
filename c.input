@@ -5,8 +5,11 @@ int main(){
     int i =100;
     char c = 'c';
 
-    printf("%f; %f; %f; \n", f,i,c);
-    printf("%d; %d; %d; \n", f,i,c);
-    printf("%c; %c; %c; \n", f,i,c);
+    if (i == 100) {
+        return 0;
+        printf("%f; %f; %f; \n", f,i,c);
+        printf("%d; %d; %d; \n", f,i,c);
+        printf("%c; %c; %c; \n", f,i,c);
 
+    }
 }
