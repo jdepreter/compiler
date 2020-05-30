@@ -1,5 +1,7 @@
 # C Compiler
 
+For generating MIPS code, we went from c directly to MIPS. No llvm is generated when compiling to MIPS.
+
 ### Implemented Features (17/04/2020)
 Assignment 1
 - Binary operations+,-,*, and / 
@@ -65,9 +67,19 @@ Also make sure graphviz is installed on your system for AST dot output.
 
 `cErrorListener.py`: Listens to ANTLR errors and throws syntax errors.
 
-`compile.py`: Execution script.
+`compile.py`: Execution script (compiles to llvm).
+
+`compile_mips.py`: Execution script (compiles to MIPS).
+
+`helperfuncs.py`: Helper functions for both llvm and MIPS code generation.
 
 `LLVM_CONVERTER.py`: Traverses the AST and generates LLVM code.
+
+`MIPS_CONVERTER.py`: Traverses the AST and generates MIPS code.
+
+`MIPS_Offset.py`: Helper class for keeping track off where variables live in respect to the stack pointer.
+
+`MIPS_Operations.py`: Helper class for MIPS instructions based on the variable / rvalue type.
 
 `symbolTables.py`: Data structure for symbol table.
 
@@ -80,6 +92,8 @@ Also make sure graphviz is installed on your system for AST dot output.
 This should create the ANTLR source files in `./ANTLR/LLVM`
 
 ### Compiling
+#### LLVM
+
 `python compile.py [inputfile] [outputname]`
 
 This generates `llvm-[outputname].ll` and a matching `[outputname]` binary in `./llvm/`.
@@ -87,6 +101,14 @@ The AST Tree can be viewed in `./trees/[outputname].png`
 
 It also compiles the `.ll` file using clang and runs the binary.
 (Files that contain errors are not compiled)
+
+#### MIPS
+`python compile_mips.py [inputfile] [outputname]`
+
+This generates `[outputname].asm` in `./asm/`.
+The AST Tree can be viewed in `./trees/[outputname].png`
+
+It also runs this .asm file with the MARS simulator in `./MARS`
 
 ### Testing
 `python run_tests.py` or `test.sh`
@@ -103,14 +125,21 @@ Also the `.ll` files are generated. They're compiled to binary using clang. And 
 The expected output of our files can be found in `./ExpectedOutput`
 
 ### Benchmark
+#### LLVM
 `python benchmark.py` runs all files in `./src/tests/benchmark1/CorrectCode` and `./src/tests/benchmark1/SemanticErrors`.
+It compares the output to our expected output.
 The expected output of these files can be found in `benchmark.py` 
+
+#### MIPS
+`python benchmark_mips.py` runs all files in `./src/tests/benchmark1/CorrectCode` and `./src/tests/benchmark1/SemanticErrors`. It also compares this output to the output of the llvm code.
+The expected output of these files can be found in `benchmark_mips.py` 
 
 ### List of test files and contents
 
 
 | File  | Tests |
 | ------------- | ------------- |
+| array.c                         | definition array, assignment array, printf array elem |
 | assignment_to_r_value.c         | definition, assignment to rvalue  |
 | basic_definition.c              | definition  |
 | basic_declaration.c             | declaration, assignment  |
